@@ -1,0 +1,68 @@
+<?php
+
+return [
+  '/' => [
+    'title' => 'Dashboard',
+    'label' => 'Dashboard',
+    'icon' => 'dashboard',
+    'view' => __DIR__ . '/../views/pages/dashboard/index.php',
+    'roles' => ['owner'],
+    'show_in_nav' => false,
+  ],
+  '/dashboard' => [
+    'title' => 'Dashboard',
+    'label' => 'Dashboard',
+    'icon' => 'dashboard',
+    'view' => __DIR__ . '/../views/pages/dashboard/index.php',
+    'roles' => ['owner'],
+    'show_in_nav' => true,
+  ],
+  '/inventory' => [
+    'title' => 'Inventory',
+    'label' => 'Inventory',
+    'icon' => 'inventory',
+    'view' => __DIR__ . '/../views/pages/inventory/index.php',
+    'roles' => ['owner'],
+    'show_in_nav' => true,
+  ],
+  '/products' => [
+    'title' => 'Products',
+    'label' => 'Products',
+    'icon' => 'products',
+    'view' => __DIR__ . '/../views/pages/products/index.php',
+    'roles' => ['owner', 'cashier'],
+    'show_in_nav' => true,
+  ],
+  '/reports' => [
+    'title' => 'Reports',
+    'label' => 'Reports',
+    'icon' => 'reports',
+    'view' => __DIR__ . '/../views/pages/reports/index.php',
+    'roles' => ['owner'],
+    'show_in_nav' => true,
+  ],
+  '/suppliers' => [
+    'title' => 'Suppliers',
+    'label' => 'Suppliers',
+    'icon' => 'suppliers',
+    'view' => __DIR__ . '/../views/pages/suppliers/index.php',
+    'roles' => ['owner'],
+    'show_in_nav' => true,
+  ],
+  '/audit-logs' => [
+    'title' => 'Audit logs',
+    'label' => 'Audit logs',
+    'icon' => 'audit logs',
+    'view' => __DIR__ . '/../views/pages/audit-logs/index.php',
+    'roles' => ['owner'],
+    'show_in_nav' => true,
+  ],
+  '/audit-logs/personal' => [
+    'title' => 'Personal audit logs',
+    'label' => 'Audit logs',
+    'icon' => 'personal audit logs',
+    'view' => __DIR__ . '/../views/pages/audit-logs/personal/index.php',
+    'roles' => ['cashier'],
+    'show_in_nav' => true,
+  ],
+];

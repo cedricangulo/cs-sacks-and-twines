@@ -1,0 +1,25 @@
+# Ignore environment variables and local configuration files
+.env
+.env.*
+*.local
+
+# Ignore dependencies
+/node_modules/
+/vendor/
+
+# Ignore logs and debug files
+/logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore uploaded files
+/public/uploads/
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
