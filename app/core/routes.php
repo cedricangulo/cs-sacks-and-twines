@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Load and cache the route catalog from the config file.
  *
- * @return array
+ * @return array<string, array<string, mixed>>
  */
 if (!function_exists('app_routes')) {
   function app_routes(): array
@@ -13,10 +13,73 @@ if (!function_exists('app_routes')) {
     static $routes = null;
 
     if ($routes === null) {
-      $routes = require __DIR__ . '/../config/routes.php';
+      $rawRoutes = require __DIR__ . '/../config/routes.php';
+      $routes = [];
+
+      foreach ($rawRoutes as $path => $route) {
+        if (!is_array($route)) {
+          continue;
+        }
+
+        $routes[$path] = app_normalize_route((string) $path, $route);
+      }
     }
 
     return $routes;
+  }
+}
+
+/**
+ * Normalize a route definition so dispatch logic can rely on consistent keys.
+ *
+ * @param string $path
+ * @param array<string, mixed> $route
+ * @return array<string, mixed>
+ */
+if (!function_exists('app_normalize_route')) {
+  function app_normalize_route(string $path, array $route): array
+  {
+    $type = (string) ($route['type'] ?? (str_starts_with($path, '/api/') ? 'api' : 'web'));
+
+    $nav = is_array($route['nav'] ?? null) ? $route['nav'] : [];
+    $label = (string) ($nav['label'] ?? $route['label'] ?? $route['title'] ?? '');
+    $icon = (string) ($nav['icon'] ?? $route['icon'] ?? '');
+    $group = (string) ($nav['group'] ?? $route['group'] ?? 'Other');
+    $show = (bool) ($nav['show'] ?? $route['show_in_nav'] ?? false);
+
+    $methods = $route['methods'] ?? null;
+    if (!is_array($methods) || $methods === []) {
+      $methods = $type === 'api' ? ['GET'] : ['GET'];
+    }
+
+    $methods = array_values(array_unique(array_map(
+      static fn(mixed $method): string => strtoupper(trim((string) $method)),
+      $methods
+    )));
+
+    $normalized = $route;
+    $normalized['type'] = $type;
+    $normalized['methods'] = $methods;
+    $normalized['layout'] = (string) ($route['layout'] ?? ($type === 'api' ? 'none' : 'app'));
+    $normalized['response'] = (string) ($route['response'] ?? ($type === 'api' ? 'json' : 'html'));
+    $normalized['roles'] = array_values(array_filter(
+      array_map(static fn(mixed $role): string => trim((string) $role), (array) ($route['roles'] ?? [])),
+      static fn(string $role): bool => $role !== ''
+    ));
+    $normalized['nav'] = [
+      'label' => $label,
+      'icon' => $icon,
+      'group' => $group,
+      'show' => $show,
+    ];
+
+    // Preserve legacy top-level keys so the app can migrate gradually.
+    $normalized['label'] = $label;
+    $normalized['icon'] = $icon;
+    $normalized['group'] = $group;
+    $normalized['show_in_nav'] = $show;
+
+    return $normalized;
   }
 }
 
@@ -32,6 +95,18 @@ if (!function_exists('app_route_for_path')) {
     $routes = app_routes();
 
     return $routes[$path] ?? null;
+  }
+}
+
+/**
+ * Determine whether the current request targets an API route namespace.
+ *
+ * @return bool
+ */
+if (!function_exists('app_request_is_api')) {
+  function app_request_is_api(): bool
+  {
+    return str_starts_with(request_path(), '/api/');
   }
 }
 
@@ -90,6 +165,92 @@ if (!function_exists('app_route_shell')) {
 }
 
 /**
+ * Return the route type.
+ *
+ * @param array<string, mixed> $route
+ * @return string
+ */
+if (!function_exists('app_route_type')) {
+  function app_route_type(array $route): string
+  {
+    return (string) ($route['type'] ?? 'web');
+  }
+}
+
+/**
+ * Return normalized route methods.
+ *
+ * @param array<string, mixed> $route
+ * @return array<int, string>
+ */
+if (!function_exists('app_route_methods')) {
+  function app_route_methods(array $route): array
+  {
+    return array_values(array_map(
+      static fn(mixed $method): string => strtoupper(trim((string) $method)),
+      (array) ($route['methods'] ?? ['GET'])
+    ));
+  }
+}
+
+/**
+ * Check whether a route accepts a request method.
+ *
+ * @param array<string, mixed> $route
+ * @param string $method
+ * @return bool
+ */
+if (!function_exists('app_route_accepts_method')) {
+  function app_route_accepts_method(array $route, string $method): bool
+  {
+    return in_array(strtoupper($method), app_route_methods($route), true);
+  }
+}
+
+/**
+ * Check whether a route has a valid view file.
+ *
+ * @param array<string, mixed> $route
+ * @return bool
+ */
+if (!function_exists('app_route_has_view')) {
+  function app_route_has_view(array $route): bool
+  {
+    $viewPath = $route['view'] ?? null;
+
+    return is_string($viewPath) && $viewPath !== '' && is_file($viewPath);
+  }
+}
+
+/**
+ * Check whether a route has a valid controller file.
+ *
+ * @param array<string, mixed> $route
+ * @return bool
+ */
+if (!function_exists('app_route_has_controller')) {
+  function app_route_has_controller(array $route): bool
+  {
+    $controllerPath = $route['controller'] ?? null;
+
+    return is_string($controllerPath) && $controllerPath !== '' && is_file($controllerPath);
+  }
+}
+
+/**
+ * Get the route nav metadata.
+ *
+ * @param array<string, mixed> $route
+ * @return array<string, mixed>
+ */
+if (!function_exists('app_route_nav')) {
+  function app_route_nav(array $route): array
+  {
+    return is_array($route['nav'] ?? null) ? $route['nav'] : [];
+  }
+}
+
+/**
  * Determine whether the current shell should render the sidebar.
  *
  * @param array $route
@@ -99,7 +260,7 @@ if (!function_exists('app_route_shell')) {
 if (!function_exists('app_should_show_sidebar')) {
   function app_should_show_sidebar(array $route, string $role): bool
   {
-    return app_route_shell($route) === 'app' && $role === 'owner';
+    return app_route_type($route) === 'web' && app_route_shell($route) === 'app' && $role === 'owner';
   }
 }
 
@@ -118,8 +279,14 @@ if (!function_exists('app_navigation_for_role')) {
     $sections = [];
 
     foreach (app_routes() as $path => $route) {
+      if (app_route_type($route) !== 'web') {
+        continue;
+      }
+
+      $nav = app_route_nav($route);
+
       // Hidden routes stay out of the menu even if they share a role.
-      if (($route['show_in_nav'] ?? true) !== true) {
+      if (($nav['show'] ?? false) !== true) {
         continue;
       }
 
@@ -129,7 +296,7 @@ if (!function_exists('app_navigation_for_role')) {
         continue;
       }
 
-      $groupLabel = $route['group'] ?? 'Other';
+      $groupLabel = (string) ($nav['group'] ?? 'Other');
 
       if (!isset($sections[$groupLabel])) {
         $sections[$groupLabel] = [
@@ -139,9 +306,9 @@ if (!function_exists('app_navigation_for_role')) {
       }
 
       $sections[$groupLabel]['links'][] = [
-        'label' => $route['label'] ?? $route['title'],
+        'label' => (string) ($nav['label'] ?? $route['title'] ?? ''),
         'href' => $path,
-        'icon' => $route['icon'] ?? '',
+        'icon' => (string) ($nav['icon'] ?? ''),
       ];
     }
 

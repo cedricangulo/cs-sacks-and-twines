@@ -3,15 +3,57 @@
 // The front controller boots shared helpers, resolves the current route,
 // and renders the selected page inside the correct shell.
 require_once __DIR__ . '/app/core/bootstrap.php';
+
+$requestPath = request_path();
+
+if (app_request_is_api() && app_route_for_path($requestPath) === null) {
+  header('Content-Type: application/json; charset=UTF-8');
+  http_response_code(404);
+  echo json_encode([
+    'success' => false,
+    'message' => 'Resource not found.',
+  ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{"success":false}';
+  exit;
+}
+
 $currentPage = app_resolve_page_route();
 
 $pageController = $currentPage['controller'] ?? null;
 $allowedRoles = $currentPage['roles'] ?? [];
 $currentRole = app_current_user_role();
+$requestMethod = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+$pageResponse = (string) ($currentPage['response'] ?? 'html');
 
 // Send guests to sign-in before any protected page renders.
 if ($currentRole === 'guest' && !in_array('guest', $allowedRoles, true)) {
+  if ($pageResponse === 'json') {
+    header('Content-Type: application/json; charset=UTF-8');
+    http_response_code(401);
+    echo json_encode([
+      'success' => false,
+      'message' => 'You must be signed in to access this resource.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{"success":false}';
+    exit;
+  }
+
   header('Location: ' . routeUrl('/sign-in'));
+  exit;
+}
+
+if (($currentPage['status_code'] ?? 200) !== 404 && !app_route_accepts_method($currentPage, $requestMethod)) {
+  if ($pageResponse === 'json') {
+    header('Content-Type: application/json; charset=UTF-8');
+    http_response_code(405);
+    echo json_encode([
+      'success' => false,
+      'message' => 'Method not allowed.',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{"success":false}';
+    exit;
+  }
+
+  http_response_code(405);
+  header('Content-Type: text/plain; charset=UTF-8');
+  echo 'Method Not Allowed';
   exit;
 }
 

@@ -20,6 +20,50 @@ function clearDialogError(state) {
   state.formError.classList.add(state.hiddenClass);
 }
 
+function setFieldError(state, fieldName, message) {
+  const field = state.form.querySelector(`[data-field="${fieldName}"]`);
+  const input = state.form.querySelector(`[data-field-input="${fieldName}"]`);
+  const error = state.form.querySelector(`[data-field-error="${fieldName}"]`);
+
+  if (!field || !input || !error) {
+    return;
+  }
+
+  field.setAttribute('data-invalid', 'true');
+  input.setAttribute('aria-invalid', 'true');
+  error.textContent = message;
+  error.classList.remove(state.hiddenClass);
+}
+
+function clearFieldError(state, fieldName) {
+  const field = state.form.querySelector(`[data-field="${fieldName}"]`);
+  const input = state.form.querySelector(`[data-field-input="${fieldName}"]`);
+  const error = state.form.querySelector(`[data-field-error="${fieldName}"]`);
+
+  if (!field || !input || !error) {
+    return;
+  }
+
+  field.removeAttribute('data-invalid');
+  input.removeAttribute('aria-invalid');
+  error.textContent = '';
+  error.classList.add(state.hiddenClass);
+}
+
+function clearFieldErrors(state) {
+  [
+    'product_id',
+    'name',
+    'category',
+    'base_uom',
+    'supplier_id',
+    'quantity_received',
+    'unit_cost',
+  ].forEach((fieldName) => {
+    clearFieldError(state, fieldName);
+  });
+}
+
 function showDialogError(state, message) {
   state.formError.textContent = message;
   state.formError.classList.remove(state.hiddenClass);
@@ -53,15 +97,15 @@ function setLockedState(state, name, locked) {
 function lockExistingItemFields(state) {
   setLockedState(state, 'image', true);
   setLockedState(state, 'category', true);
-  setLockedState(state, 'unit', true);
-  setLockedState(state, 'supplier', true);
+  setLockedState(state, 'base_uom', true);
+  setLockedState(state, 'supplier_id', true);
 }
 
 function unlockAllItemFields(state) {
   setLockedState(state, 'image', false);
   setLockedState(state, 'category', false);
-  setLockedState(state, 'unit', false);
-  setLockedState(state, 'supplier', false);
+  setLockedState(state, 'base_uom', false);
+  setLockedState(state, 'supplier_id', false);
 }
 
 function showExistingMode(state) {
@@ -123,6 +167,7 @@ function filterOptions(state, query) {
 function resetForm(state) {
   state.form.reset();
   clearDialogError(state);
+  clearFieldErrors(state);
   state.productIdField.value = '';
   state.triggerLabel.textContent = 'Select an item or add a new one';
   state.newItemAlert.classList.add(state.hiddenClass);
@@ -148,6 +193,7 @@ function fillExistingItem(state, option) {
   const supplierId = option.dataset.supplierId || '';
 
   clearDialogError(state);
+  clearFieldError(state, 'product_id');
   state.productIdField.value = productId;
   state.triggerLabel.textContent = label;
   state.itemNameInput.value = label;
@@ -168,6 +214,7 @@ function fillExistingItem(state, option) {
 
 function switchToNewItem(state) {
   clearDialogError(state);
+  clearFieldErrors(state);
   state.productIdField.value = '';
   showNewMode(state);
   state.triggerLabel.textContent = 'New item';
@@ -192,21 +239,50 @@ function findFirstVisibleOption(state) {
 
 function validateBeforeSubmit(state) {
   clearDialogError(state);
+  clearFieldErrors(state);
+
+  const errors = {};
 
   if (state.modeField.value === 'existing' && state.productIdField.value.trim() === '') {
-    showDialogError(state, 'Please choose an existing item before saving stock.');
-    openCombobox(state);
-    state.trigger.focus();
-    return false;
+    errors.product_id = 'Please choose an existing item before saving stock.';
   }
 
   if (state.modeField.value === 'new' && state.itemNameInput.value.trim() === '') {
-    state.itemNameInput.reportValidity();
-    return false;
+    errors.name = 'Enter an item name for the new product.';
   }
 
   if (!state.form.checkValidity()) {
     state.form.reportValidity();
+    if (!state.quantityInput.checkValidity()) {
+      errors.quantity_received = 'Quantity must be greater than zero.';
+    }
+    if (!state.costInput.checkValidity()) {
+      errors.unit_cost = 'Total procurement cost must be greater than zero.';
+    }
+    if (state.modeField.value === 'new') {
+      if (!state.categoryInput.value) {
+        errors.category = 'Select a valid category for the new product.';
+      }
+      if (!state.unitInput.value) {
+        errors.base_uom = 'Select a valid unit of measurement for the new product.';
+      }
+      if (!state.supplierInput.value) {
+        errors.supplier_id = 'Select a supplier for the new item.';
+      }
+    }
+  }
+
+  if (Object.keys(errors).length > 0) {
+    Object.entries(errors).forEach(([fieldName, message]) => {
+      setFieldError(state, fieldName, message);
+    });
+    const firstField = state.form.querySelector('[data-invalid] [data-field-input]');
+    if (firstField instanceof HTMLElement) {
+      firstField.focus();
+    }
+    if (errors.product_id) {
+      openCombobox(state);
+    }
     return false;
   }
 
@@ -215,6 +291,9 @@ function validateBeforeSubmit(state) {
 
 export {
   clearDialogError,
+  setFieldError,
+  clearFieldError,
+  clearFieldErrors,
   showDialogError,
   updatePreviewMessage,
   setSubmittingState,

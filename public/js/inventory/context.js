@@ -25,10 +25,10 @@ export function createInventoryState(dialog) {
   const imagePreview = dialog.querySelector('[data-image-preview]');
   const imagePreviewMessage = dialog.querySelector('[data-image-preview-message]');
   const categoryInput = dialog.querySelector('[data-field-input="category"]');
-  const unitInput = dialog.querySelector('[data-field-input="unit"]');
-  const supplierInput = dialog.querySelector('[data-field-input="supplier"]');
-  const quantityInput = dialog.querySelector('[data-field-input="quantity"]');
-  const costInput = dialog.querySelector('[data-field-input="cost"]');
+  const unitInput = dialog.querySelector('[data-field-input="base_uom"]');
+  const supplierInput = dialog.querySelector('[data-field-input="supplier_id"]');
+  const quantityInput = dialog.querySelector('[data-field-input="quantity_received"]');
+  const costInput = dialog.querySelector('[data-field-input="unit_cost"]');
   const skuInput = dialog.querySelector('[data-field-input="sku"]');
   const batchInput = dialog.querySelector('[data-field-input="batch"]');
   const editButtons = Array.from(dialog.querySelectorAll('[data-edit-field]'));
@@ -99,14 +99,14 @@ export function createInventoryState(dialog) {
     fieldInputs: {
       image: imageInput,
       category: categoryInput,
-      unit: unitInput,
-      supplier: supplierInput,
+      base_uom: unitInput,
+      supplier_id: supplierInput,
     },
     fieldGroups: {
       image: dialog.querySelector('[data-field-group="image"]'),
       category: dialog.querySelector('[data-field-group="category"]'),
-      unit: dialog.querySelector('[data-field-group="unit"]'),
-      supplier: dialog.querySelector('[data-field-group="supplier"]'),
+      base_uom: dialog.querySelector('[data-field-group="base_uom"]'),
+      supplier_id: dialog.querySelector('[data-field-group="supplier_id"]'),
     },
     hiddenClass: 'hidden',
     saveButtonLabel: saveButton.textContent || 'Save stock',

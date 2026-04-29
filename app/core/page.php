@@ -17,10 +17,8 @@ if (!function_exists('app_resolve_page_route')) {
     $currentPage = app_current_route();
 
     if ($requestedPath !== '/not-found') {
-      $pageViewPath = $currentPage['view'] ?? null;
-      $pageController = $currentPage['controller'] ?? null;
-      $hasView = is_string($pageViewPath) && $pageViewPath !== '' && is_file($pageViewPath);
-      $hasController = is_string($pageController) && $pageController !== '' && is_file($pageController);
+      $hasView = app_route_has_view($currentPage);
+      $hasController = app_route_has_controller($currentPage);
 
       if (!$hasView && !$hasController) {
         $currentPage = app_route_for_path('/not-found') ?? $currentPage;

@@ -5,7 +5,7 @@ include __DIR__ . '/add-inventory-dialog.php';
   <div class="flex w-full items-center justify-between gap-4">
     <div class="space-y-2">
       <h2 class="type-lg">Inventory</h2>
-      <p class="text-sm text-muted-foreground">
+      <p class="type-sm text-muted-foreground">
         Choose an existing product for fast stock intake or add a new product inline.
       </p>
     </div>
@@ -18,33 +18,21 @@ include __DIR__ . '/add-inventory-dialog.php';
     </button>
   </div>
 
-  <!-- Products container with skeleton loaders -->
-  <div class="mt-6" id="products-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/products'), ENT_QUOTES, 'UTF-8') ?>">
-    <!-- Skeleton loaders -->
-    <div class="space-y-3" id="skeleton-loaders">
-      <div class="flex items-center gap-4">
-        <div class="bg-accent animate-pulse size-10 shrink-0 rounded-full"></div>
-        <div class="grid gap-2 flex-1">
-          <div class="bg-accent animate-pulse rounded-md h-4 w-[150px]"></div>
-          <div class="bg-accent animate-pulse rounded-md h-4 w-[100px]"></div>
-        </div>
-      </div>
-      <div class="flex items-center gap-4">
-        <div class="bg-accent animate-pulse size-10 shrink-0 rounded-full"></div>
-        <div class="grid gap-2 flex-1">
-          <div class="bg-accent animate-pulse rounded-md h-4 w-[150px]"></div>
-          <div class="bg-accent animate-pulse rounded-md h-4 w-[100px]"></div>
-        </div>
-      </div>
-      <div class="flex items-center gap-4">
-        <div class="bg-accent animate-pulse size-10 shrink-0 rounded-full"></div>
-        <div class="grid gap-2 flex-1">
-          <div class="bg-accent animate-pulse rounded-md h-4 w-[150px]"></div>
-          <div class="bg-accent animate-pulse rounded-md h-4 w-[100px]"></div>
-        </div>
-      </div>
-    </div>
+  <div class="mt-6 overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Base Unit</th>
+          <th class="text-right">Current Stock</th>
+        </tr>
+      </thead>
+      <tbody id="products-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/products'), ENT_QUOTES, 'UTF-8') ?>">
+      </tbody>
+    </table>
   </div>
 </section>
 
-<script type="module" src="<?= htmlspecialchars(routeUrl('/public/js/inventory.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(routeUrl('/public/js/inventory/index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>

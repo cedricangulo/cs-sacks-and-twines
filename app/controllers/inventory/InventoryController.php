@@ -139,61 +139,46 @@ class InventoryController
 		$allowedCategories = ['sacks', 'twines'];
 		$allowedUnits = ['pieces', 'kilos'];
 
+		$errors = [];
+
 		if (!in_array($mode, ['existing', 'new'], true)) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'Choose a valid inventory mode.',
-			], 422);
+			$errors['mode'] = 'Choose a valid inventory mode.';
 		}
 
 		if ($quantityReceived === '' || (float) $quantityReceived <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'Quantity must be greater than zero.',
-			], 422);
+			$errors['quantity_received'] = 'Quantity must be greater than zero.';
 		}
 
 		if ($unitCost === '' || (float) $unitCost <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'Total procurement cost must be greater than zero.',
-			], 422);
+			$errors['unit_cost'] = 'Total procurement cost must be greater than zero.';
 		}
 
 		if ($mode === 'new') {
 			if ($itemName === '') {
-				$this->jsonResponse([
-					'success' => false,
-					'message' => 'Enter an item name for the new product.',
-				], 422);
+				$errors['name'] = 'Enter an item name for the new product.';
 			}
 
 			if ($category === '' || !in_array($category, $allowedCategories, true)) {
-				$this->jsonResponse([
-					'success' => false,
-					'message' => 'Select a valid category for the new product.',
-				], 422);
+				$errors['category'] = 'Select a valid category for the new product.';
 			}
 
 			if ($baseUom === '' || !in_array($baseUom, $allowedUnits, true)) {
-				$this->jsonResponse([
-					'success' => false,
-					'message' => 'Select a valid unit of measurement for the new product.',
-				], 422);
+				$errors['base_uom'] = 'Select a valid unit of measurement for the new product.';
 			}
 
 			if ($supplierId <= 0) {
-				$this->jsonResponse([
-					'success' => false,
-					'message' => 'Select a supplier for the new item.',
-				], 422);
+				$errors['supplier_id'] = 'Select a supplier for the new item.';
 			}
 		}
 
 		if ($mode === 'existing' && $productId <= 0) {
+			$errors['product_id'] = 'Choose an existing item before saving stock.';
+		}
+
+		if ($errors !== []) {
 			$this->jsonResponse([
 				'success' => false,
-				'message' => 'Choose an existing item before saving stock.',
+				'errors' => $errors,
 			], 422);
 		}
 

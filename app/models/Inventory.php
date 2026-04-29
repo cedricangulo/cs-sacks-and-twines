@@ -31,6 +31,7 @@ class Inventory
 				p.category,
 				p.base_uom,
 				p.current_stock,
+				p.updated_at,
 				(
 					SELECT b.supplier_id
 					FROM batches b
