@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Title comes from the route metadata so every page can define its own label. -->
   <title><?php echo htmlspecialchars((string) ($pageTitle ?? 'Sacks and Twines'), ENT_QUOTES, 'UTF-8'); ?></title>
 
   <!-- Basecoat local CDN -->

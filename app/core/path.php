@@ -63,6 +63,7 @@ if (!function_exists('request_path')) {
 if (!function_exists('routeUrl')) {
   function routeUrl(string $path): string
   {
+    // All frontend links should go through this helper so the app works from /htdocs or a subfolder.
     return app_base_path() . $path;
   }
 }
