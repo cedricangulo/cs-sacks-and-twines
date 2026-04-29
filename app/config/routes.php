@@ -1,11 +1,14 @@
 <?php
 
+// Route metadata keeps the app layout, access control, and menu data in one
+// place so views do not need to know about every page by hand.
 return [
   '/' => [
     'title' => 'Dashboard',
     'label' => 'Dashboard',
     'icon' => 'dashboard',
     'view' => __DIR__ . '/../views/pages/dashboard/index.php',
+    'layout' => 'app',
     'roles' => ['owner'],
     'show_in_nav' => false,
   ],
@@ -14,6 +17,7 @@ return [
     'label' => 'Dashboard',
     'icon' => 'dashboard',
     'view' => __DIR__ . '/../views/pages/dashboard/index.php',
+    'layout' => 'app',
     'roles' => ['owner'],
     'show_in_nav' => true,
   ],
@@ -22,6 +26,7 @@ return [
     'label' => 'Inventory',
     'icon' => 'inventory',
     'view' => __DIR__ . '/../views/pages/inventory/index.php',
+    'layout' => 'app',
     'roles' => ['owner'],
     'show_in_nav' => true,
   ],
@@ -30,6 +35,7 @@ return [
     'label' => 'Products',
     'icon' => 'products',
     'view' => __DIR__ . '/../views/pages/products/index.php',
+    'layout' => 'app',
     'roles' => ['owner', 'cashier'],
     'show_in_nav' => true,
   ],
@@ -38,6 +44,7 @@ return [
     'label' => 'Reports',
     'icon' => 'reports',
     'view' => __DIR__ . '/../views/pages/reports/index.php',
+    'layout' => 'app',
     'roles' => ['owner'],
     'show_in_nav' => true,
   ],
@@ -46,6 +53,7 @@ return [
     'label' => 'Suppliers',
     'icon' => 'suppliers',
     'view' => __DIR__ . '/../views/pages/suppliers/index.php',
+    'layout' => 'app',
     'roles' => ['owner'],
     'show_in_nav' => true,
   ],
@@ -54,6 +62,7 @@ return [
     'label' => 'Audit logs',
     'icon' => 'audit logs',
     'view' => __DIR__ . '/../views/pages/audit-logs/index.php',
+    'layout' => 'app',
     'roles' => ['owner'],
     'show_in_nav' => true,
   ],
@@ -62,7 +71,20 @@ return [
     'label' => 'Audit logs',
     'icon' => 'personal audit logs',
     'view' => __DIR__ . '/../views/pages/audit-logs/personal/index.php',
+    'layout' => 'app',
     'roles' => ['cashier'],
     'show_in_nav' => true,
+  ],
+  '/sign-in' => [
+    'title' => 'Sign in',
+    'label' => 'Sign in',
+    'icon' => 'sign in',
+    // The sign-in route runs a controller before the view so POST requests can
+    // authenticate and redirect without mixing login logic into the template.
+    'controller' => __DIR__ . '/../controllers/auth/sign-in.php',
+    'view' => __DIR__ . '/../views/pages/auth/sign-in.php',
+    'layout' => 'auth',
+    'roles' => ['guest'],
+    'show_in_nav' => false,
   ],
 ];
