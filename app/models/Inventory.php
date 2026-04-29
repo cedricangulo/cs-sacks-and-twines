@@ -232,6 +232,57 @@ class Inventory
 	}
 
 	/**
+	 * Get batches for a specific product.
+	 *
+	 * @param int $productId
+	 * @param int $limit
+	 * @param int $offset
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function batchesByProductId(int $productId, int $limit = 3, int $offset = 0): array
+	{
+		$statement = $this->pdo->prepare(
+			'SELECT
+				b.id,
+				b.batch_code,
+				b.unit_cost,
+				b.quantity_received,
+				b.quantity_remaining,
+				b.created_at,
+				b.updated_at,
+				s.company_name AS supplier_name
+			FROM batches b
+			JOIN suppliers s ON s.id = b.supplier_id
+			WHERE b.product_id = :product_id
+			ORDER BY b.created_at DESC, b.id DESC
+			LIMIT :limit OFFSET :offset'
+		);
+		$statement->bindValue('product_id', $productId, PDO::PARAM_INT);
+		$statement->bindValue('limit', $limit, PDO::PARAM_INT);
+		$statement->bindValue('offset', $offset, PDO::PARAM_INT);
+		$statement->execute();
+
+		return $statement->fetchAll();
+	}
+
+	/**
+	 * Count batches for a specific product.
+	 *
+	 * @param int $productId
+	 * @return int
+	 */
+	public function batchCountByProductId(int $productId): int
+	{
+		$statement = $this->pdo->prepare(
+			'SELECT COUNT(*) FROM batches WHERE product_id = :product_id'
+		);
+		$statement->bindValue('product_id', $productId, PDO::PARAM_INT);
+		$statement->execute();
+
+		return (int) $statement->fetchColumn();
+	}
+
+	/**
 	 * Increment product stock after a batch insert.
 	 *
 	 * @param int $productId

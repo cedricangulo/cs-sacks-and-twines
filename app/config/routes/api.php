@@ -55,6 +55,32 @@ return [
       'show' => false,
     ],
   ],
+  '/api/inventory/batches' => [
+    'title' => 'Get batches',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/inventory/BatchController.php',
+    'class' => 'BatchController',
+    'method' => 'getBatchesJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/inventory/batches/count' => [
+    'title' => 'Get batch count',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/inventory/BatchController.php',
+    'class' => 'BatchController',
+    'method' => 'getBatchCountJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
   '/supplier/save' => [
     'title' => 'Save supplier (legacy)',
     'type' => 'api',

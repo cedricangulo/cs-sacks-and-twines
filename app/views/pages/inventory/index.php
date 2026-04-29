@@ -29,7 +29,7 @@ include __DIR__ . '/add-inventory-dialog.php';
           <th class="text-right">Current Stock</th>
         </tr>
       </thead>
-      <tbody id="products-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/products'), ENT_QUOTES, 'UTF-8') ?>">
+      <tbody id="products-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/products'), ENT_QUOTES, 'UTF-8') ?>" data-batches-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches'), ENT_QUOTES, 'UTF-8') ?>" data-batches-count-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches/count'), ENT_QUOTES, 'UTF-8') ?>">
       </tbody>
     </table>
   </div>
