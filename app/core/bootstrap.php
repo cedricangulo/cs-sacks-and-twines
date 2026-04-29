@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 // Start the session once for the whole request lifecycle so authentication
 // and route helpers can read and write role state safely.
 if (session_status() === PHP_SESSION_NONE) {
@@ -10,3 +12,4 @@ if (session_status() === PHP_SESSION_NONE) {
 // route resolution.
 require_once __DIR__ . '/path.php';
 require_once __DIR__ . '/routes.php';
+require_once __DIR__ . '/page.php';

@@ -21,8 +21,11 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
               <!-- Route URLs are resolved through the helper so subfolder installs keep working. -->
               <?php $linkHref = routeUrl($link['href']); ?>
               <li>
-                <a href="<?php echo $escape($linkHref); ?>"<?php echo $currentPath === $link['href'] ? ' aria-current="page"' : ''; ?>>
-                  <!-- icon: <?php echo $escape($link['icon']); ?> -->
+                <a href="<?php echo $escape($linkHref); ?>" <?php echo $currentPath === $link['href'] ? ' aria-current="page"' : ''; ?>>
+                  <?php $iconMarkup = app_icon_svg($link['icon']); ?>
+                  <?php if ($iconMarkup !== ''): ?>
+                    <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center" aria-hidden="true"><?php echo $iconMarkup; ?></span>
+                  <?php endif; ?>
                   <span><?php echo $escape($link['label']); ?></span>
                 </a>
               </li>
@@ -31,5 +34,17 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
         </div>
       <?php endforeach; ?>
     </section>
+    <div role="group" aria-label="Session actions">
+      <ul>
+        <li>
+          <form action="<?php echo $escape(routeUrl('/sign-out')); ?>" method="post">
+            <button class="btn-ghost w-full" type="submit">
+              <?php echo app_icon_svg('sign-out'); ?>
+              <span>Sign Out</span>
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
   </nav>
 </aside>
