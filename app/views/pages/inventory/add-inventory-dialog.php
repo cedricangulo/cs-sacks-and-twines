@@ -11,7 +11,7 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
     </header>
 
     <section class="overflow-y-auto scrollbar">
-      <form id="inventory-form" class="form pb-4" data-inventory-form action="<?= htmlspecialchars(routeUrl('/api/inventory/save'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
+      <form id="inventory-form" class="form pb-4" data-inventory-form action="<?= htmlspecialchars(routeUrl('/api/stock-in'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
         <input type="hidden" name="mode" value="existing" data-inventory-mode />
         <input type="hidden" name="product_id" value="" data-product-id />
 
@@ -73,6 +73,7 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                         $productWeight = (string) ($product['weight_per_unit'] ?? '');
                         $productImage = (string) ($product['image_path'] ?? '');
                         $defaultSupplierId = (string) ($product['default_supplier_id'] ?? '');
+                        $productLowStockThreshold = (string) ($product['low_stock_threshold'] ?? '0.00');
                         $filterText = trim($productName . ' ' . $productSku . ' ' . $productCategory . ' ' . $productUnit);
                         ?>
                         <div
@@ -88,6 +89,7 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                           data-weight="<?= htmlspecialchars($productWeight, ENT_QUOTES, 'UTF-8') ?>"
                           data-image="<?= htmlspecialchars($productImage, ENT_QUOTES, 'UTF-8') ?>"
                           data-supplier-id="<?= htmlspecialchars($defaultSupplierId, ENT_QUOTES, 'UTF-8') ?>"
+                          data-low-stock-threshold="<?= htmlspecialchars($productLowStockThreshold, ENT_QUOTES, 'UTF-8') ?>"
                           data-filter="<?= htmlspecialchars($filterText, ENT_QUOTES, 'UTF-8') ?>">
                           <h4 class="font-medium type-base text-foreground"><?= htmlspecialchars($productName, ENT_QUOTES, 'UTF-8') ?></h4>
                           <div class="type-xs text-muted-foreground"><?= htmlspecialchars($productSku, ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars($productCategory, ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars($productUnit, ENT_QUOTES, 'UTF-8') ?></div>
@@ -232,7 +234,7 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                     <label class="label" for="inventory-item-weight">Weight per Unit (kg)</label>
                     <button type="button" class="hidden text-xs font-medium text-primary" data-edit-field="weight_per_unit">Edit</button>
                   </div>
-                  <input class="w-full input" type="number" id="inventory-item-weight" name="weight_per_unit" min="0.01" step="0.0001" placeholder="0.0000" disabled data-field-input="weight_per_unit" aria-describedby="weight_per_unit-error" />
+                  <input class="w-full input" type="number" id="inventory-item-weight" name="weight_per_unit" step="0.0001" placeholder="Optional" disabled data-field-input="weight_per_unit" aria-describedby="weight_per_unit-error" />
                   <p id="weight_per_unit-error" class="hidden text-sm text-destructive" role="alert" data-field-error="weight_per_unit"></p>
                 </div>
 
@@ -247,6 +249,15 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                 <label class="label" for="inventory-item-cost">Total Procurement Cost</label>
                 <input class="w-full input" type="number" id="inventory-item-cost" name="total_procurement_cost" min="0.01" step="0.01" placeholder="0.00" required data-field-input="total_procurement_cost" aria-describedby="total_procurement_cost-error" />
                 <p id="total_procurement_cost-error" class="hidden text-sm text-destructive" role="alert" data-field-error="total_procurement_cost"></p>
+              </div>
+
+              <div role="group" class="field" data-field="low_stock_threshold" data-field-group="low_stock_threshold">
+                <div class="flex items-center justify-between gap-4">
+                  <label class="label" for="inventory-item-low-stock">Low Stock Threshold</label>
+                  <button type="button" class="hidden text-xs font-medium text-primary" data-edit-field="low_stock_threshold">Edit</button>
+                </div>
+                <input class="w-full input" type="number" id="inventory-item-low-stock" name="low_stock_threshold" min="0" step="0.01" value="0.00" placeholder="0.00" disabled data-field-input="low_stock_threshold" aria-describedby="low_stock_threshold-error" />
+                <p id="low_stock_threshold-error" class="hidden text-sm text-destructive" role="alert" data-field-error="low_stock_threshold"></p>
               </div>
             </div>
         </fieldset>

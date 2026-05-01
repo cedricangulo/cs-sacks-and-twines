@@ -15,6 +15,20 @@ function populateDraftCodes(state) {
   state.batchInput.value = generateDraftCode('BAT');
 }
 
+function syncCategoryDefaults(state) {
+  const category = state.categoryInput.value;
+
+  if (category === 'sacks') {
+    state.unitInput.value = 'piece';
+    state.weightInput.value = '';
+  }
+
+  if (category === 'twines') {
+    state.unitInput.value = 'roll';
+    state.weightInput.value = '20.00';
+  }
+}
+
 function clearDialogError(state) {
   state.formError.textContent = '';
   state.formError.classList.add(state.hiddenClass);
@@ -60,6 +74,7 @@ function clearFieldErrors(state) {
     'supplier_id',
     'quantity_received',
     'total_procurement_cost',
+    'low_stock_threshold',
   ].forEach((fieldName) => {
     clearFieldError(state, fieldName);
   });
@@ -101,6 +116,7 @@ function lockExistingItemFields(state) {
   setLockedState(state, 'base_uom', true);
   setLockedState(state, 'weight_per_unit', true);
   setLockedState(state, 'supplier_id', true);
+  setLockedState(state, 'low_stock_threshold', true);
 }
 
 function unlockAllItemFields(state) {
@@ -109,6 +125,7 @@ function unlockAllItemFields(state) {
   setLockedState(state, 'base_uom', false);
   setLockedState(state, 'weight_per_unit', false);
   setLockedState(state, 'supplier_id', false);
+  setLockedState(state, 'low_stock_threshold', false);
 }
 
 function showExistingMode(state) {
@@ -197,6 +214,7 @@ function fillExistingItem(state, option) {
   const weightPerUnit = option.dataset.weight || '';
   const imagePath = option.dataset.image || '';
   const supplierId = option.dataset.supplierId || '';
+  const lowStockThreshold = option.dataset.lowStockThreshold || '';
 
   clearDialogError(state);
   clearFieldError(state, 'product_id');
@@ -210,6 +228,7 @@ function fillExistingItem(state, option) {
   state.unitInput.value = unit;
   state.weightInput.value = weightPerUnit;
   state.supplierInput.value = supplierId;
+  state.lowStockInput.value = lowStockThreshold;
   state.imageInput.value = '';
 
   if (imagePath) {
@@ -238,9 +257,11 @@ function switchToNewItem(state) {
   populateDraftCodes(state);
   state.categoryInput.value = '';
   state.unitInput.value = '';
+  state.weightInput.value = '';
   state.supplierInput.value = '';
+  state.lowStockInput.value = '0.00';
   state.imageInput.value = '';
-  state.imagePreview.textContent = 'Preview';
+  state.imagePreviewMessage.textContent = 'Preview';
   updatePreviewMessage(state, 'New item mode enabled. Enter the item name and details below.');
   state.itemNameInput.value = '';
   closeCombobox(state);
@@ -265,6 +286,7 @@ function validateBeforeSubmit(state) {
     supplier_id: state.supplierInput.value,
     quantity_received: state.quantityInput.value,
     total_procurement_cost: state.costInput.value,
+    low_stock_threshold: state.lowStockInput.value,
   };
 
   return { values };
@@ -357,4 +379,5 @@ export {
   showImagePreview,
   showImageUpload,
   clearImagePreview,
+  syncCategoryDefaults,
 }

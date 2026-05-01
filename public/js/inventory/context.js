@@ -32,6 +32,7 @@ export function createInventoryState(dialog) {
   const supplierInput = dialog.querySelector('[data-field-input="supplier_id"]');
   const quantityInput = dialog.querySelector('[data-field-input="quantity_received"]');
   const costInput = dialog.querySelector('[data-field-input="total_procurement_cost"]');
+  const lowStockInput = dialog.querySelector('[data-field-input="low_stock_threshold"]');
   const weightInput = dialog.querySelector('[data-field-input="weight_per_unit"]');
   const skuInput = dialog.querySelector('[data-field-input="sku"]');
   const batchInput = dialog.querySelector('[data-field-input="batch"]');
@@ -66,6 +67,7 @@ export function createInventoryState(dialog) {
     !supplierInput ||
     !quantityInput ||
     !costInput ||
+    !lowStockInput ||
     !skuInput ||
     !batchInput
   ) {
@@ -103,6 +105,7 @@ export function createInventoryState(dialog) {
     supplierInput,
     quantityInput,
     costInput,
+    lowStockInput,
     weightInput,
     skuInput,
     batchInput,
@@ -113,6 +116,7 @@ export function createInventoryState(dialog) {
       base_uom: unitInput,
       weight_per_unit: weightInput,
       supplier_id: supplierInput,
+      low_stock_threshold: lowStockInput,
     },
     fieldGroups: {
       image: dialog.querySelector('[data-field-group="image"]'),
@@ -120,6 +124,7 @@ export function createInventoryState(dialog) {
       base_uom: dialog.querySelector('[data-field-group="base_uom"]'),
       weight_per_unit: dialog.querySelector('[data-field-group="weight_per_unit"]'),
       supplier_id: dialog.querySelector('[data-field-group="supplier_id"]'),
+      low_stock_threshold: dialog.querySelector('[data-field-group="low_stock_threshold"]'),
     },
     hiddenClass: 'hidden',
     saveButtonLabel: saveButton.textContent || 'Save stock',

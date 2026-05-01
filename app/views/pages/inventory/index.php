@@ -22,9 +22,8 @@ include __DIR__ . '/add-inventory-dialog.php';
     <table class="table">
       <thead>
         <tr>
-          <th>Image</th>
-          <th>SKU</th>
           <th>Product Name</th>
+          <th>SKU</th>
           <th>Category</th>
           <th>Base Unit</th>
           <th class="text-right">Current Stock</th>

@@ -1,9 +1,110 @@
 import { fetchJson } from '../utils/fetch-utils.js';
 import { escapeHtml, renderEmptyState } from '../utils/dom-utils.js';
-import { formatDate } from '../utils/date-utils.js';
 import { formatCurrency } from '../utils/format.js';
+import {
+  renderBatchRows,
+  renderBatchDetailRow,
+  renderBatchShowMore,
+  renderBatchError,
+} from './render-batches.js';
 
 let lastSignature = [];
+
+/**
+ * Fetch all products for the combobox (includes supplier info).
+ *
+ * @returns {Promise<Array<Record<string, unknown>>>}
+ */
+export async function getProductsForCombobox() {
+  const apiUrl = '/cs-sacks-and-twines/api/products';
+  const payload = await fetchJson(apiUrl);
+
+  if (!Array.isArray(payload)) {
+    throw new Error('Products API returned an unexpected response.');
+  }
+
+  return payload;
+}
+
+/**
+ * Render a single combobox option element.
+ *
+ * @param {Record<string, unknown>} product
+ * @returns {string}
+ */
+function renderComboboxOption(product) {
+  const productId = String(product.product_id ?? '');
+  const productName = String(product.name ?? '');
+  const productSku = String(product.sku_code ?? '');
+  const productCategory = String(product.category ?? '');
+  const productUnit = String(product.base_uom ?? '');
+  const productWeight = String(product.weight_per_unit ?? '');
+  const productImage = String(product.image_path ?? '');
+  const defaultSupplierId = String(product.default_supplier_id ?? '');
+  const productLowStockThreshold = String(product.low_stock_threshold ?? '0.00');
+  const filterText = `${productName} ${productSku} ${productCategory} ${productUnit}`;
+
+  return `
+    <div
+      role="option"
+      tabindex="0"
+      class="flex-col items-start w-full gap-1 transition h-fit btn-ghost inventory-option"
+      data-combobox-option
+      data-value="${escapeHtml(productId)}"
+      data-label="${escapeHtml(productName)}"
+      data-sku="${escapeHtml(productSku)}"
+      data-category="${escapeHtml(productCategory)}"
+      data-unit="${escapeHtml(productUnit)}"
+      data-weight="${escapeHtml(productWeight)}"
+      data-image="${escapeHtml(productImage)}"
+      data-supplier-id="${escapeHtml(defaultSupplierId)}"
+      data-low-stock-threshold="${escapeHtml(productLowStockThreshold)}"
+      data-filter="${escapeHtml(filterText)}">
+      <h4 class="font-medium type-base text-foreground">${escapeHtml(productName)}</h4>
+      <div class="type-xs text-muted-foreground">${escapeHtml(productSku)} · ${escapeHtml(productCategory)} · ${escapeHtml(productUnit)}</div>
+    </div>
+  `;
+}
+
+/**
+ * Refresh the inventory combobox options with latest products.
+ *
+ * @param {{ fillExistingItem?: function }} handlers - Optional handlers to attach to new options
+ * @returns {Promise<Array<HTMLElement>>} New option elements
+ */
+export async function refreshComboboxOptions(handlers = {}) {
+  const listbox = document.getElementById('inventory-item-listbox');
+  if (!listbox) {
+    return [];
+  }
+
+  const addNewButton = listbox.querySelector('[data-add-new-item]');
+  const products = await getProductsForCombobox();
+
+  const optionsHtml = products.map(renderComboboxOption).join('');
+
+  if (addNewButton) {
+    addNewButton.insertAdjacentHTML('beforebegin', optionsHtml);
+  } else {
+    listbox.innerHTML = optionsHtml;
+  }
+
+  const newOptions = Array.from(listbox.querySelectorAll('[data-combobox-option]'));
+
+  if (handlers.fillExistingItem) {
+    newOptions.forEach((option) => {
+      option.addEventListener('click', () => handlers.fillExistingItem(option));
+      option.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handlers.fillExistingItem(option);
+        }
+      });
+    });
+  }
+
+  return newOptions;
+}
 
 /**
  * Fetch product data for the inventory table.
@@ -66,37 +167,6 @@ export async function getBatchCount(productId) {
 }
 
 /**
- * Render batch subtable rows.
- *
- * @param {Array<Record<string, unknown>>} batches
- * @returns {string}
- */
-function renderBatchRows(batches) {
-  if (batches.length === 0) {
-    return `
-      <tr>
-        <td colspan="8" class="py-4 px-6 type-sm text-muted-foreground text-center">
-          No batches found.
-        </td>
-      </tr>
-    `;
-  }
-
-  return batches.map((batch) => `
-    <tr class="bg-muted/10">
-      <td></td>
-      <td class="type-xs font-medium">${escapeHtml(batch.batch_code ?? '')}</td>
-      <td>${escapeHtml(batch.supplier_name ?? '')}</td>
-      <td class="text-right">${formatCurrency(batch.unit_cost)}</td>
-      <td>${escapeHtml(batch.quantity_received ?? '')}</td>
-      <td class="text-right">${escapeHtml(batch.quantity_remaining ?? '')}</td>
-      <td><span class="badge-${escapeHtml((batch.status ?? 'active') === 'active' ? 'success' : 'destructive')}">${escapeHtml(batch.status ?? '')}</span></td>
-      <td>${formatDate(batch.created_at)}</td>
-    </tr>
-  `).join('');
-}
-
-/**
  * Render inventory products table rows.
  *
  * @param {Array<Record<string, unknown>>} products
@@ -116,16 +186,12 @@ export function renderProducts(products) {
 
     return `
     <tr class="product-row cursor-pointer hover:bg-muted/50 transition-colors" data-product-id="${product.product_id}" data-current-quantity="${product.current_quantity}">
-      <td class="pl-6">
+      <td class="pl-2 flex gap-2 items-center">
+        <svg class="chevron-icon size-4 shrink-0 text-muted-foreground transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
         ${imageHtml}
+        <span class="font-medium">${escapeHtml(product.name ?? '')}</span>
       </td>
-      <td>
-        <div class="flex items-center gap-2">
-          <svg class="chevron-icon size-4 shrink-0 text-muted-foreground transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-          <span>${escapeHtml(product.sku_code ?? '')}</span>
-        </div>
-      </td>
-      <td class="font-medium">${escapeHtml(product.name ?? '')}</td>
+      <td><span>${escapeHtml(product.sku_code ?? '')}</span></td>
       <td>${escapeHtml(product.category ?? '')}</td>
       <td>${escapeHtml(product.base_uom ?? '')}</td>
       <td class="text-right">${escapeHtml(product.current_quantity ?? '')}</td>
@@ -188,11 +254,7 @@ function initAccordion(container) {
 
   rows.forEach((row) => {
     row.addEventListener('click', async (event) => {
-      if (event.target.closest('.see-more-btn')) {
-        event.stopPropagation();
-        await handleSeeMore(row);
-        return;
-      }
+      if (event.target.closest('.see-more-btn')) return;
 
       const isExpanded = row.getAttribute('data-expanded') === 'true';
 
@@ -203,6 +265,15 @@ function initAccordion(container) {
       }
     });
   });
+
+  container.addEventListener('click', async (event) => {
+    const seeMoreBtn = event.target.closest('.see-more-btn');
+
+    if (seeMoreBtn) {
+      event.stopPropagation();
+      await handleSeeMore(seeMoreBtn);
+    }
+  });
 }
 
 /**
@@ -212,13 +283,12 @@ function initAccordion(container) {
  */
 async function expandRow(row) {
   const productId = row.getAttribute('data-product-id');
-  const currentStock = row.getAttribute('data-current-quantity');
   const chevron = row.querySelector('.chevron-icon');
 
   if (!productId) return;
 
   if (chevron) {
-    chevron.style.transform = 'rotate(90deg)';
+    chevron.style.transform = 'rotate(180deg)';
   }
 
   row.setAttribute('data-expanded', 'true');
@@ -227,33 +297,7 @@ async function expandRow(row) {
   const detailsRow = document.createElement('tr');
   detailsRow.className = 'batch-details-row';
   detailsRow.setAttribute('data-product-id', productId);
-  detailsRow.innerHTML = `
-    <td colspan="8" class="p-0">
-      <div class="pl-6 pr-6 py-2 space-y-2">
-        <div class="overflow-x-auto">
-          <table class="table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Batch Code</th>
-                <th>Supplier</th>
-                <th class="text-right">Unit Cost</th>
-                <th>Qty Received</th>
-                <th class="text-right">Qty Remaining</th>
-                <th>Status</th>
-                <th>Created At</th>
-              </tr>
-            </thead>
-            <tbody class="batch-tbody" data-product-id="${productId}">
-              <tr>
-                <td colspan="8" class="py-4 text-center type-sm text-muted-foreground">Loading batches...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </td>
-  `;
+  detailsRow.innerHTML = renderBatchDetailRow(productId);
 
   row.after(detailsRow);
 
@@ -267,14 +311,7 @@ async function expandRow(row) {
 
       if (totalCount > 3) {
         const seeMoreRow = document.createElement('tr');
-        seeMoreRow.className = 'bg-muted/20';
-        seeMoreRow.innerHTML = `
-          <td colspan="8" class="text-center py-2">
-            <button type="button" class="see-more-btn btn-ghost type-xs" data-product-id="${productId}" data-loaded="3" data-total="${totalCount}">
-              Show all ${totalCount} batches
-            </button>
-          </td>
-        `;
+        seeMoreRow.innerHTML = renderBatchShowMore(productId, 3, totalCount);
         tbody.after(seeMoreRow);
       }
     }
@@ -282,13 +319,7 @@ async function expandRow(row) {
     console.error('Failed to load batches:', error);
     const tbody = detailsRow.querySelector('.batch-tbody');
     if (tbody) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="8" class="py-4 text-center type-sm text-destructive">
-            Failed to load batches.
-          </td>
-        </tr>
-      `;
+      tbody.innerHTML = renderBatchError();
     }
   }
 }
@@ -316,21 +347,19 @@ function collapseRow(row) {
 }
 
 /**
- * Handle "See More" button click to load all batches.
+ * Handle "Show all" button click to load all batches.
  *
- * @param {HTMLElement} row
+ * @param {HTMLButtonElement} button
  */
-async function handleSeeMore(row) {
-  const productId = row.getAttribute('data-product-id');
+async function handleSeeMore(button) {
+  const productId = button.getAttribute('data-product-id');
   if (!productId) return;
 
   const tbody = document.querySelector(`.batch-tbody[data-product-id="${productId}"]`);
-  const button = row.querySelector('.see-more-btn');
+  const seeMoreRow = button.closest('tr');
 
-  if (button) {
-    button.disabled = true;
-    button.textContent = 'Loading...';
-  }
+  button.disabled = true;
+  button.textContent = 'Loading...';
 
   try {
     const batches = await getBatches(parseInt(productId), 50, 0);
@@ -339,15 +368,12 @@ async function handleSeeMore(row) {
       tbody.innerHTML = renderBatchRows(batches);
     }
 
-    const seeMoreRow = button?.closest('tr');
     if (seeMoreRow) {
       seeMoreRow.remove();
     }
   } catch (error) {
     console.error('Failed to load more batches:', error);
-    if (button) {
-      button.disabled = false;
-      button.textContent = 'Try again';
-    }
+    button.disabled = false;
+    button.textContent = 'Try again';
   }
 }

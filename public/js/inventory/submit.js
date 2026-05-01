@@ -8,8 +8,9 @@ import {
   showDialogError,
   validateBeforeSubmit,
 } from './state.js';
-import { validateInventoryForm } from '../utils/validation.js';
+import { validateInventoryForm } from './validation.js';
 import { toast } from '../utils/toast.js';
+import { refreshComboboxOptions, loadProducts } from './get-products.js';
 
 /**
  * Attach inventory submit handling.
@@ -20,7 +21,7 @@ import { toast } from '../utils/toast.js';
 export function initInventorySubmission(state, options = {}) {
   const { onSuccess } = options;
 
-  ['product_id', 'name', 'category', 'base_uom', 'weight_per_unit', 'supplier_id', 'quantity_received', 'total_procurement_cost'].forEach((fieldName) => {
+  ['product_id', 'name', 'category', 'base_uom', 'weight_per_unit', 'supplier_id', 'quantity_received', 'total_procurement_cost', 'low_stock_threshold'].forEach((fieldName) => {
     const input = state.form.querySelector(`[data-field-input="${fieldName}"]`);
     if (!input) {
       return;

@@ -1,5 +1,5 @@
 import { fetchJson } from '../utils/fetch-utils.js';
-import { validateUserCreateForm } from '../utils/validation.js';
+import { validateUserCreateForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 
 function setFieldError(form, fieldName, message) {

@@ -1,5 +1,5 @@
 import { fetchJson } from '../utils/fetch-utils.js';
-import { validateSupplierForm } from '../utils/validation.js';
+import { validateSupplierForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 
 /**
