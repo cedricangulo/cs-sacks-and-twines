@@ -56,9 +56,10 @@ function clearFieldErrors(state) {
     'name',
     'category',
     'base_uom',
+    'weight_per_unit',
     'supplier_id',
     'quantity_received',
-    'unit_cost',
+    'total_procurement_cost',
   ].forEach((fieldName) => {
     clearFieldError(state, fieldName);
   });
@@ -98,6 +99,7 @@ function lockExistingItemFields(state) {
   setLockedState(state, 'image', true);
   setLockedState(state, 'category', true);
   setLockedState(state, 'base_uom', true);
+  setLockedState(state, 'weight_per_unit', true);
   setLockedState(state, 'supplier_id', true);
 }
 
@@ -105,6 +107,7 @@ function unlockAllItemFields(state) {
   setLockedState(state, 'image', false);
   setLockedState(state, 'category', false);
   setLockedState(state, 'base_uom', false);
+  setLockedState(state, 'weight_per_unit', false);
   setLockedState(state, 'supplier_id', false);
 }
 
@@ -160,7 +163,8 @@ function filterOptions(state, query) {
 
   const emptyState = state.dialog.querySelector('[data-combobox-empty]');
   if (emptyState instanceof HTMLElement) {
-    emptyState.classList.toggle(state.hiddenClass, visibleCount !== 0);
+    const hasOptions = state.options.length > 0;
+    emptyState.classList.toggle(state.hiddenClass, hasOptions && visibleCount > 0);
   }
 }
 
@@ -175,7 +179,7 @@ function resetForm(state) {
   showExistingMode(state);
   lockExistingItemFields(state);
   populateDraftCodes(state);
-  state.imagePreview.textContent = 'Preview';
+  showImageUpload(state);
   updatePreviewMessage(state, 'Locked until you choose or create an item.');
   state.itemNameInput.value = '';
   state.itemNameInput.disabled = true;
@@ -190,6 +194,8 @@ function fillExistingItem(state, option) {
   const sku = option.dataset.sku || generateDraftCode('SKU');
   const category = option.dataset.category || '';
   const unit = option.dataset.unit || '';
+  const weightPerUnit = option.dataset.weight || '';
+  const imagePath = option.dataset.image || '';
   const supplierId = option.dataset.supplierId || '';
 
   clearDialogError(state);
@@ -202,8 +208,16 @@ function fillExistingItem(state, option) {
   state.batchInput.value = generateDraftCode('BAT');
   state.categoryInput.value = category;
   state.unitInput.value = unit;
+  state.weightInput.value = weightPerUnit;
   state.supplierInput.value = supplierId;
-  state.imagePreview.textContent = label.slice(0, 2).toUpperCase();
+  state.imageInput.value = '';
+
+  if (imagePath) {
+    showImagePreview(state, `/cs-sacks-and-twines/public/uploads/products/${imagePath}`);
+  } else {
+    showImageUpload(state);
+  }
+
   updatePreviewMessage(state, 'Existing item selected. Locked fields can be edited one at a time.');
   lockExistingItemFields(state);
   state.newItemAlert.classList.add(state.hiddenClass);
@@ -241,52 +255,81 @@ function validateBeforeSubmit(state) {
   clearDialogError(state);
   clearFieldErrors(state);
 
-  const errors = {};
+  const values = {
+    mode: state.modeField.value,
+    product_id: state.productIdField.value,
+    name: state.itemNameInput.value,
+    category: state.categoryInput.value,
+    base_uom: state.unitInput.value,
+    weight_per_unit: state.weightInput.value,
+    supplier_id: state.supplierInput.value,
+    quantity_received: state.quantityInput.value,
+    total_procurement_cost: state.costInput.value,
+  };
 
-  if (state.modeField.value === 'existing' && state.productIdField.value.trim() === '') {
-    errors.product_id = 'Please choose an existing item before saving stock.';
+  return { values };
+}
+
+function showImagePreview(state, imageSrc) {
+  state.imageUploadContainer.classList.add(state.hiddenClass);
+  state.imagePreviewContainer.classList.remove(state.hiddenClass);
+  state.imagePreviewImg.src = imageSrc;
+}
+
+function showImageUpload(state) {
+  state.imageUploadContainer.classList.remove(state.hiddenClass);
+  state.imagePreviewContainer.classList.add(state.hiddenClass);
+  state.imagePreviewImg.src = '';
+}
+
+function clearImagePreview(state) {
+  state.imageInput.value = '';
+  showImageUpload(state);
+}
+
+function validateImageFile(file) {
+  const maxSize = 5 * 1024 * 1024;
+  const allowedTypes = ['image/jpeg', 'image/png'];
+
+  if (!allowedTypes.includes(file.type)) {
+    return 'Please select a valid image file (JPG or PNG).';
   }
 
-  if (state.modeField.value === 'new' && state.itemNameInput.value.trim() === '') {
-    errors.name = 'Enter an item name for the new product.';
+  if (file.size > maxSize) {
+    return 'File size must be less than 5MB.';
   }
 
-  if (!state.form.checkValidity()) {
-    state.form.reportValidity();
-    if (!state.quantityInput.checkValidity()) {
-      errors.quantity_received = 'Quantity must be greater than zero.';
-    }
-    if (!state.costInput.checkValidity()) {
-      errors.unit_cost = 'Total procurement cost must be greater than zero.';
-    }
-    if (state.modeField.value === 'new') {
-      if (!state.categoryInput.value) {
-        errors.category = 'Select a valid category for the new product.';
-      }
-      if (!state.unitInput.value) {
-        errors.base_uom = 'Select a valid unit of measurement for the new product.';
-      }
-      if (!state.supplierInput.value) {
-        errors.supplier_id = 'Select a supplier for the new item.';
-      }
-    }
+  return null;
+}
+
+function handleImageFileSelect(state, file) {
+  clearFieldError(state, 'image');
+
+  const error = validateImageFile(file);
+  if (error) {
+    setFieldError(state, 'image', error);
+    return;
   }
 
-  if (Object.keys(errors).length > 0) {
-    Object.entries(errors).forEach(([fieldName, message]) => {
-      setFieldError(state, fieldName, message);
-    });
-    const firstField = state.form.querySelector('[data-invalid] [data-field-input]');
-    if (firstField instanceof HTMLElement) {
-      firstField.focus();
-    }
-    if (errors.product_id) {
-      openCombobox(state);
-    }
-    return false;
-  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    showImagePreview(state, e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
 
-  return true;
+function initImageHandlers(state) {
+  state.imageInput.addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageFileSelect(state, file);
+    }
+  });
+
+  state.removeImageBtn.addEventListener('click', () => {
+    clearImagePreview(state);
+    clearFieldError(state, 'image');
+  });
 }
 
 export {
@@ -310,4 +353,8 @@ export {
   switchToNewItem,
   findFirstVisibleOption,
   validateBeforeSubmit,
+  initImageHandlers,
+  showImagePreview,
+  showImageUpload,
+  clearImagePreview,
 }

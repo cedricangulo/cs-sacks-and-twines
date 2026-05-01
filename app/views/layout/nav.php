@@ -1,8 +1,8 @@
 <?php
 // The top navigation changes based on the active role to keep owner and
-// cashier workflows separate.
+// staff workflows separate.
 ?>
-<header class="flex p-4 border-b">
+<header class="fixed w-full p-4 bg-background border-b">
   <?php if (app_current_user_role() === 'owner'): ?>
     <!-- Owners get the sidebar toggle because they can navigate the full app. -->
     <button class="btn-icon-outline" type="button" onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))">
@@ -14,8 +14,8 @@
         <path d="M9 9v1" />
       </svg>
     </button>
-  <?php elseif (app_current_user_role() === 'cashier'): ?>
-    <!-- Cashiers get a slimmer action set focused on common tasks. -->
+  <?php elseif (app_current_user_role() === 'staff'): ?>
+    <!-- Staff get a slimmer action set focused on common tasks. -->
     <div class="flex items-center gap-4 ml-auto">
       <button class="btn">Add Product</button>
       <a href="<?= routeUrl('/audit-logs/personal') ?>">

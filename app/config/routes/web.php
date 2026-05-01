@@ -31,8 +31,8 @@ return [
   ],
   '/inventory' => [
     'title' => 'Inventory',
-    'controller' => __DIR__ . '/../../controllers/inventory/InventoryController.php',
-    'class' => 'InventoryController',
+    'controller' => __DIR__ . '/../../controllers/products/ProductsController.php',
+    'class' => 'ProductsController',
     'method' => 'index',
     'view' => __DIR__ . '/../../views/pages/inventory/index.php',
     'layout' => 'app',
@@ -50,7 +50,7 @@ return [
     'view' => __DIR__ . '/../../views/pages/products/index.php',
     'layout' => 'app',
     'methods' => ['GET'],
-    'roles' => ['owner', 'cashier'],
+    'roles' => ['owner', 'staff'],
     'nav' => [
       'label' => 'Products',
       'icon' => 'products',
@@ -102,7 +102,7 @@ return [
     'view' => __DIR__ . '/../../views/pages/audit-logs/personal/index.php',
     'layout' => 'app',
     'methods' => ['GET'],
-    'roles' => ['cashier'],
+    'roles' => ['staff'],
     'nav' => [
       'label' => 'Audit logs',
       'icon' => 'audit-logs-personal',
@@ -145,7 +145,7 @@ return [
     'method' => 'signOut',
     'layout' => 'none',
     'methods' => ['POST'],
-    'roles' => ['owner', 'cashier'],
+    'roles' => ['owner', 'staff'],
     'nav' => [
       'label' => 'Sign out',
       'icon' => 'sign-out',
@@ -157,7 +157,7 @@ return [
     'view' => __DIR__ . '/../../views/pages/not-found.php',
     'layout' => 'auth',
     'methods' => ['GET'],
-    'roles' => ['owner', 'cashier', 'guest'],
+    'roles' => ['owner', 'staff', 'guest'],
     'status_code' => 404,
     'nav' => [
       'label' => 'Not found',

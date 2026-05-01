@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 return [
-  '/api/inventory/save' => [
-    'title' => 'Save inventory',
+  '/api/stock-in' => [
+    'title' => 'Save stock-in',
     'type' => 'api',
-    'controller' => __DIR__ . '/../../controllers/inventory/InventoryController.php',
-    'class' => 'InventoryController',
+    'controller' => __DIR__ . '/../../controllers/products/ProductsController.php',
+    'class' => 'ProductsController',
     'method' => 'save',
     'layout' => 'none',
     'methods' => ['POST'],
@@ -19,12 +19,25 @@ return [
   '/api/products' => [
     'title' => 'API Products',
     'type' => 'api',
-    'controller' => __DIR__ . '/../../controllers/inventory/InventoryController.php',
-    'class' => 'InventoryController',
+    'controller' => __DIR__ . '/../../controllers/products/ProductsController.php',
+    'class' => 'ProductsController',
     'method' => 'getProductsJson',
     'layout' => 'none',
     'methods' => ['GET'],
     'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/products/list' => [
+    'title' => 'API Products List',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/products/ProductsController.php',
+    'class' => 'ProductsController',
+    'method' => 'getProductsListJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner', 'staff'],
     'nav' => [
       'show' => false,
     ],
@@ -58,7 +71,7 @@ return [
   '/api/inventory/batches' => [
     'title' => 'Get batches',
     'type' => 'api',
-    'controller' => __DIR__ . '/../../controllers/inventory/BatchController.php',
+    'controller' => __DIR__ . '/../../controllers/products/BatchController.php',
     'class' => 'BatchController',
     'method' => 'getBatchesJson',
     'layout' => 'none',
@@ -71,11 +84,76 @@ return [
   '/api/inventory/batches/count' => [
     'title' => 'Get batch count',
     'type' => 'api',
-    'controller' => __DIR__ . '/../../controllers/inventory/BatchController.php',
+    'controller' => __DIR__ . '/../../controllers/products/BatchController.php',
     'class' => 'BatchController',
     'method' => 'getBatchCountJson',
     'layout' => 'none',
     'methods' => ['GET'],
+    'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/stock-out/batches' => [
+    'title' => 'Get batches for dispatch',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/products/BatchController.php',
+    'class' => 'BatchController',
+    'method' => 'getBatchesForDispatchJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner', 'staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/stock-out' => [
+    'title' => 'Submit dispatch',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/products/ProductsController.php',
+    'class' => 'ProductsController',
+    'method' => 'dispatch',
+    'layout' => 'none',
+    'methods' => ['POST'],
+    'roles' => ['owner', 'staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/users' => [
+    'title' => 'API Users',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/users/UsersController.php',
+    'class' => 'UsersController',
+    'method' => 'getUsersJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/users/save' => [
+    'title' => 'Save user',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/users/UsersController.php',
+    'class' => 'UsersController',
+    'method' => 'save',
+    'layout' => 'none',
+    'methods' => ['POST'],
+    'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/users/deactivate' => [
+    'title' => 'Deactivate user',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/users/UsersController.php',
+    'class' => 'UsersController',
+    'method' => 'deactivate',
+    'layout' => 'none',
+    'methods' => ['POST'],
     'roles' => ['owner'],
     'nav' => [
       'show' => false,

@@ -25,7 +25,7 @@ class AuthController
 		$currentUserRole = $_SESSION['user']['role'] ?? $_SESSION['user_role'] ?? null;
 
 		if (is_string($currentUserRole) && $currentUserRole !== '') {
-			$redirectPath = $currentUserRole === 'cashier' ? '/products' : '/dashboard';
+			$redirectPath = $currentUserRole === 'staff' ? '/products' : '/dashboard';
 			header('Location: ' . routeUrl($redirectPath));
 			exit;
 		}
@@ -63,7 +63,7 @@ class AuthController
 			session_regenerate_id(true);
 
 			$_SESSION['user'] = [
-				'id' => (int) $user['id'],
+				'user_id' => (int) $user['user_id'],
 				'name' => (string) $user['name'],
 				'email' => (string) $user['email'],
 				'role' => (string) $user['role'],
@@ -71,7 +71,7 @@ class AuthController
 			$_SESSION['user_role'] = (string) $user['role'];
 
 			// Route users to the correct landing page for their role.
-			$redirectPath = $user['role'] === 'cashier' ? '/products' : '/dashboard';
+			$redirectPath = $user['role'] === 'staff' ? '/products' : '/dashboard';
 			header('Location: ' . routeUrl($redirectPath));
 			exit;
 		} catch (Throwable $throwable) {

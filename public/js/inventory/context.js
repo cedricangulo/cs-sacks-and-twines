@@ -22,13 +22,17 @@ export function createInventoryState(dialog) {
   const itemNameInput = dialog.querySelector('[data-field-input="name"]');
   const saveButton = dialog.querySelector('[data-save-button]');
   const imageInput = dialog.querySelector('[data-field-input="image"]');
-  const imagePreview = dialog.querySelector('[data-image-preview]');
+  const imageUploadContainer = dialog.querySelector('#image-upload-container');
+  const imagePreviewContainer = dialog.querySelector('#image-preview-container');
+  const imagePreviewImg = dialog.querySelector('#image-preview-img');
+  const removeImageBtn = dialog.querySelector('#remove-image-btn');
   const imagePreviewMessage = dialog.querySelector('[data-image-preview-message]');
   const categoryInput = dialog.querySelector('[data-field-input="category"]');
   const unitInput = dialog.querySelector('[data-field-input="base_uom"]');
   const supplierInput = dialog.querySelector('[data-field-input="supplier_id"]');
   const quantityInput = dialog.querySelector('[data-field-input="quantity_received"]');
-  const costInput = dialog.querySelector('[data-field-input="unit_cost"]');
+  const costInput = dialog.querySelector('[data-field-input="total_procurement_cost"]');
+  const weightInput = dialog.querySelector('[data-field-input="weight_per_unit"]');
   const skuInput = dialog.querySelector('[data-field-input="sku"]');
   const batchInput = dialog.querySelector('[data-field-input="batch"]');
   const editButtons = Array.from(dialog.querySelectorAll('[data-edit-field]'));
@@ -52,7 +56,10 @@ export function createInventoryState(dialog) {
     !itemNameInput ||
     !saveButton ||
     !imageInput ||
-    !imagePreview ||
+    !imageUploadContainer ||
+    !imagePreviewContainer ||
+    !imagePreviewImg ||
+    !removeImageBtn ||
     !imagePreviewMessage ||
     !categoryInput ||
     !unitInput ||
@@ -86,13 +93,17 @@ export function createInventoryState(dialog) {
     itemNameInput,
     saveButton,
     imageInput,
-    imagePreview,
+    imageUploadContainer,
+    imagePreviewContainer,
+    imagePreviewImg,
+    removeImageBtn,
     imagePreviewMessage,
     categoryInput,
     unitInput,
     supplierInput,
     quantityInput,
     costInput,
+    weightInput,
     skuInput,
     batchInput,
     editButtons,
@@ -100,12 +111,14 @@ export function createInventoryState(dialog) {
       image: imageInput,
       category: categoryInput,
       base_uom: unitInput,
+      weight_per_unit: weightInput,
       supplier_id: supplierInput,
     },
     fieldGroups: {
       image: dialog.querySelector('[data-field-group="image"]'),
       category: dialog.querySelector('[data-field-group="category"]'),
       base_uom: dialog.querySelector('[data-field-group="base_uom"]'),
+      weight_per_unit: dialog.querySelector('[data-field-group="weight_per_unit"]'),
       supplier_id: dialog.querySelector('[data-field-group="supplier_id"]'),
     },
     hiddenClass: 'hidden',

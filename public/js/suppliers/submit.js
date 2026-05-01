@@ -1,4 +1,6 @@
 import { fetchJson } from '../utils/fetch-utils.js';
+import { validateSupplierForm } from '../utils/validation.js';
+import { toast } from '../utils/toast.js';
 
 /**
  * Initialize supplier form submission and validation.
@@ -79,43 +81,12 @@ export function initSuppliersForm(options = {}) {
     });
   };
 
-  const normalize = (value) => String(value ?? '').trim().replace(/\s+/g, ' ');
-
-  /**
-   * Validate supplier inputs.
-   *
-   * @returns {string|null}
-   */
-  const validate = () => {
-    const companyName = normalize(fields.companyName.value);
-    const contactPerson = normalize(fields.contactPerson.value);
-    const contactNumber = normalize(fields.contactNumber.value);
-    const address = normalize(fields.address.value);
-
-    const errors = {};
-
-    if (companyName.length < 2 || companyName.length > 255) {
-      errors.company_name = 'Enter a valid company name.';
-    }
-
-    if (contactPerson.length < 2 || contactPerson.length > 255) {
-      errors.contact_person = 'Enter a valid contact person name.';
-    }
-
-    if (contactNumber.length < 7 || contactNumber.length > 20) {
-      errors.contact_number = 'Enter a valid contact number.';
-    }
-
-    if (!/^[0-9+()\s-]{7,20}$/.test(contactNumber)) {
-      errors.contact_number = 'Contact number may contain only digits, spaces, +, -, and parentheses.';
-    }
-
-    if (address.length < 10 || address.length > 500) {
-      errors.address = 'Enter a valid address.';
-    }
-
-    return errors;
-  };
+  const getValues = () => ({
+    company_name: fields.companyName.value,
+    contact_person: fields.contactPerson.value,
+    contact_number: fields.contactNumber.value,
+    address: fields.address.value,
+  });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -123,8 +94,9 @@ export function initSuppliersForm(options = {}) {
     errorBox.classList.add('hidden');
     clearFieldErrors();
 
-    const errors = validate();
-    if (Object.keys(errors).length > 0) {
+    const result = validateSupplierForm(getValues());
+    if (!result.success) {
+      const errors = result.errors;
       Object.entries(errors).forEach(([fieldName, message]) => {
         setFieldError(fieldName, message);
       });
@@ -167,6 +139,12 @@ export function initSuppliersForm(options = {}) {
 
       dialog.close();
       resetForm();
+
+      const companyName = fields.companyName.value;
+      toast.success(
+        'Supplier added successfully',
+        `${companyName} has been added to your suppliers. You can now create stock intake from this supplier.`
+      );
 
       if (typeof options.onSuccess === 'function') {
         options.onSuccess();

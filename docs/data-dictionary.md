@@ -1,108 +1,136 @@
-### 1. PRODUCTS
-This table stores the master list of items available in the inventory.
+### 1. USERS
+Contains records of individuals authorized to use the system.
 
-| Field Name        | Data Type | MySQL Type / Size       | Key  | Description                                                    |
-| :---------------- | :-------- | :---------------------- | :--- | :------------------------------------------------------------- |
-| **id**            | BigInt    | BIGINT UNSIGNED         | PK   | Unique identifier for each product.                            |
-| **sku_code**      | String    | VARCHAR(50)             | UK   | Unique Stock Keeping Unit (a unique code used to track items). |
-| **name**          | String    | VARCHAR(255)            | -    | The name of the product.                                       |
-| **category**      | Enum      | ENUM('sacks', 'twines') | -    | Product group (e.g., sacks, twines).                           |
-| **base_uom**      | Enum      | ENUM('pieces', 'kilos') | -    | Base Unit of Measurement (e.g., pieces, kilos).                |
-| **current_stock** | Decimal   | DECIMAL(12,2)           | -    | The total amount currently available.                          |
-| **created_at**    | Timestamp | DATETIME                | -    | Date and time the record was created.                          |
-| **updated_at**    | Timestamp | DATETIME                | -    | Date and time the record was last changed.                     |
-
----
-
-### 2. SUPPLIERS
-Contains contact information for the companies providing the goods.
-
-| Field Name         | Data Type | MySQL Type / Size | Key  | Description                                 |
-| :----------------- | :-------- | :---------------- | :--- | :------------------------------------------ |
-| **id**             | BigInt    | BIGINT UNSIGNED   | PK   | Unique identifier for the supplier.         |
-| **company_name**   | String    | VARCHAR(255)      | -    | Full name of the supplier company.          |
-| **contact_person** | String    | VARCHAR(255)      | -    | Name of the primary contact at the company. |
-| **contact_number** | String    | VARCHAR(20)       | -    | Phone number for communication.             |
-| **address**        | Text      | VARCHAR(500)     | -    | Physical location of the supplier.          |
-| **created_at**     | Timestamp | DATETIME          | -    | Record creation timestamp.                  |
-| **updated_at**     | Timestamp | DATETIME          | -    | Record update timestamp.                    |
+| Field Name        | Data Type | MySQL Type / Size      | Key  | Description                             |
+| :---------------- | :-------- | :--------------------- | :--- | :-------------------------------------- |
+| **user_id**       | BigInt    | BIGINT UNSIGNED        | PK   | Unique ID ng user.                      |
+| **name**          | String    | VARCHAR(255)           | -    | Buong pangalan ng owner o staff.        |
+| **email**         | String    | VARCHAR(255)           | UK   | Unique email para sa login.             |
+| **password_hash** | String    | VARCHAR(255)           | -    | Hashed password (Bcrypt).               |
+| **role**          | Enum      | ENUM('owner', 'staff') | -    | Values: 'owner', 'staff'                |
+| **created_at**    | Timestamp | DATETIME               | -    | Timestamp kung kailan ginawa.           |
+| **updated_at**    | Timestamp | DATETIME               | -    | Timestamp kung kailan huling in-update. |
 
 ---
 
-### 3. BATCHES
-Tracks specific deliveries or groups of products received.
+### 2. AUDIT_LOGS
+Records all movements and actions within the system.
 
-| Field Name             | Data Type | MySQL Type / Size | Key  | Description                                                |
-| :--------------------- | :-------- | :---------------- | :--- | :--------------------------------------------------------- |
-| **id**                 | BigInt    | BIGINT UNSIGNED   | PK   | Unique identifier for the batch.                           |
-| **batch_code**         | String    | VARCHAR(50)       | UK   | Unique code assigned to a specific shipment.               |
-| **unit_cost**          | Decimal   | DECIMAL(12,2)     | -    | The price paid per unit for this batch.                    |
-| **quantity_received**  | Decimal   | DECIMAL(12,2)     | -    | Total amount delivered in this batch.                      |
-| **quantity_remaining** | Decimal   | DECIMAL(12,2)     | -    | Amount still available for dispatch.                       |
-| **created_at**         | Timestamp | DATETIME          | -    | When the batch was logged.                                 |
-| **updated_at**         | Timestamp | DATETIME          | -    | Last update to the batch info.                             |
-| **product_id**         | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **PRODUCTS** table.                           |
-| **supplier_id**        | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **SUPPLIERS** table.                          |
-| **user_id**            | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **USERS** table (the person who received it). |
+| Field Name      | Data Type | MySQL Type / Size | Key  | Description                                          |
+| :-------------- | :-------- | :---------------- | :--- | :--------------------------------------------------- |
+| **log_id**      | BigInt    | BIGINT UNSIGNED   | PK   | Unique ID ng log.                                    |
+| **user_id**     | BigInt    | BIGINT UNSIGNED   | FK   | Nakakonekta sa USERS (Sino ang gumawa).              |
+| **action**      | String    | VARCHAR(255)      | -    | Maikling title ng action (e.g., "Created Dispatch"). |
+| **description** | Text      | TEXT              | -    | Buong detalye ng ginawa ng user.                     |
+| **ip_address**  | String    | VARCHAR(45)       | -    | IP Address ng device na ginamit.                     |
+| **created_at**  | Timestamp | DATETIME          | -    |                                                      |
+| **updated_at**  | Timestamp | DATETIME          | -    |                                                      |
 
 ---
 
-### 4. USERS
-Stores information about the people who access the system.
+### 3. SUPPLIERS
+A list of sources for sacks and twine.
 
-| Field Name     | Data Type | MySQL Type / Size        | Key  | Description                             |
-| :------------- | :-------- | :----------------------- | :--- | :-------------------------------------- |
-| **id**         | BigInt    | BIGINT UNSIGNED          | PK   | Unique identifier for the user.         |
-| **name**       | String    | VARCHAR(255)             | -    | Full name of the user.                  |
-| **email**      | String    | VARCHAR(254)             | UK   | Email address used for login.           |
-| **password**   | String    | VARCHAR(255)             | -    | Encrypted security key for the account. |
-| **role**       | Enum      | ENUM('owner', 'cashier') | -    | Access level (e.g., owner, cashier).    |
-| **created_at** | Timestamp | DATETIME                 | -    | When the account was created.           |
-| **updated_at** | Timestamp | DATETIME                 | -    | When account details were last changed. |
-
----
-
-### 5. DISPATCHES
-Records the overall transaction when items are sent out or sold.
-
-| Field Name             | Data Type | MySQL Type / Size | Key  | Description                                              |
-| :--------------------- | :-------- | :---------------- | :--- | :------------------------------------------------------- |
-| **id**                 | BigInt    | BIGINT UNSIGNED   | PK   | Unique identifier for the dispatch event.                |
-| **customer_reference** | String    | VARCHAR(255)      | -    | Name or ID of the customer receiving the goods.          |
-| **created_at**         | Timestamp | DATETIME          | -    | Date and time of the dispatch.                           |
-| **updated_at**         | Timestamp | DATETIME          | -    | Last update to the record.                               |
-| **user_id**            | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **USERS** table (the person processing it). |
+| Field Name         | Data Type | MySQL Type / Size | Key  | Description                      |
+| :----------------- | :-------- | :---------------- | :--- | :------------------------------- |
+| **supplier_id**    | BigInt    | BIGINT UNSIGNED   | PK   | Unique ID ng supplier.           |
+| **company_name**   | String    | VARCHAR(255)      | -    | Pangalan ng kumpanya o supplier. |
+| **contact_person** | String    | VARCHAR(255)      | -    | Pangalan ng kausap.              |
+| **contact_number** | String    | VARCHAR(50)       | -    | Phone/Mobile number.             |
+| **address**        | String    | VARCHAR(255)      | -    | Address ng supplier.             |
+| **created_at**     | Timestamp | DATETIME          | -    |                                  |
+| **updated_at**     | Timestamp | DATETIME          | -    |                                  |
 
 ---
 
-### 6. DISPATCH_ITEMS
-A "bridge table" that links specific batches to dispatches (used for FIFO tracking).
+### 4. PRODUCTS
+Master list of all types of sacks and twine.
 
-| Field Name            | Data Type | MySQL Type / Size | Key  | Description                           |
-| :-------------------- | :-------- | :---------------- | :--- | :------------------------------------ |
-| **id**                | BigInt    | BIGINT UNSIGNED   | PK   | Unique identifier for this line item. |
-| **quantity_deducted** | Decimal   | DECIMAL(12,2)     | -    | The amount taken out of inventory.    |
-| **created_at**        | Timestamp | DATETIME          | -    | Timestamp of the deduction.           |
-| **updated_at**        | Timestamp | DATETIME          | -    | Last update timestamp.                |
-| **dispatch_id**       | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **DISPATCHES** table.    |
-| **product_id**        | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **PRODUCTS** table.      |
-| **batch_id**          | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **BATCHES** table.       |
-
----
-
-### 7. AUDIT_LOGS
-A security table that tracks every action taken within the system.
-
-| Field Name      | Data Type | MySQL Type / Size | Key  | Description                                      |
-| :-------------- | :-------- | :---------------- | :--- | :----------------------------------------------- |
-| **id**          | BigInt    | BIGINT UNSIGNED   | PK   | Unique identifier for the log entry.             |
-| **action**      | String    | VARCHAR(100)      | -    | What happened (e.g., Created, Updated, Deleted). |
-| **description** | Text      | TEXT              | -    | Specific details about the change.               |
-| **ip_address**  | String    | VARCHAR(45)       | -    | The network address of the user.                 |
-| **created_at**  | Timestamp | DATETIME          | -    | When the action occurred.                        |
-| **updated_at**  | Timestamp | DATETIME          | -    | Usually same as created_at.                      |
-| **user_id**     | BigInt    | BIGINT UNSIGNED   | FK   | Links to the **USERS** table (who did it).       |
+| Field Name              | Data Type | MySQL Type / Size          | Key  | Description                                    |
+| :---------------------- | :-------- | :------------------------- | :--- | :--------------------------------------------- |
+| **product_id**          | BigInt    | BIGINT UNSIGNED            | PK   | Unique ID ng product.                          |
+| **sku_code**            | String    | VARCHAR(100)               | UK   | Unique Barcode/SKU ng item.                    |
+| **name**                | String    | VARCHAR(255)               | -    | Pangalan ng product (e.g., "Red Sack 50kg").   |
+| **category**            | Enum      | ENUM('sacks', 'twines')    | -    | Values: 'sacks', 'twines'                      |
+| **base_uom**            | Enum      | ENUM('piece', 'roll')      | -    | Unit of Measurement sa bodega.                 |
+| **weight_per_unit**     | Decimal   | DECIMAL(10,4)              | -    | Ilang kilo ang bigat ng isang piece/roll.      |
+| **current_quantity**    | Decimal   | DECIMAL(10,2)              | -    | (Derived) Total na natitirang stock.           |
+| **total_asset_value**   | Decimal   | DECIMAL(15,2)              | -    | (Derived) Total na halaga ng natitirang stock. |
+| **low_stock_threshold** | Decimal   | DECIMAL(10,2)              | -    | Pang low stock alert                           |
+| **status**              | Enum      | ENUM('active', 'archived') | -    | Values: 'active', 'archived'                   |
+| **image_path**          | String    | VARCHAR(255)               | -    | File name ng image.                            |
+| **created_at**          | Timestamp | DATETIME                   | -    |                                                |
+| **updated_at**          | Timestamp | DATETIME                   | -    |                                                |
 
 ---
 
-> **Note on Foreign Keys (FK):** These fields are essential for your database relationships. They ensure that data in one table (like a Batch) correctly points to valid data in another (like a Product or Supplier).
+### 5. BATCHES
+Records of deliveries and stock-in from suppliers.
+
+| Field Name                 | Data Type | MySQL Type / Size                    | Key  | Description                            |
+| :------------------------- | :-------- | :----------------------------------- | :--- | :------------------------------------- |
+| **batch_id**               | BigInt    | BIGINT UNSIGNED                      | PK   | Unique ID ng delivery batch.           |
+| **product_id**             | BigInt    | BIGINT UNSIGNED                      | FK   | Nakakonekta sa PRODUCTS.               |
+| **supplier_id**            | BigInt    | BIGINT UNSIGNED                      | FK   | Nakakonekta sa SUPPLIERS.              |
+| **user_id**                | BigInt    | BIGINT UNSIGNED                      | FK   | Nakakonekta sa USERS.                  |
+| **batch_code**             | String    | VARCHAR(100)                         | UK   | Receipt # galing sa supplier.          |
+| **total_procurement_cost** | Decimal   | DECIMAL(15,2)                        | -    | Magkano binayaran sa buong batch.      |
+| **unit_cost**              | Decimal   | DECIMAL(10,2)                        | -    | Puhunan kada isang piraso o roll.      |
+| **quantity_received**      | Decimal   | DECIMAL(10,2)                        | -    | Original na bilang na dumating.        |
+| **quantity_remaining**     | Decimal   | DECIMAL(10,2)                        | -    | Bilang ng natitira sa batch na ito.    |
+| **status**                 | Enum      | ENUM('active', 'depleted', 'voided') | -    | Values: 'active', 'depleted', 'voided' |
+| **created_at**             | Timestamp | DATETIME                             | -    |                                        |
+| **updated_at**             | Timestamp | DATETIME                             | -    |                                        |
+
+---
+
+### 6. DISPATCHES
+Transaction logs for stock outgoing (receipts).
+
+| Field Name             | Data Type | MySQL Type / Size           | Key  | Description                          |
+| :--------------------- | :-------- | :-------------------------- | :--- | :----------------------------------- |
+| **dispatch_id**        | BigInt    | BIGINT UNSIGNED             | PK   | Unique ID ng transaksyon/resibo.     |
+| **user_id**            | BigInt    | BIGINT UNSIGNED             | FK   | Nakakonekta sa USERS.                |
+| **customer_reference** | String    | VARCHAR(255)                | -    | Pangalan ng bumili o plaka ng truck. |
+| **status**             | Enum      | ENUM('completed', 'voided') | -    | Values: 'completed', 'voided'        |
+| **created_at**         | Timestamp | DATETIME                    | -    |                                      |
+| **updated_at**         | Timestamp | DATETIME                    | -    |                                      |
+
+---
+
+### 7. DISPATCH_ITEMS
+Specific items sold within a single dispatch receipt.
+
+| Field Name            | Data Type | MySQL Type / Size             | Key  | Description                               |
+| :-------------------- | :-------- | :---------------------------- | :--- | :---------------------------------------- |
+| **dispatch_item_id**  | BigInt    | BIGINT UNSIGNED               | PK   | Unique ID ng item line.                   |
+| **dispatch_id**       | BigInt    | BIGINT UNSIGNED               | FK   | Nakakonekta sa DISPATCHES.                |
+| **batch_id**          | BigInt    | BIGINT UNSIGNED               | FK   | Nakakonekta sa BATCHES.                   |
+| **product_id**        | BigInt    | BIGINT UNSIGNED               | FK   | Nakakonekta sa PRODUCTS.                  |
+| **dispatch_uom**      | Enum      | ENUM('piece', 'kilo', 'roll') | -    | Unit used by customer.                    |
+| **dispatch_quantity** | Decimal   | DECIMAL(10,2)                 | -    | Ilan ang inilagay ni Staff sa resibo.     |
+| **quantity_deducted** | Decimal   | DECIMAL(10,4)                 | -    | Totoong ibinawas (converted to base_uom). |
+| **unit_cost**         | Decimal   | DECIMAL(10,2)                 | -    | Snapshot ng puhunan nung araw na nabenta. |
+| **created_at**        | Timestamp | DATETIME                      | -    |                                           |
+| **updated_at**        | Timestamp | DATETIME                      | -    |                                           |
+
+---
+
+### 8. STOCK_ADJUSTMENTS
+Manual adjustments for damaged goods, losses, or error corrections.
+
+| Field Name            | Data Type | MySQL Type / Size                                     | Key  | Description                                             |
+| :-------------------- | :-------- | :---------------------------------------------------- | :--- | :------------------------------------------------------ |
+| **adjustment_id**     | BigInt    | BIGINT UNSIGNED                                       | PK   | Unique ID ng adjustment.                                |
+| **batch_id**          | BigInt    | BIGINT UNSIGNED                                       | FK   | Nakakonekta sa BATCHES.                                 |
+| **product_id**        | BigInt    | BIGINT UNSIGNED                                       | FK   | Nakakonekta sa PRODUCTS.                                |
+| **user_id**           | BigInt    | BIGINT UNSIGNED                                       | FK   | Nakakonekta sa USERS.                                   |
+| **quantity_adjusted** | Decimal   | DECIMAL(10,2)                                         | -    | Ilan ang binago (e.g., -5, o kaya +2).                  |
+| **reason**            | Enum      | ENUM('damaged', 'lost', 'recount', 'system_reversal') | -    | Values: 'damaged', 'lost', 'recount', 'system_reversal' |
+| **status**            | Enum      | ENUM('applied', 'voided')                             | -    | Values: 'applied', 'voided'                             |
+| **created_at**        | Timestamp | DATETIME                                              | -    |                                                         |
+| **updated_at**        | Timestamp | DATETIME                                              | -    |                                                         |
+
+---
+
+> **Note on Foreign Keys (FK):** These fields are essential for your database relationships. They ensure that data in one table correctly points to valid data in another.

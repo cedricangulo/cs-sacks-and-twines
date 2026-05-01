@@ -1,10 +1,18 @@
 {
 	"scripts": {
 		"build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
-		"watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch"
+		"watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
+		"build:js": "node scripts/build-js.mjs",
+		"watch:js": "node scripts/build-js.mjs --watch",
+		"build": "pnpm run build:css && pnpm run build:js",
+		"watch": "pnpm run watch:css & pnpm run watch:js"
 	},
 	"devDependencies": {
-		"tailwindcss": "^4.2.4",
-		"@tailwindcss/cli": "^4.2.4"
+		"@tailwindcss/cli": "^4.2.4",
+		"esbuild": "^0.28.0",
+		"tailwindcss": "^4.2.4"
+	},
+	"dependencies": {
+		"zod": "^4.4.1"
 	}
 }

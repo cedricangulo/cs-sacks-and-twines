@@ -32,7 +32,7 @@ class Auth
   {
     // Parameter binding keeps the lookup safe from SQL injection.
     $statement = $this->pdo->prepare(
-      'SELECT id, name, email, password, role FROM users WHERE email = :email LIMIT 1'
+      'SELECT user_id, name, email, password_hash, role FROM users WHERE email = :email LIMIT 1'
     );
 
     $statement->execute(['email' => $email]);
@@ -63,11 +63,11 @@ class Auth
       return null;
     }
 
-    if (!password_verify($password, (string) $user['password'])) {
+    if (!password_verify($password, (string) $user['password_hash'])) {
       return null;
     }
 
-    unset($user['password']);
+    unset($user['password_hash']);
 
     return $user;
   }

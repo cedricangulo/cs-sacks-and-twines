@@ -2,7 +2,7 @@ import { createInventoryState } from './context.js';
 import { initInventoryCombobox } from './combobox.js';
 import { initInventoryModes } from './modes.js';
 import { initInventorySubmission } from './submit.js';
-import { resetForm } from './state.js';
+import { resetForm, initImageHandlers } from './state.js';
 import { loadProducts } from './get-products.js';
 
 function initInventoryPage() {
@@ -15,6 +15,7 @@ function initInventoryPage() {
 
   initInventoryCombobox(state);
   initInventoryModes(state);
+  initImageHandlers(state);
   initInventorySubmission(state, {
     onSuccess: () => loadProducts({ force: true }),
   });

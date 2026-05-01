@@ -8,6 +8,8 @@ import {
   showDialogError,
   validateBeforeSubmit,
 } from './state.js';
+import { validateInventoryForm } from '../utils/validation.js';
+import { toast } from '../utils/toast.js';
 
 /**
  * Attach inventory submit handling.
@@ -18,7 +20,7 @@ import {
 export function initInventorySubmission(state, options = {}) {
   const { onSuccess } = options;
 
-  ['product_id', 'name', 'category', 'base_uom', 'supplier_id', 'quantity_received', 'unit_cost'].forEach((fieldName) => {
+  ['product_id', 'name', 'category', 'base_uom', 'weight_per_unit', 'supplier_id', 'quantity_received', 'total_procurement_cost'].forEach((fieldName) => {
     const input = state.form.querySelector(`[data-field-input="${fieldName}"]`);
     if (!input) {
       return;
@@ -35,7 +37,20 @@ export function initInventorySubmission(state, options = {}) {
   state.form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    if (!validateBeforeSubmit(state)) {
+    const { values } = validateBeforeSubmit(state);
+    const result = validateInventoryForm(values);
+    if (!result.success) {
+      const errors = result.errors;
+      Object.entries(errors).forEach(([fieldName, message]) => {
+        setFieldError(state, fieldName, message);
+      });
+      const firstField = state.form.querySelector('[data-invalid] [data-field-input]');
+      if (firstField instanceof HTMLElement) {
+        firstField.focus();
+      }
+      if (errors.product_id) {
+        state.trigger.focus();
+      }
       return;
     }
 
@@ -75,6 +90,17 @@ export function initInventorySubmission(state, options = {}) {
         showDialogError(state, message);
         return;
       }
+
+      const productName = state.itemNameInput.value || 'the product';
+      const quantity = values.quantity_received || '';
+      const unit = values.base_uom || '';
+      const cost = values.total_procurement_cost || '';
+      const batchCode = payload?.data?.batch_code || '';
+
+      toast.success(
+        'Stock saved successfully',
+        `Added ${quantity} ${unit} of ${productName}. Total cost: ₱${Number(cost).toLocaleString('en-PH', { minimumFractionDigits: 2 })}. Batch: ${batchCode}.`
+      );
 
       state.dialog.close();
       resetForm(state);

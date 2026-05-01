@@ -10,6 +10,7 @@
   <!-- Basecoat local CDN -->
   <link rel="stylesheet" href="<?php echo routeUrl('/public/css/basecoat.cdn.min.css'); ?>">
   <script src="<?php echo routeUrl('/public/js/basecoat.cdn.min.js'); ?>" defer></script>
+  <script src="<?php echo routeUrl('/public/js/toast.min.js'); ?>" defer></script>
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="<?php echo routeUrl('/public/css/output.css'); ?>">

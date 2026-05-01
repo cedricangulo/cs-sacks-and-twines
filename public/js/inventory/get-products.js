@@ -1,8 +1,9 @@
 import { fetchJson } from '../utils/fetch-utils.js';
-import { escapeHtml, renderEmptyRow } from '../utils/dom-utils.js';
+import { escapeHtml, renderEmptyState } from '../utils/dom-utils.js';
 import { formatDate } from '../utils/date-utils.js';
+import { formatCurrency } from '../utils/format.js';
 
-let lastSignature = '';
+let lastSignature = [];
 
 /**
  * Fetch product data for the inventory table.
@@ -74,7 +75,7 @@ function renderBatchRows(batches) {
   if (batches.length === 0) {
     return `
       <tr>
-        <td colspan="5" class="py-4 px-6 type-sm text-muted-foreground text-center">
+        <td colspan="8" class="py-4 px-6 type-sm text-muted-foreground text-center">
           No batches found.
         </td>
       </tr>
@@ -86,8 +87,10 @@ function renderBatchRows(batches) {
       <td></td>
       <td class="type-xs font-medium">${escapeHtml(batch.batch_code ?? '')}</td>
       <td>${escapeHtml(batch.supplier_name ?? '')}</td>
+      <td class="text-right">${formatCurrency(batch.unit_cost)}</td>
       <td>${escapeHtml(batch.quantity_received ?? '')}</td>
       <td class="text-right">${escapeHtml(batch.quantity_remaining ?? '')}</td>
+      <td><span class="badge-${escapeHtml((batch.status ?? 'active') === 'active' ? 'success' : 'destructive')}">${escapeHtml(batch.status ?? '')}</span></td>
       <td>${formatDate(batch.created_at)}</td>
     </tr>
   `).join('');
@@ -101,12 +104,22 @@ function renderBatchRows(batches) {
  */
 export function renderProducts(products) {
   if (products.length === 0) {
-    return renderEmptyRow({ colspan: 5, message: 'No products found.' });
+    return renderEmptyState('products');
   }
 
-  return products.map((product) => `
-    <tr class="product-row cursor-pointer hover:bg-muted/50 transition-colors" data-product-id="${product.id}" data-current-stock="${product.current_stock}">
+  return products.map((product) => {
+    const firstTwo = (product.name ?? '').slice(0, 2).toUpperCase();
+    const imageHtml = product.image_path
+      ? `<img src="/cs-sacks-and-twines/public/uploads/products/${escapeHtml(product.image_path)}" class="size-10 object-cover rounded" alt="" />`
+      : `<div class="size-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium">${firstTwo}</div>`;
+    const isLowStock = (parseFloat(product.current_quantity) || 0) < (parseFloat(product.low_stock_threshold) || 0);
+
+    return `
+    <tr class="product-row cursor-pointer hover:bg-muted/50 transition-colors" data-product-id="${product.product_id}" data-current-quantity="${product.current_quantity}">
       <td class="pl-6">
+        ${imageHtml}
+      </td>
+      <td>
         <div class="flex items-center gap-2">
           <svg class="chevron-icon size-4 shrink-0 text-muted-foreground transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           <span>${escapeHtml(product.sku_code ?? '')}</span>
@@ -115,9 +128,13 @@ export function renderProducts(products) {
       <td class="font-medium">${escapeHtml(product.name ?? '')}</td>
       <td>${escapeHtml(product.category ?? '')}</td>
       <td>${escapeHtml(product.base_uom ?? '')}</td>
-      <td class="text-right pr-6">${escapeHtml(product.current_stock ?? '')}</td>
+      <td class="text-right">${escapeHtml(product.current_quantity ?? '')}</td>
+      <td class="text-right">${formatCurrency(product.total_asset_value)}</td>
+      <td><span class="badge-${escapeHtml((product.status ?? 'active') === 'active' ? 'success' : 'secondary')}">${escapeHtml(product.status ?? '')}</span></td>
+      <td>${isLowStock ? '<span class="badge-destructive">Alert</span>' : ''}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 /**
@@ -128,7 +145,7 @@ export function renderProducts(products) {
  */
 function buildSignature(products) {
   return products
-    .map((product) => `${product.id ?? ''}|${product.updated_at ?? ''}`)
+    .map((product) => `${product.product_id ?? ''}|${product.updated_at ?? ''}`)
     .join('|');
 }
 
@@ -157,7 +174,7 @@ export async function loadProducts(options = {}) {
     initAccordion(container);
   } catch (error) {
     console.error('Failed to load products:', error);
-    container.innerHTML = renderEmptyRow({ colspan: 5, message: 'Failed to load products. Please try again.' });
+    container.innerHTML = renderEmptyState('error', 'Failed to load products', 'Please try again later.');
   }
 }
 
@@ -195,7 +212,7 @@ function initAccordion(container) {
  */
 async function expandRow(row) {
   const productId = row.getAttribute('data-product-id');
-  const currentStock = row.getAttribute('data-current-stock');
+  const currentStock = row.getAttribute('data-current-quantity');
   const chevron = row.querySelector('.chevron-icon');
 
   if (!productId) return;
@@ -211,7 +228,7 @@ async function expandRow(row) {
   detailsRow.className = 'batch-details-row';
   detailsRow.setAttribute('data-product-id', productId);
   detailsRow.innerHTML = `
-    <td colspan="5" class="p-0">
+    <td colspan="8" class="p-0">
       <div class="pl-6 pr-6 py-2 space-y-2">
         <div class="overflow-x-auto">
           <table class="table">
@@ -220,14 +237,16 @@ async function expandRow(row) {
                 <th></th>
                 <th>Batch Code</th>
                 <th>Supplier</th>
+                <th class="text-right">Unit Cost</th>
                 <th>Qty Received</th>
                 <th class="text-right">Qty Remaining</th>
+                <th>Status</th>
                 <th>Created At</th>
               </tr>
             </thead>
             <tbody class="batch-tbody" data-product-id="${productId}">
               <tr>
-                <td colspan="5" class="py-4 text-center type-sm text-muted-foreground">Loading batches...</td>
+                <td colspan="8" class="py-4 text-center type-sm text-muted-foreground">Loading batches...</td>
               </tr>
             </tbody>
           </table>
@@ -239,8 +258,8 @@ async function expandRow(row) {
   row.after(detailsRow);
 
   try {
-    const batches = await getBatches(parseInt(productId));
-    const totalCount = await getBatchCount(parseInt(productId));
+    const batches = await getBatches(parseInt(productId, 10));
+    const totalCount = await getBatchCount(parseInt(productId, 10));
     const tbody = detailsRow.querySelector('.batch-tbody');
 
     if (tbody) {
@@ -250,7 +269,7 @@ async function expandRow(row) {
         const seeMoreRow = document.createElement('tr');
         seeMoreRow.className = 'bg-muted/20';
         seeMoreRow.innerHTML = `
-          <td colspan="5" class="text-center py-2">
+          <td colspan="8" class="text-center py-2">
             <button type="button" class="see-more-btn btn-ghost type-xs" data-product-id="${productId}" data-loaded="3" data-total="${totalCount}">
               Show all ${totalCount} batches
             </button>
@@ -265,7 +284,7 @@ async function expandRow(row) {
     if (tbody) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="py-4 text-center type-sm text-destructive">
+          <td colspan="8" class="py-4 text-center type-sm text-destructive">
             Failed to load batches.
           </td>
         </tr>

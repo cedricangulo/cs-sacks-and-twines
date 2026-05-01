@@ -24,7 +24,7 @@ class Suppliers
   public function getAll(): array
   {
     $statement = $this->pdo->query(
-      'SELECT id, company_name, contact_person, contact_number, address, created_at, updated_at FROM suppliers ORDER BY company_name ASC'
+      'SELECT supplier_id, company_name, contact_person, contact_number, address, created_at, updated_at FROM suppliers ORDER BY company_name ASC'
     );
     return $statement->fetchAll();
   }

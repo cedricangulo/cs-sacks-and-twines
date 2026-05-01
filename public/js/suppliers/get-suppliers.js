@@ -1,8 +1,8 @@
 import { formatDate } from '../utils/date-utils.js';
 import { fetchJson } from '../utils/fetch-utils.js';
-import { escapeHtml, renderEmptyRow } from '../utils/dom-utils.js';
+import { escapeHtml, renderEmptyState } from '../utils/dom-utils.js';
 
-let lastSignature = '';
+let lastSignature = [];
 
 /**
  * Fetch suppliers for the table.
@@ -30,7 +30,7 @@ export async function getSuppliers() {
  */
 export function renderSuppliers(suppliers) {
   if (suppliers.length === 0) {
-    return renderEmptyRow({ colspan: 5, message: 'No suppliers found.' });
+    return renderEmptyState('suppliers');
   }
 
   return suppliers.map((supplier) => `
@@ -80,6 +80,6 @@ export async function loadSuppliers(options = {}) {
     container.innerHTML = renderSuppliers(suppliers);
   } catch (error) {
     console.error('Failed to load suppliers:', error);
-    container.innerHTML = renderEmptyRow({ colspan: 5, message: 'Failed to load suppliers. Please try again.' });
+    container.innerHTML = renderEmptyState('error', 'Failed to load suppliers', 'Please try again later.');
   }
 }

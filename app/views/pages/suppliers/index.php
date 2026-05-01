@@ -1,7 +1,7 @@
 <?php
 include __DIR__ . '/add-supplier-dialog.php';
 ?>
-<section class="p-6">
+<section class="p-6 pt-23">
   <div class="flex w-full items-center justify-between gap-4">
     <div class="space-y-2">
       <h2 class="type-lg">Suppliers</h2>
@@ -35,4 +35,4 @@ include __DIR__ . '/add-supplier-dialog.php';
   </div>
 </section>
 
-<script type="module" src="<?= htmlspecialchars(routeUrl('/public/js/suppliers/index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(routeUrl('/public/dist/suppliers/index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
