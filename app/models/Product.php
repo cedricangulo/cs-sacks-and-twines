@@ -69,6 +69,7 @@ class Product
 				p.current_quantity,
 				p.status,
 				p.image_path,
+				p.low_stock_threshold,
 				p.updated_at
 			FROM products p
 			WHERE p.status = \'active\'
@@ -179,13 +180,14 @@ class Product
 	 * @param string|int|float $weightPerUnit
 	 * @param string|int|float $currentStock
 	 * @param string|null $imagePath
+	 * @param string|int|float $lowStockThreshold
 	 * @return int
 	 */
-	public function createProduct(string $skuCode, string $name, string $category, string $baseUom, $weightPerUnit, $currentStock = '0.00', ?string $imagePath = null): int
+	public function createProduct(string $skuCode, string $name, string $category, string $baseUom, $weightPerUnit, $currentStock = '0.00', ?string $imagePath = null, $lowStockThreshold = '0.00'): int
 	{
 		$statement = $this->pdo->prepare(
-			'INSERT INTO products (sku_code, name, category, base_uom, weight_per_unit, current_quantity, image_path)
-			 VALUES (:sku_code, :name, :category, :base_uom, :weight_per_unit, :current_quantity, :image_path)'
+			'INSERT INTO products (sku_code, name, category, base_uom, weight_per_unit, current_quantity, image_path, low_stock_threshold)
+			 VALUES (:sku_code, :name, :category, :base_uom, :weight_per_unit, :current_quantity, :image_path, :low_stock_threshold)'
 		);
 		$statement->execute([
 			'sku_code' => $skuCode,
@@ -195,6 +197,7 @@ class Product
 			'weight_per_unit' => $weightPerUnit,
 			'current_quantity' => $currentStock,
 			'image_path' => $imagePath,
+			'low_stock_threshold' => $lowStockThreshold,
 		]);
 
 		return (int) $this->pdo->lastInsertId();
@@ -206,20 +209,23 @@ class Product
 	 * @param int $productId
 	 * @param string $category
 	 * @param string $baseUom
+	 * @param string|int|float|null $lowStockThreshold
 	 * @return void
 	 */
-	public function updateProductCatalog(int $productId, string $category, string $baseUom): void
+	public function updateProductCatalog(int $productId, string $category, string $baseUom, $lowStockThreshold = null): void
 	{
 		$statement = $this->pdo->prepare(
 			'UPDATE products
 			 SET category = :category,
 			     base_uom = :base_uom,
+			     low_stock_threshold = COALESCE(:low_stock_threshold, low_stock_threshold),
 			     updated_at = CURRENT_TIMESTAMP
 			 WHERE product_id = :product_id'
 		);
 		$statement->execute([
 			'category' => $category,
 			'base_uom' => $baseUom,
+			'low_stock_threshold' => $lowStockThreshold,
 			'product_id' => $productId,
 		]);
 	}
@@ -448,10 +454,17 @@ class Product
 	 * @param float $quantity
 	 * @param int $dispatchId
 	 * @param int $userId
+	 * @param string $dispatchUom
+	 * @param string $category
 	 * @return int Number of batches used
 	 */
-	public function deductFromBatches(int $productId, float $quantity, int $dispatchId, int $userId): int
+	public function deductFromBatches(int $productId, float $quantity, int $dispatchId, int $userId, string $dispatchUom = 'piece', string $category = ''): int
 	{
+		if ($category === 'twines' && $dispatchUom === 'kilo') {
+			$quantity = $quantity / 20.0;
+			$dispatchUom = 'roll';
+		}
+
 		$batches = $this->getBatchesForDispatch($productId);
 		$remainingToDeduct = $quantity;
 		$batchesUsed = 0;
@@ -498,7 +511,7 @@ class Product
 					:dispatch_id,
 					:batch_id,
 					:product_id,
-					\'piece\',
+					:dispatch_uom,
 					:dispatch_quantity,
 					:quantity_deducted,
 					:unit_cost
@@ -508,6 +521,7 @@ class Product
 				'dispatch_id' => $dispatchId,
 				'batch_id' => $batchId,
 				'product_id' => $productId,
+				'dispatch_uom' => $dispatchUom,
 				'dispatch_quantity' => $toDeduct,
 				'quantity_deducted' => $toDeduct,
 				'unit_cost' => $unitCost,

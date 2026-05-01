@@ -172,4 +172,30 @@ return [
       'show' => false,
     ],
   ],
+  '/api/audit-logs' => [
+    'title' => 'API Audit Logs',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/audit-logs/AuditLogsController.php',
+    'class' => 'AuditLogsController',
+    'method' => 'getLogsJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/audit-logs/personal' => [
+    'title' => 'API Personal Audit Logs',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/audit-logs/AuditLogsController.php',
+    'class' => 'AuditLogsController',
+    'method' => 'getPersonalLogsJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
 ];

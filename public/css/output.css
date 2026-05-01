@@ -259,12 +259,6 @@
   .col-span-3 {
     grid-column: span 3 / span 3;
   }
-  .col-span-4 {
-    grid-column: span 4 / span 4;
-  }
-  .col-span-8 {
-    grid-column: span 8 / span 8;
-  }
   .col-span-9 {
     grid-column: span 9 / span 9;
   }
@@ -297,9 +291,6 @@
   }
   .me-1\.5 {
     margin-inline-end: calc(var(--spacing) * 1.5);
-  }
-  .mt-1 {
-    margin-top: calc(var(--spacing) * 1);
   }
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
@@ -356,9 +347,9 @@
     width: calc(var(--spacing) * 4);
     height: calc(var(--spacing) * 4);
   }
-  .size-6 {
-    width: calc(var(--spacing) * 6);
-    height: calc(var(--spacing) * 6);
+  .size-9 {
+    width: calc(var(--spacing) * 9);
+    height: calc(var(--spacing) * 9);
   }
   .size-10 {
     width: calc(var(--spacing) * 10);
@@ -392,12 +383,6 @@
   .h-screen {
     height: 100vh;
   }
-  .max-h-14 {
-    max-height: calc(var(--spacing) * 14);
-  }
-  .max-h-26 {
-    max-height: calc(var(--spacing) * 26);
-  }
   .max-h-32 {
     max-height: calc(var(--spacing) * 32);
   }
@@ -415,12 +400,6 @@
   }
   .w-8 {
     width: calc(var(--spacing) * 8);
-  }
-  .w-12 {
-    width: calc(var(--spacing) * 12);
-  }
-  .w-32 {
-    width: calc(var(--spacing) * 32);
   }
   .w-96 {
     width: calc(var(--spacing) * 96);
@@ -488,6 +467,9 @@
   .flex-col {
     flex-direction: column;
   }
+  .flex-row {
+    flex-direction: row;
+  }
   .place-items-center {
     place-items: center;
   }
@@ -520,13 +502,6 @@
   }
   .gap-6 {
     gap: calc(var(--spacing) * 6);
-  }
-  .space-y-1 {
-    :where(& > :not(:last-child)) {
-      --tw-space-y-reverse: 0;
-      margin-block-start: calc(calc(var(--spacing) * 1) * var(--tw-space-y-reverse));
-      margin-block-end: calc(calc(var(--spacing) * 1) * calc(1 - var(--tw-space-y-reverse)));
-    }
   }
   .space-y-2 {
     :where(& > :not(:last-child)) {
@@ -665,9 +640,6 @@
     }
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
-  .object-contain {
-    object-fit: contain;
-  }
   .object-cover {
     object-fit: cover;
   }
@@ -713,9 +685,6 @@
   .px-6 {
     padding-inline: calc(var(--spacing) * 6);
   }
-  .py-0 {
-    padding-block: calc(var(--spacing) * 0);
-  }
   .py-1 {
     padding-block: calc(var(--spacing) * 1);
   }
@@ -731,6 +700,9 @@
   .py-6 {
     padding-block: calc(var(--spacing) * 6);
   }
+  .py-8 {
+    padding-block: calc(var(--spacing) * 8);
+  }
   .py-12 {
     padding-block: calc(var(--spacing) * 12);
   }
@@ -743,11 +715,17 @@
   .pt-23 {
     padding-top: calc(var(--spacing) * 23);
   }
+  .pr-0 {
+    padding-right: calc(var(--spacing) * 0);
+  }
   .pr-6 {
     padding-right: calc(var(--spacing) * 6);
   }
   .pb-4 {
     padding-bottom: calc(var(--spacing) * 4);
+  }
+  .pl-2 {
+    padding-left: calc(var(--spacing) * 2);
   }
   .pl-6 {
     padding-left: calc(var(--spacing) * 6);
@@ -802,6 +780,9 @@
   }
   .text-wrap {
     text-wrap: wrap;
+  }
+  .whitespace-nowrap {
+    white-space: nowrap;
   }
   .text-destructive {
     color: var(--destructive);
