@@ -1,5 +1,5 @@
-<section class="grid grid-cols-12 gap-6 pt-17 h-dvh">
-  <div class="col-span-9 p-6">
+<section class="grid grid-cols-12 pt-17 h-dvh overflow-hidden">
+  <div class="col-span-9 p-6 overflow-y-auto">
     <div class="flex items-center justify-between w-full gap-4 mb-6">
       <div class="space-y-2">
         <h2 class="type-lg">Products</h2>

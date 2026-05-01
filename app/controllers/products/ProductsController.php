@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/uploads.php';
 require_once __DIR__ . '/../../models/Product.php';
+require_once __DIR__ . '/../../models/AuditLog.php';
 
 /**
  * Handles inventory screens and data loading.
@@ -151,6 +152,7 @@ class ProductsController
 		$supplierId = (int) ($_POST['supplier_id'] ?? 0);
 		$quantityReceived = $this->normalizeDecimal($_POST['quantity_received'] ?? '');
 		$totalProcurementCost = $this->normalizeDecimal($_POST['total_procurement_cost'] ?? '');
+		$lowStockThreshold = $this->normalizeDecimal($_POST['low_stock_threshold'] ?? '0');
 		$imagePath = null;
 		if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
 			$imagePath = app_upload_product_image($_FILES['image']);
@@ -185,12 +187,16 @@ class ProductsController
 				$errors['base_uom'] = 'Select a valid unit of measurement for the new product.';
 			}
 
-			if ($weightPerUnit === '' || (float) $weightPerUnit <= 0) {
+			if ($weightPerUnit !== '' && (float) $weightPerUnit <= 0) {
 				$errors['weight_per_unit'] = 'Weight per unit must be greater than zero.';
 			}
 
 			if ($supplierId <= 0) {
 				$errors['supplier_id'] = 'Select a supplier for the new item.';
+			}
+
+			if ($lowStockThreshold !== '' && (float) $lowStockThreshold < 0) {
+				$errors['low_stock_threshold'] = 'Low stock threshold must be zero or greater.';
 			}
 		}
 
@@ -217,7 +223,7 @@ class ProductsController
 
 				$category = $category !== '' ? $category : (string) ($productRecord['category'] ?? '');
 				$baseUom = $baseUom !== '' ? $baseUom : (string) ($productRecord['base_uom'] ?? '');
-				$weightPerUnit = $weightPerUnit !== '' ? $weightPerUnit : (string) ($productRecord['weight_per_unit'] ?? '0.0000');
+				$weightPerUnit = $weightPerUnit !== '' ? $weightPerUnit : ($productRecord['weight_per_unit'] ?? null);
 				$supplierId = $supplierId > 0 ? $supplierId : (int) ($productRecord['default_supplier_id'] ?? 0);
 
 				if ($category === '' || !in_array($category, $allowedCategories, true)) {
@@ -250,7 +256,7 @@ class ProductsController
 					throw new DomainException('Unable to generate a unique SKU. Please try again.');
 				}
 
-				$productId = $product->createProduct($skuCode, $itemName, $category, $baseUom, $weightPerUnit, '0.00', $imagePath);
+				$productId = $product->createProduct($skuCode, $itemName, $category, $baseUom, $weightPerUnit, '0.00', $imagePath, $lowStockThreshold);
 			}
 
 			$batchCode = $this->generateBatchCode($product);
@@ -270,6 +276,15 @@ class ProductsController
 			$product->incrementProductStock($productId, $quantityReceived, $totalProcurementCost);
 
 			$pdo->commit();
+
+			$auditLog = new AuditLog($pdo);
+			$productName = $mode === 'new' ? $itemName : ($productRecord['name'] ?? 'product');
+			$auditLog->log(
+				$userId,
+				'stock_in',
+				"Added {$quantityReceived} {$baseUom} of {$productName} (Batch: {$batchCode})",
+				$_SERVER['REMOTE_ADDR'] ?? null
+			);
 
 			$this->jsonResponse([
 				'success' => true,
@@ -357,6 +372,12 @@ class ProductsController
 			foreach ($items as $item) {
 				$productId = isset($item['product_id']) ? (int) $item['product_id'] : 0;
 				$quantity = isset($item['quantity']) ? (float) $item['quantity'] : 0;
+				$dispatchUom = isset($item['dispatch_uom']) ? trim((string) $item['dispatch_uom']) : 'piece';
+
+				$allowedDispatchUoms = ['piece', 'kilo', 'roll'];
+				if (!in_array($dispatchUom, $allowedDispatchUoms, true)) {
+					$dispatchUom = 'piece';
+				}
 
 				if ($productId <= 0 || $quantity <= 0) {
 					continue;
@@ -367,12 +388,18 @@ class ProductsController
 					throw new DomainException('Product not found.');
 				}
 
+				$category = (string) ($productRecord['category'] ?? '');
+				$checkQuantity = $quantity;
+				if ($category === 'twines' && $dispatchUom === 'kilo') {
+					$checkQuantity = $quantity / 20.0;
+				}
+
 				$currentStock = (float) ($productRecord['current_quantity'] ?? 0);
-				if ($currentStock < $quantity) {
+				if ($currentStock < $checkQuantity) {
 					throw new DomainException('Insufficient stock for ' . ($productRecord['name'] ?? 'product') . '. Available: ' . $currentStock);
 				}
 
-				$deductedItems = $product->deductFromBatches($productId, $quantity, $dispatchId, $userId);
+				$deductedItems = $product->deductFromBatches($productId, $quantity, $dispatchId, $userId, $dispatchUom, $category);
 
 				if ($deductedItems === 0) {
 					throw new DomainException('No available batches for ' . ($productRecord['name'] ?? 'product') . '.');
@@ -387,6 +414,15 @@ class ProductsController
 			}
 
 			$pdo->commit();
+
+			$auditLog = new AuditLog($pdo);
+			$refText = $customerReference ? " (Ref: {$customerReference})" : '';
+			$auditLog->log(
+				$userId,
+				'stock_out',
+				"Dispatched {$totalQuantityDispatched} units across {$itemsDispatched} product(s){$refText}",
+				$_SERVER['REMOTE_ADDR'] ?? null
+			);
 
 			$this->jsonResponse([
 				'success' => true,

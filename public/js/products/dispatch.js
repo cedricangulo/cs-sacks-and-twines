@@ -25,6 +25,7 @@ export async function submitDispatch(customerReference) {
     formData.append('items', JSON.stringify(items.map(item => ({
       product_id: item.product_id,
       quantity: item.quantity,
+      dispatch_uom: item.dispatch_uom || 'piece',
     }))));
 
     const response = await fetch(dispatchUrl, {
