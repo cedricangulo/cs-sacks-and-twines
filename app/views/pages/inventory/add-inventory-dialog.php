@@ -1,6 +1,6 @@
 <?php
-$products = is_array($products ?? null) ? $products : [];
-$suppliers = is_array($suppliers ?? null) ? $suppliers : [];
+if (!isset($products) || !is_array($products)) { $products = []; }
+if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
 ?>
 
 <dialog id="add-inventory-dialog" class="w-full dialog sm:max-w-5xl max-h-164" aria-labelledby="add-inventory-dialog-title" aria-describedby="add-inventory-dialog-description" data-inventory-dialog onclick="if (event.target === this) this.close()">
@@ -65,11 +65,13 @@ $suppliers = is_array($suppliers ?? null) ? $suppliers : [];
 
                       <?php foreach ($products as $product): ?>
                         <?php
-                        $productId = (string) ($product['id'] ?? '');
+                        $productId = (string) ($product['product_id'] ?? '');
                         $productName = (string) ($product['name'] ?? '');
                         $productSku = (string) ($product['sku_code'] ?? '');
                         $productCategory = (string) ($product['category'] ?? '');
                         $productUnit = (string) ($product['base_uom'] ?? '');
+                        $productWeight = (string) ($product['weight_per_unit'] ?? '');
+                        $productImage = (string) ($product['image_path'] ?? '');
                         $defaultSupplierId = (string) ($product['default_supplier_id'] ?? '');
                         $filterText = trim($productName . ' ' . $productSku . ' ' . $productCategory . ' ' . $productUnit);
                         ?>
@@ -83,6 +85,8 @@ $suppliers = is_array($suppliers ?? null) ? $suppliers : [];
                           data-sku="<?= htmlspecialchars($productSku, ENT_QUOTES, 'UTF-8') ?>"
                           data-category="<?= htmlspecialchars($productCategory, ENT_QUOTES, 'UTF-8') ?>"
                           data-unit="<?= htmlspecialchars($productUnit, ENT_QUOTES, 'UTF-8') ?>"
+                          data-weight="<?= htmlspecialchars($productWeight, ENT_QUOTES, 'UTF-8') ?>"
+                          data-image="<?= htmlspecialchars($productImage, ENT_QUOTES, 'UTF-8') ?>"
                           data-supplier-id="<?= htmlspecialchars($defaultSupplierId, ENT_QUOTES, 'UTF-8') ?>"
                           data-filter="<?= htmlspecialchars($filterText, ENT_QUOTES, 'UTF-8') ?>">
                           <h4 class="font-medium type-base text-foreground"><?= htmlspecialchars($productName, ENT_QUOTES, 'UTF-8') ?></h4>
@@ -130,14 +134,40 @@ $suppliers = is_array($suppliers ?? null) ? $suppliers : [];
 
               <div class="grid gap-3" data-field-group="image">
                 <div class="flex items-center justify-between gap-4">
-                  <label class="label" for="inventory-item-image">Item Image</label>
+                  <label class="label" for="dropzone-file">Item Image</label>
                   <button type="button" class="hidden text-xs font-medium text-primary" data-edit-field="image">Edit</button>
                 </div>
-                <div class="flex items-center gap-3 p-3 border border-dashed border-border bg-muted">
-                  <div class="flex items-center justify-center overflow-hidden text-xs font-medium size-14 text-muted-foreground" data-image-preview>Preview</div>
-                  <p class="text-sm text-muted-foreground" data-image-preview-message>Locked until you choose or create an item.</p>
+                <div id="image-upload-container">
+                  <div id="image-upload-area" class="flex items-center justify-center w-full">
+                    <div class="flex flex-col items-center justify-center w-full h-40 bg-muted border border-dashed border-border rounded-base">
+                      <div class="flex flex-col items-center justify-center text-body text-center">
+                        <svg class="w-8 h-8 mb-2 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01" />
+                        </svg>
+                        <p class="mb-1 text-sm">Click the button below to upload</p>
+                        <p class="text-xs mb-3">Max. File Size: <span class="font-semibold">5MB</span></p>
+                        <button type="button" onclick="document.getElementById('dropzone-file').click()" class="inline-flex items-center btn text-white bg-primary hover:bg-primary-strong">
+                          <svg class="w-4 h-4 me-1.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+                          </svg>
+                          Browse file
+                        </button>
+                      </div>
+                    </div>
+                    <input id="dropzone-file" type="file" class="hidden" name="image" accept="image/jpeg,image/png" disabled data-field-input="image" data-image-input />
+                  </div>
                 </div>
-                <input class="w-full" type="file" name="image" id="inventory-item-image" accept="image/*" disabled data-field-input="image" />
+                <div id="image-preview-container" class="hidden w-full h-40 rounded-base border border-border overflow-hidden relative">
+                  <img id="image-preview-img" class="block w-auto h-full object-cover mx-auto" src="" alt="" />
+                  <button type="button" id="remove-image-btn" class="absolute top-2 right-2 bg-destructive text-white rounded-full p-1 hover:bg-destructive-strong" title="Remove image">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <p id="image-error" class="hidden text-sm text-destructive" role="alert" data-field-error="image"></p>
+                <p class="text-xs text-muted-foreground" data-image-preview-message></p>
               </div>
 
             </div>
@@ -175,8 +205,8 @@ $suppliers = is_array($suppliers ?? null) ? $suppliers : [];
                   </div>
                   <select class="w-full select" id="inventory-item-unit" name="base_uom" disabled required data-field-input="base_uom" aria-describedby="base_uom-error">
                     <option value="">Select unit</option>
-                    <option value="pieces">Pieces</option>
-                    <option value="kilos">Kilos</option>
+                    <option value="piece">Piece</option>
+                    <option value="roll">Roll</option>
                   </select>
                   <p id="base_uom-error" class="hidden text-sm text-destructive" role="alert" data-field-error="base_uom"></p>
                 </div>
@@ -190,24 +220,33 @@ $suppliers = is_array($suppliers ?? null) ? $suppliers : [];
                 <select class="w-full select" id="inventory-item-supplier" name="supplier_id" disabled required data-field-input="supplier_id" aria-describedby="supplier_id-error">
                   <option value="">Select supplier</option>
                   <?php foreach ($suppliers as $supplier): ?>
-                    <option value="<?= htmlspecialchars((string) ($supplier['id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($supplier['company_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></option>
+                    <option value="<?= htmlspecialchars((string) ($supplier['supplier_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($supplier['company_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></option>
                   <?php endforeach; ?>
                 </select>
                 <p id="supplier_id-error" class="hidden text-sm text-destructive" role="alert" data-field-error="supplier_id"></p>
               </div>
 
               <div class="grid grid-cols-2 gap-4">
+                <div role="group" class="field" data-field="weight_per_unit" data-field-group="weight_per_unit">
+                  <div class="flex items-center justify-between gap-4">
+                    <label class="label" for="inventory-item-weight">Weight per Unit (kg)</label>
+                    <button type="button" class="hidden text-xs font-medium text-primary" data-edit-field="weight_per_unit">Edit</button>
+                  </div>
+                  <input class="w-full input" type="number" id="inventory-item-weight" name="weight_per_unit" min="0.01" step="0.0001" placeholder="0.0000" disabled data-field-input="weight_per_unit" aria-describedby="weight_per_unit-error" />
+                  <p id="weight_per_unit-error" class="hidden text-sm text-destructive" role="alert" data-field-error="weight_per_unit"></p>
+                </div>
+
                 <div role="group" class="field" data-field="quantity_received">
                   <label class="label" for="inventory-item-quantity">Quantity</label>
                   <input class="w-full input" type="number" id="inventory-item-quantity" name="quantity_received" min="0.01" step="0.01" placeholder="0.00" required data-field-input="quantity_received" aria-describedby="quantity_received-error" />
                   <p id="quantity_received-error" class="hidden text-sm text-destructive" role="alert" data-field-error="quantity_received"></p>
                 </div>
+              </div>
 
-                <div role="group" class="field" data-field="unit_cost">
-                  <label class="label" for="inventory-item-cost">Total Procurement Cost</label>
-                  <input class="w-full input" type="number" id="inventory-item-cost" name="unit_cost" min="0.01" step="0.01" placeholder="0.00" required data-field-input="unit_cost" aria-describedby="unit_cost-error" />
-                  <p id="unit_cost-error" class="hidden text-sm text-destructive" role="alert" data-field-error="unit_cost"></p>
-                </div>
+              <div role="group" class="field" data-field="total_procurement_cost">
+                <label class="label" for="inventory-item-cost">Total Procurement Cost</label>
+                <input class="w-full input" type="number" id="inventory-item-cost" name="total_procurement_cost" min="0.01" step="0.01" placeholder="0.00" required data-field-input="total_procurement_cost" aria-describedby="total_procurement_cost-error" />
+                <p id="total_procurement_cost-error" class="hidden text-sm text-destructive" role="alert" data-field-error="total_procurement_cost"></p>
               </div>
             </div>
         </fieldset>
