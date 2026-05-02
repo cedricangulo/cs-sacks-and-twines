@@ -1,0 +1,124 @@
+1,2,batch.create,Batch BAT-00001 created for Rice Sack from Luzon Sacks Inc. — 242 piece(s) @ PHP 74.69/unit,127.0.0.1,2025-10-22 09:10:00,2025-10-22 09:10:00
+2,1,batch.create,Batch BAT-00002 created for Rice Sack from Golden Harvest Co. — 326 piece(s) @ PHP 54.35/unit,127.0.0.1,2025-11-23 03:15:00,2025-11-23 03:15:00
+3,1,batch.create,Batch BAT-00003 created for Gunny Sack from Palawan Raw Materials — 286 piece(s) @ PHP 86.76/unit,127.0.0.1,2025-08-13 09:23:00,2025-08-13 09:23:00
+4,1,batch.create,Batch BAT-00004 created for Gunny Sack from Mabuhay Fiber Supply — 262 piece(s) @ PHP 92.93/unit,127.0.0.1,2025-10-11 05:47:00,2025-10-11 05:47:00
+5,2,batch.create,Batch BAT-00005 created for Flour Sack from Mabuhay Fiber Supply — 223 piece(s) @ PHP 92.1/unit,127.0.0.1,2025-07-26 00:28:00,2025-07-26 00:28:00
+6,2,batch.create,Batch BAT-00006 created for Flour Sack from Island Weave Corp. — 229 piece(s) @ PHP 92.15/unit,127.0.0.1,2025-07-27 05:56:00,2025-07-27 05:56:00
+7,2,batch.create,Batch BAT-00007 created for Flour Sack from Luzon Sacks Inc. — 313 piece(s) @ PHP 52.65/unit,127.0.0.1,2025-07-31 09:53:00,2025-07-31 09:53:00
+8,2,batch.create,Batch BAT-00008 created for Binder Twine from Baguio Twine Traders — 201 roll(s) @ PHP 263.67/unit,127.0.0.1,2025-05-09 01:40:00,2025-05-09 01:40:00
+9,2,batch.create,Batch BAT-00009 created for Binder Twine from Golden Harvest Co. — 212 roll(s) @ PHP 260.59/unit,127.0.0.1,2025-09-11 06:36:00,2025-09-11 06:36:00
+10,1,batch.create,Batch BAT-00010 created for Binder Twine from Baguio Twine Traders — 273 roll(s) @ PHP 148.84/unit,127.0.0.1,2025-09-16 09:26:00,2025-09-16 09:26:00
+11,1,batch.create,Batch BAT-00011 created for Baler Twine from Palawan Raw Materials — 250 roll(s) @ PHP 278.45/unit,127.0.0.1,2025-05-16 06:38:00,2025-05-16 06:38:00
+12,2,batch.create,Batch BAT-00012 created for Baler Twine from Baguio Twine Traders — 166 roll(s) @ PHP 136.97/unit,127.0.0.1,2025-05-24 08:20:00,2025-05-24 08:20:00
+13,2,batch.create,Batch BAT-00013 created for Baler Twine from Luzon Sacks Inc. — 246 roll(s) @ PHP 148.85/unit,127.0.0.1,2025-08-26 02:30:00,2025-08-26 02:30:00
+14,1,batch.create,Batch BAT-00014 created for Sisal Twine from Baguio Twine Traders — 287 roll(s) @ PHP 173.69/unit,127.0.0.1,2025-10-31 02:07:00,2025-10-31 02:07:00
+15,1,batch.create,Batch BAT-00015 created for Sisal Twine from Island Weave Corp. — 232 roll(s) @ PHP 153.47/unit,127.0.0.1,2025-11-26 07:12:00,2025-11-26 07:12:00
+16,1,batch.create,Batch BAT-00016 created for Sisal Twine from Luzon Sacks Inc. — 253 roll(s) @ PHP 222.42/unit,127.0.0.1,2025-12-12 00:09:00,2025-12-12 00:09:00
+17,1,dispatch.create,Dispatch #1 created with 2 item(s),127.0.0.1,2025-10-18 01:47:00,2025-10-18 01:47:00
+18,2,dispatch.create,Dispatch #2 created with 2 item(s),127.0.0.1,2026-01-07 04:58:00,2026-01-07 04:58:00
+19,2,dispatch.create,Dispatch #3 created with 3 item(s),127.0.0.1,2026-02-11 23:40:00,2026-02-11 23:40:00
+20,2,dispatch.create,Dispatch #4 created with 3 item(s),127.0.0.1,2025-07-27 01:51:00,2025-07-27 01:51:00
+21,1,dispatch.create,Dispatch #5 created with 2 item(s),127.0.0.1,2025-07-06 01:31:00,2025-07-06 01:31:00
+22,1,dispatch.create,Dispatch #6 created with 3 item(s),127.0.0.1,2026-01-07 05:35:00,2026-01-07 05:35:00
+23,1,dispatch.create,Dispatch #7 created with 2 item(s),127.0.0.1,2025-12-26 05:51:00,2025-12-26 05:51:00
+24,1,dispatch.create,Dispatch #8 created with 2 item(s),127.0.0.1,2025-10-28 06:28:00,2025-10-28 06:28:00
+25,1,dispatch.create,Dispatch #9 created with 1 item(s),127.0.0.1,2025-10-02 06:05:00,2025-10-02 06:05:00
+26,1,dispatch.create,Dispatch #10 created with 2 item(s),127.0.0.1,2025-11-24 02:43:00,2025-11-24 02:43:00
+27,1,dispatch.create,Dispatch #11 created with 1 item(s),127.0.0.1,2026-02-19 01:30:00,2026-02-19 01:30:00
+28,1,dispatch.create,Dispatch #12 created with 2 item(s),127.0.0.1,2025-12-19 03:44:00,2025-12-19 03:44:00
+29,2,dispatch.create,Dispatch #13 created with 2 item(s),127.0.0.1,2025-10-17 08:03:00,2025-10-17 08:03:00
+30,2,dispatch.create,Dispatch #14 created with 3 item(s),127.0.0.1,2026-03-05 09:01:00,2026-03-05 09:01:00
+31,2,dispatch.create,Dispatch #15 created with 1 item(s),127.0.0.1,2026-02-13 08:56:00,2026-02-13 08:56:00
+32,2,dispatch.create,Dispatch #16 created with 3 item(s),127.0.0.1,2025-07-08 00:33:00,2025-07-08 00:33:00
+33,2,dispatch.create,Dispatch #17 created with 2 item(s),127.0.0.1,2026-02-16 08:38:00,2026-02-16 08:38:00
+34,1,dispatch.create,Dispatch #18 created with 1 item(s),127.0.0.1,2026-03-16 00:23:00,2026-03-16 00:23:00
+35,2,dispatch.create,Dispatch #19 created with 2 item(s),127.0.0.1,2026-03-24 07:26:00,2026-03-24 07:26:00
+36,2,dispatch.create,Dispatch #20 created with 3 item(s),127.0.0.1,2025-11-28 07:18:00,2025-11-28 07:18:00
+37,1,dispatch.void,Dispatch #21 voided,127.0.0.1,2026-03-26 01:06:00,2026-03-26 01:06:00
+38,1,dispatch.create,Dispatch #22 created with 1 item(s),127.0.0.1,2026-01-18 09:50:00,2026-01-18 09:50:00
+39,2,dispatch.create,Dispatch #23 created with 1 item(s),127.0.0.1,2026-02-06 08:39:00,2026-02-06 08:39:00
+40,1,dispatch.void,Dispatch #24 voided,127.0.0.1,2025-12-21 04:15:00,2025-12-21 04:15:00
+41,2,dispatch.create,Dispatch #25 created with 1 item(s),127.0.0.1,2025-10-14 06:08:00,2025-10-14 06:08:00
+42,1,dispatch.create,Dispatch #26 created with 2 item(s),127.0.0.1,2025-11-06 07:27:00,2025-11-06 07:27:00
+43,1,dispatch.create,Dispatch #27 created with 2 item(s),127.0.0.1,2026-01-23 23:36:00,2026-01-23 23:36:00
+44,2,dispatch.create,Dispatch #28 created with 2 item(s),127.0.0.1,2025-06-26 00:04:00,2025-06-26 00:04:00
+45,1,dispatch.create,Dispatch #29 created with 3 item(s),127.0.0.1,2026-02-07 05:05:00,2026-02-07 05:05:00
+46,1,dispatch.create,Dispatch #30 created with 1 item(s),127.0.0.1,2026-01-13 03:20:00,2026-01-13 03:20:00
+47,1,dispatch.create,Dispatch #31 created with 3 item(s),127.0.0.1,2025-12-13 02:17:00,2025-12-13 02:17:00
+48,1,dispatch.create,Dispatch #32 created with 2 item(s),127.0.0.1,2025-10-09 05:57:00,2025-10-09 05:57:00
+49,2,dispatch.create,Dispatch #33 created with 3 item(s),127.0.0.1,2025-12-17 07:42:00,2025-12-17 07:42:00
+50,2,dispatch.create,Dispatch #34 created with 1 item(s),127.0.0.1,2025-12-24 06:05:00,2025-12-24 06:05:00
+51,1,dispatch.create,Dispatch #35 created with 1 item(s),127.0.0.1,2026-02-12 02:31:00,2026-02-12 02:31:00
+52,1,dispatch.create,Dispatch #36 created with 1 item(s),127.0.0.1,2025-11-27 09:34:00,2025-11-27 09:34:00
+53,1,dispatch.create,Dispatch #37 created with 1 item(s),127.0.0.1,2026-01-13 02:40:00,2026-01-13 02:40:00
+54,2,dispatch.create,Dispatch #38 created with 1 item(s),127.0.0.1,2025-08-22 03:04:00,2025-08-22 03:04:00
+55,2,dispatch.create,Dispatch #39 created with 1 item(s),127.0.0.1,2026-01-22 09:56:00,2026-01-22 09:56:00
+56,1,dispatch.create,Dispatch #40 created with 3 item(s),127.0.0.1,2026-01-20 05:36:00,2026-01-20 05:36:00
+57,2,dispatch.create,Dispatch #41 created with 3 item(s),127.0.0.1,2026-02-19 23:25:00,2026-02-19 23:25:00
+58,2,dispatch.create,Dispatch #42 created with 1 item(s),127.0.0.1,2025-07-14 09:17:00,2025-07-14 09:17:00
+59,2,dispatch.create,Dispatch #43 created with 3 item(s),127.0.0.1,2026-01-20 00:17:00,2026-01-20 00:17:00
+60,2,dispatch.create,Dispatch #44 created with 3 item(s),127.0.0.1,2025-10-14 00:37:00,2025-10-14 00:37:00
+61,1,dispatch.create,Dispatch #45 created with 3 item(s),127.0.0.1,2026-03-12 03:02:00,2026-03-12 03:02:00
+62,1,dispatch.create,Dispatch #46 created with 3 item(s),127.0.0.1,2025-08-24 01:22:00,2025-08-24 01:22:00
+63,2,dispatch.create,Dispatch #47 created with 1 item(s),127.0.0.1,2025-05-07 06:11:00,2025-05-07 06:11:00
+64,1,dispatch.create,Dispatch #48 created with 2 item(s),127.0.0.1,2026-03-20 08:59:00,2026-03-20 08:59:00
+65,2,dispatch.create,Dispatch #49 created with 1 item(s),127.0.0.1,2026-03-08 09:59:00,2026-03-08 09:59:00
+66,1,dispatch.create,Dispatch #50 created with 1 item(s),127.0.0.1,2026-02-01 02:56:00,2026-02-01 02:56:00
+67,2,dispatch.create,Dispatch #51 created with 3 item(s),127.0.0.1,2026-02-18 03:55:00,2026-02-18 03:55:00
+68,2,dispatch.create,Dispatch #52 created with 1 item(s),127.0.0.1,2025-12-22 00:11:00,2025-12-22 00:11:00
+69,2,dispatch.create,Dispatch #53 created with 3 item(s),127.0.0.1,2026-01-26 06:35:00,2026-01-26 06:35:00
+70,2,dispatch.create,Dispatch #54 created with 1 item(s),127.0.0.1,2026-03-23 09:19:00,2026-03-23 09:19:00
+71,1,dispatch.create,Dispatch #55 created with 2 item(s),127.0.0.1,2026-02-20 23:42:00,2026-02-20 23:42:00
+72,2,dispatch.create,Dispatch #56 created with 1 item(s),127.0.0.1,2025-05-12 23:40:00,2025-05-12 23:40:00
+73,2,dispatch.create,Dispatch #57 created with 2 item(s),127.0.0.1,2026-02-06 02:41:00,2026-02-06 02:41:00
+74,1,dispatch.create,Dispatch #58 created with 3 item(s),127.0.0.1,2026-02-13 01:17:00,2026-02-13 01:17:00
+75,2,dispatch.create,Dispatch #59 created with 1 item(s),127.0.0.1,2025-10-31 01:49:00,2025-10-31 01:49:00
+76,1,dispatch.create,Dispatch #60 created with 2 item(s),127.0.0.1,2025-12-20 02:37:00,2025-12-20 02:37:00
+77,1,dispatch.create,Dispatch #61 created with 3 item(s),127.0.0.1,2025-10-21 04:45:00,2025-10-21 04:45:00
+78,1,dispatch.create,Dispatch #62 created with 1 item(s),127.0.0.1,2026-03-20 08:31:00,2026-03-20 08:31:00
+79,1,dispatch.create,Dispatch #63 created with 3 item(s),127.0.0.1,2026-01-31 23:25:00,2026-01-31 23:25:00
+80,2,dispatch.create,Dispatch #64 created with 1 item(s),127.0.0.1,2026-02-15 09:42:00,2026-02-15 09:42:00
+81,1,dispatch.create,Dispatch #65 created with 2 item(s),127.0.0.1,2026-03-01 04:18:00,2026-03-01 04:18:00
+82,2,dispatch.create,Dispatch #66 created with 1 item(s),127.0.0.1,2025-10-18 08:50:00,2025-10-18 08:50:00
+83,1,dispatch.create,Dispatch #67 created with 1 item(s),127.0.0.1,2025-05-22 05:07:00,2025-05-22 05:07:00
+84,2,dispatch.create,Dispatch #68 created with 2 item(s),127.0.0.1,2025-12-25 09:59:00,2025-12-25 09:59:00
+85,2,dispatch.create,Dispatch #69 created with 3 item(s),127.0.0.1,2025-10-31 00:52:00,2025-10-31 00:52:00
+86,1,dispatch.create,Dispatch #70 created with 3 item(s),127.0.0.1,2026-02-25 04:13:00,2026-02-25 04:13:00
+87,1,dispatch.create,Dispatch #71 created with 3 item(s),127.0.0.1,2025-10-01 01:05:00,2025-10-01 01:05:00
+88,2,dispatch.create,Dispatch #72 created with 3 item(s),127.0.0.1,2025-12-27 08:41:00,2025-12-27 08:41:00
+89,2,dispatch.create,Dispatch #73 created with 3 item(s),127.0.0.1,2025-11-18 08:16:00,2025-11-18 08:16:00
+90,1,dispatch.create,Dispatch #74 created with 1 item(s),127.0.0.1,2025-07-28 03:14:00,2025-07-28 03:14:00
+91,2,dispatch.create,Dispatch #75 created with 3 item(s),127.0.0.1,2026-02-14 05:16:00,2026-02-14 05:16:00
+92,1,dispatch.create,Dispatch #76 created with 1 item(s),127.0.0.1,2025-11-19 04:04:00,2025-11-19 04:04:00
+93,1,dispatch.create,Dispatch #77 created with 1 item(s),127.0.0.1,2025-11-06 08:42:00,2025-11-06 08:42:00
+94,1,dispatch.create,Dispatch #78 created with 2 item(s),127.0.0.1,2026-01-28 01:44:00,2026-01-28 01:44:00
+95,2,dispatch.create,Dispatch #79 created with 1 item(s),127.0.0.1,2026-03-29 00:42:00,2026-03-29 00:42:00
+96,1,dispatch.create,Dispatch #80 created with 1 item(s),127.0.0.1,2026-01-14 23:48:00,2026-01-14 23:48:00
+97,2,dispatch.create,Dispatch #81 created with 1 item(s),127.0.0.1,2025-11-03 03:27:00,2025-11-03 03:27:00
+98,1,dispatch.create,Dispatch #82 created with 3 item(s),127.0.0.1,2026-03-23 07:46:00,2026-03-23 07:46:00
+99,2,dispatch.create,Dispatch #83 created with 1 item(s),127.0.0.1,2026-01-18 07:45:00,2026-01-18 07:45:00
+100,2,dispatch.create,Dispatch #84 created with 1 item(s),127.0.0.1,2025-12-10 03:55:00,2025-12-10 03:55:00
+101,2,dispatch.create,Dispatch #85 created with 2 item(s),127.0.0.1,2026-01-26 02:01:00,2026-01-26 02:01:00
+102,1,dispatch.create,Dispatch #86 created with 2 item(s),127.0.0.1,2026-01-06 00:37:00,2026-01-06 00:37:00
+103,2,dispatch.create,Dispatch #87 created with 3 item(s),127.0.0.1,2026-01-09 01:12:00,2026-01-09 01:12:00
+104,2,dispatch.create,Dispatch #88 created with 1 item(s),127.0.0.1,2026-02-28 09:02:00,2026-02-28 09:02:00
+105,1,dispatch.create,Dispatch #89 created with 3 item(s),127.0.0.1,2025-12-30 09:07:00,2025-12-30 09:07:00
+106,2,dispatch.create,Dispatch #90 created with 3 item(s),127.0.0.1,2025-11-26 08:05:00,2025-11-26 08:05:00
+107,1,dispatch.create,Dispatch #91 created with 0 item(s),127.0.0.1,2025-11-13 09:58:00,2025-11-13 09:58:00
+108,2,dispatch.create,Dispatch #92 created with 1 item(s),127.0.0.1,2026-02-16 02:36:00,2026-02-16 02:36:00
+109,1,dispatch.create,Dispatch #93 created with 1 item(s),127.0.0.1,2026-01-17 02:40:00,2026-01-17 02:40:00
+110,2,dispatch.create,Dispatch #94 created with 1 item(s),127.0.0.1,2025-12-10 02:16:00,2025-12-10 02:16:00
+111,1,dispatch.create,Dispatch #95 created with 3 item(s),127.0.0.1,2025-12-19 02:54:00,2025-12-19 02:54:00
+112,2,dispatch.create,Dispatch #96 created with 3 item(s),127.0.0.1,2025-06-12 02:12:00,2025-06-12 02:12:00
+113,2,dispatch.create,Dispatch #97 created with 0 item(s),127.0.0.1,2026-01-10 00:00:00,2026-01-10 00:00:00
+114,2,dispatch.create,Dispatch #98 created with 1 item(s),127.0.0.1,2025-12-07 03:56:00,2025-12-07 03:56:00
+115,2,dispatch.create,Dispatch #99 created with 1 item(s),127.0.0.1,2025-11-07 02:07:00,2025-11-07 02:07:00
+116,2,dispatch.create,Dispatch #100 created with 2 item(s),127.0.0.1,2025-06-23 09:01:00,2025-06-23 09:01:00
+117,2,adjustment.apply,Stock adjustment applied to Rice Sack: 2.5 piece(s) — recount,127.0.0.1,2025-06-28 00:56:00,2025-06-28 00:56:00
+118,1,adjustment.void,Stock adjustment #2 voided,127.0.0.1,2025-12-05 08:51:00,2025-12-05 08:51:00
+119,2,adjustment.apply,Stock adjustment applied to Flour Sack: 1.2 piece(s) — damaged,127.0.0.1,2025-10-18 06:59:00,2025-10-18 06:59:00
+120,1,adjustment.apply,Stock adjustment applied to Binder Twine: 1.75 roll(s) — lost,127.0.0.1,2025-09-28 00:22:00,2025-09-28 00:22:00
+121,2,adjustment.apply,Stock adjustment applied to Baler Twine: 3.6 roll(s) — damaged,127.0.0.1,2025-05-11 02:22:00,2025-05-11 02:22:00
+122,2,adjustment.apply,Stock adjustment applied to Baler Twine: 1.2 roll(s) — lost,127.0.0.1,2025-12-23 07:13:00,2025-12-23 07:13:00
+123,1,adjustment.apply,Stock adjustment applied to Sisal Twine: 1.2 roll(s) — recount,127.0.0.1,2025-08-23 08:34:00,2025-08-23 08:34:00
+124,2,adjustment.apply,Stock adjustment applied to Sisal Twine: 1.65 roll(s) — recount,127.0.0.1,2026-04-16 09:55:00,2026-04-16 09:55:00
