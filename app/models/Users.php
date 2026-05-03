@@ -24,7 +24,7 @@ class Users
   public function getAllActive(): array
   {
     $statement = $this->pdo->query(
-      'SELECT user_id, name, email, role, created_at, updated_at
+      'SELECT user_id, name, email, created_at, updated_at
         FROM users
         WHERE role = \'staff\'
         ORDER BY name ASC'

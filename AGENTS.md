@@ -11,12 +11,24 @@ This is a vanilla PHP MVC-style app styled with Tailwind CSS v4 and Basecoat. It
 - Use `pnpm run build:js` or `pnpm run watch:js` for the bundled client scripts.
 - `pnpm run build` runs both CSS and JS builds.
 
+## Database Setup
+- Schema is in [docs/schema.sql](docs/schema.sql) - run this to create tables.
+- Migrations are in [docs/migrations/](docs/migrations/) - apply in date order.
+- Database connection is in [app/core/db.php](app/core/db.php) (PDO).
+- Configure via environment variables: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, or `DB_DSN`.
+
 ## Routing & Layout
 - All requests enter through `index.php`, which boots `app/core/bootstrap.php`, resolves the route, and renders the correct shell.
-- Route metadata lives in [app/config/routes/web.php](app/config/routes/web.php) and [app/config/routes/api.php](app/config/routes/api.php), then merges through [app/config/routes.php](app/config/routes.php).
+- Route metadata lives in [app/config/routes/web.php](app/config/routes/web.php) and [app/config/routes/api.php](app/config/routes/api.php), then merges through [app/core/routes.php](app/core/routes.php).
 - Use `routeUrl('/path')` from [app/core/path.php](app/core/path.php) for every frontend link and asset path that needs to work in a subfolder install.
 - Put page-specific views in `app/views/pages/{route}/index.php` and shared chrome in `app/views/layout/`.
 - Controllers may return arrays for view data or short-circuit with JSON responses and redirects.
+
+## Roles & Access
+- `owner` - full access to all pages including users, audit-logs, suppliers, reports
+- `staff` - limited access (products, inventory, personal audit-logs)
+- `guest` - sign-in page only
+- RBAC is enforced in index.php based on route metadata `roles` array.
 
 ## Forms & Client Scripts
 - Follow the field-level error pattern in [docs/FORMS.md](docs/FORMS.md): one general error alert plus per-field error slots, except sign-in which stays general-only.
@@ -28,7 +40,7 @@ This is a vanilla PHP MVC-style app styled with Tailwind CSS v4 and Basecoat. It
 - Prefix custom helpers in `app/core/` with `app_`.
 - Use `require_once __DIR__ . '/...'` for nested includes.
 - Use `<?= ... ?>` in views and `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')` for output that can contain user data.
-- Use prepared statements in models and keep controllers responsible for validation, orchestration, and response shape.
+- Use prepared statements (PDO) and keep controllers responsible for validation, orchestration, and response shape.
 
 ## Quality Bar
 - Follow [docs/RUBRICS.md](docs/RUBRICS.md) for CRUD, async, and CSS expectations.

@@ -1,6 +1,10 @@
 <?php
-if (!isset($products) || !is_array($products)) { $products = []; }
-if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
+if (!isset($products) || !is_array($products)) {
+  $products = [];
+}
+if (!isset($suppliers) || !is_array($suppliers)) {
+  $suppliers = [];
+}
 ?>
 
 <dialog id="add-inventory-dialog" class="w-full dialog sm:max-w-5xl max-h-164" aria-labelledby="add-inventory-dialog-title" aria-describedby="add-inventory-dialog-description" data-inventory-dialog onclick="if (event.target === this) this.close()">
@@ -11,15 +15,42 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
     </header>
 
     <section class="overflow-y-auto scrollbar">
-      <form id="inventory-form" class="form pb-4" data-inventory-form action="<?= htmlspecialchars(routeUrl('/api/stock-in'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
+      <form id="inventory-form" class="pb-4 form" data-inventory-form action="<?= htmlspecialchars(routeUrl('/api/stock-in'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
         <input type="hidden" name="mode" value="existing" data-inventory-mode />
         <input type="hidden" name="product_id" value="" data-product-id />
 
-        <div class="hidden px-4 py-3 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-form-error></div>
+        <div class="hidden px-4 py-3 mb-4 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-form-error></div>
 
         <fieldset class="fieldset">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="grid gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between gap-2 p-2 w-full text-blue-800 border rounded-md border-border bg-blue-50" data-new-item-alert>
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info-icon lucide-info size-4 shrink-0">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4" />
+                    <path d="M12 8h.01" />
+                  </svg>
+                  <h2>Creating a new item</h2>
+                </div>
+                <button type="button" class="btn-outline w-fit" data-cancel-new-item>Cancel</button>
+              </div>
+              <div role="group" class="field" hidden data-new-item-panel data-field="name">
+                <label for="inventory-item-name">Item Name</label>
+                <input
+                  class="w-full input"
+                  type="text"
+                  id="inventory-item-name"
+                  name="name"
+                  placeholder="Enter a new item name"
+                  autocomplete="off"
+                  required
+                  disabled
+                  data-field-input="name"
+                  aria-describedby="name-error" />
+                <p id="name-error" class="hidden text-sm text-destructive" role="alert" data-field-error="name"></p>
+              </div>
+
               <div role="group" class="field" data-field="product_id" data-existing-item-panel>
                 <label for="inventory-item-search">Item Name</label>
                 <div class="relative" data-combobox>
@@ -40,7 +71,7 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                     </svg>
                   </button>
 
-                  <div class="absolute z-30 hidden w-full mt-2 overflow-hidden bg-white border border-border" data-combobox-popover>
+                  <div class="absolute z-30 hidden w-full overflow-hidden border -top-2 bg-background border-border" data-combobox-popover>
                     <div class="p-2 border-b border-border">
                       <input
                         id="inventory-item-search"
@@ -58,9 +89,9 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                         data-combobox-search />
                     </div>
 
-                    <div class="p-2 space-y-2 overflow-auto max-h-45" role="listbox" id="inventory-item-listbox" aria-labelledby="inventory-item-trigger" data-combobox-listbox>
+                    <div class="p-2 space-y-2 overflow-auto max-h-64" role="listbox" id="inventory-item-listbox" aria-labelledby="inventory-item-trigger" data-combobox-listbox>
                       <?php if ($products === []): ?>
-                        <div class="px-3 py-4 text-sm text-destructive" data-combobox-empty>No items found yet.</div>
+                        <div class="px-3 py-4 text-center type-sm text-destructive" data-combobox-empty>No items found yet.</div>
                       <?php endif; ?>
 
                       <?php foreach ($products as $product): ?>
@@ -109,47 +140,20 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                 </div>
               </div>
 
-              <div class="hidden alert" data-new-item-alert>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info-icon lucide-info">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 16v-4" />
-                  <path d="M12 8h.01" />
-                </svg>
-                <h2>Creating a new item</h2>
-                <button type="button" class="btn-outline w-fit" data-cancel-new-item>Cancel</button>
-              </div>
-              <div role="group" class="field" hidden data-new-item-panel data-field="name">
-                <label for="inventory-item-name">Item Name</label>
-                <input
-                  class="w-full input"
-                  type="text"
-                  id="inventory-item-name"
-                  name="name"
-                  placeholder="Enter a new item name"
-                  autocomplete="off"
-                  required
-                  disabled
-                  data-field-input="name"
-                  aria-describedby="name-error" />
-                <p id="name-error" class="hidden text-sm text-destructive" role="alert" data-field-error="name"></p>
-              </div>
-
-              <div class="grid gap-3" data-field-group="image">
+              <div class="space-y-2" data-field-group="image">
                 <div class="flex items-center justify-between gap-4">
                   <label class="label" for="dropzone-file">Item Image</label>
                   <button type="button" class="hidden text-xs font-medium text-primary" data-edit-field="image">Edit</button>
                 </div>
                 <div id="image-upload-container">
                   <div id="image-upload-area" class="flex items-center justify-center w-full">
-                    <div class="flex flex-col items-center justify-center w-full h-40 bg-muted border border-dashed border-border rounded-base">
-                      <div class="flex flex-col items-center justify-center text-body text-center">
-                        <svg class="w-8 h-8 mb-2 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01" />
-                        </svg>
+                    <div class="flex flex-col items-center justify-center w-full h-40 border border-dashed bg-muted/10 border-border rounded-base">
+                      <div class="flex flex-col items-center justify-center text-center text-body">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-up-icon lucide-image-up"><path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"/><path d="m14 19.5 3-3 3 3"/><path d="M17 22v-5.5"/><circle cx="9" cy="9" r="2"/></svg>
                         <p class="mb-1 text-sm">Click the button below to upload</p>
-                        <p class="text-xs mb-3">Max. File Size: <span class="font-semibold">5MB</span></p>
-                        <button type="button" onclick="document.getElementById('dropzone-file').click()" class="inline-flex items-center btn text-white bg-primary hover:bg-primary-strong">
-                          <svg class="w-4 h-4 me-1.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <p class="mb-3 text-xs">Max. File Size: <span class="font-semibold">5MB</span></p>
+                        <button type="button" onclick="document.getElementById('dropzone-file').click()" class="btn-secondary">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
                           </svg>
                           Browse file
@@ -159,9 +163,9 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                     <input id="dropzone-file" type="file" class="hidden" name="image" accept="image/jpeg,image/png" disabled data-field-input="image" data-image-input />
                   </div>
                 </div>
-                <div id="image-preview-container" class="hidden w-full h-40 rounded-base border border-border overflow-hidden relative">
-                  <img id="image-preview-img" class="block w-auto h-full object-cover mx-auto" src="" alt="" />
-                  <button type="button" id="remove-image-btn" class="absolute top-2 right-2 bg-destructive text-white rounded-full p-1 hover:bg-destructive-strong" title="Remove image">
+                <div id="image-preview-container" class="relative hidden w-full h-40 overflow-hidden border rounded-base border-border">
+                  <img id="image-preview-img" class="block object-cover w-auto h-full mx-auto" src="" alt="" />
+                  <button type="button" id="remove-image-btn" class="absolute p-1 text-white rounded-full top-2 right-2 bg-destructive hover:bg-destructive-strong" title="Remove image">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M18 6 6 18" />
                       <path d="m6 6 12 12" />
@@ -171,9 +175,9 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                 <p id="image-error" class="hidden text-sm text-destructive" role="alert" data-field-error="image"></p>
                 <p class="text-xs text-muted-foreground" data-image-preview-message></p>
               </div>
-
             </div>
-            <div class="grid gap-4">
+
+            <div class="grid gap-4 p-4 card">
               <div class="grid grid-cols-2 gap-4">
                 <div role="group" class="field" data-field="sku_code">
                   <label class="label" for="inventory-item-sku">SKU</label>
@@ -238,26 +242,28 @@ if (!isset($suppliers) || !is_array($suppliers)) { $suppliers = []; }
                   <p id="weight_per_unit-error" class="hidden text-sm text-destructive" role="alert" data-field-error="weight_per_unit"></p>
                 </div>
 
+                <div role="group" class="field" data-field="low_stock_threshold" data-field-group="low_stock_threshold">
+                  <div class="flex items-center justify-between gap-4">
+                    <label class="label" for="inventory-item-low-stock">Low Stock Threshold</label>
+                    <button type="button" class="hidden text-xs font-medium text-primary" data-edit-field="low_stock_threshold">Edit</button>
+                  </div>
+                  <input class="w-full input" type="number" id="inventory-item-low-stock" name="low_stock_threshold" min="0" step="0.01" value="0.00" placeholder="0.00" disabled data-field-input="low_stock_threshold" aria-describedby="low_stock_threshold-error" />
+                  <p id="low_stock_threshold-error" class="hidden text-sm text-destructive" role="alert" data-field-error="low_stock_threshold"></p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
                 <div role="group" class="field" data-field="quantity_received">
                   <label class="label" for="inventory-item-quantity">Quantity</label>
                   <input class="w-full input" type="number" id="inventory-item-quantity" name="quantity_received" min="0.01" step="0.01" placeholder="0.00" required data-field-input="quantity_received" aria-describedby="quantity_received-error" />
                   <p id="quantity_received-error" class="hidden text-sm text-destructive" role="alert" data-field-error="quantity_received"></p>
                 </div>
-              </div>
 
-              <div role="group" class="field" data-field="total_procurement_cost">
-                <label class="label" for="inventory-item-cost">Total Procurement Cost</label>
-                <input class="w-full input" type="number" id="inventory-item-cost" name="total_procurement_cost" min="0.01" step="0.01" placeholder="0.00" required data-field-input="total_procurement_cost" aria-describedby="total_procurement_cost-error" />
-                <p id="total_procurement_cost-error" class="hidden text-sm text-destructive" role="alert" data-field-error="total_procurement_cost"></p>
-              </div>
-
-              <div role="group" class="field" data-field="low_stock_threshold" data-field-group="low_stock_threshold">
-                <div class="flex items-center justify-between gap-4">
-                  <label class="label" for="inventory-item-low-stock">Low Stock Threshold</label>
-                  <button type="button" class="hidden text-xs font-medium text-primary" data-edit-field="low_stock_threshold">Edit</button>
+                <div role="group" class="field" data-field="total_procurement_cost">
+                  <label class="label" for="inventory-item-cost">Total Procurement Cost</label>
+                  <input class="w-full input" type="number" id="inventory-item-cost" name="total_procurement_cost" min="0.01" step="0.01" placeholder="0.00" required data-field-input="total_procurement_cost" aria-describedby="total_procurement_cost-error" />
+                  <p id="total_procurement_cost-error" class="hidden text-sm text-destructive" role="alert" data-field-error="total_procurement_cost"></p>
                 </div>
-                <input class="w-full input" type="number" id="inventory-item-low-stock" name="low_stock_threshold" min="0" step="0.01" value="0.00" placeholder="0.00" disabled data-field-input="low_stock_threshold" aria-describedby="low_stock_threshold-error" />
-                <p id="low_stock_threshold-error" class="hidden text-sm text-destructive" role="alert" data-field-error="low_stock_threshold"></p>
               </div>
             </div>
         </fieldset>

@@ -2,7 +2,7 @@
 $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 $routeUrl = static fn($path) => call_user_func('routeUrl', $path);
 ?>
-<section class="p-6 pt-17 space-y-6">
+<section class="p-6 pt-23 space-y-6">
   <a class="block w-fit" href="<?= $escape($routeUrl('/products')) ?>">
     <button class="btn-ghost">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left">
@@ -13,7 +13,7 @@ $routeUrl = static fn($path) => call_user_func('routeUrl', $path);
     </button>
   </a>
 
-  <div class="space-y-2">
+  <div>
     <h2 class="type-lg">Personal audit logs</h2>
     <p class="type-sm text-muted-foreground">
       Your activity history.
@@ -31,8 +31,11 @@ $routeUrl = static fn($path) => call_user_func('routeUrl', $path);
       </thead>
       <tbody id="audit-logs-container" data-api-url="<?= $escape($routeUrl('/api/audit-logs/personal')) ?>">
         <tr>
-          <td colspan="3" class="py-8 text-center text-muted-foreground">
-            Loading audit logs...
+          <td colspan="3" class="py-12">
+            <div class="flex flex-col items-center justify-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="status" aria-label="Loading" class="size-6 animate-spin text-muted-foreground"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+              <span class="text-muted-foreground type-sm">Loading audit logs...</span>
+            </div>
           </td>
         </tr>
       </tbody>

@@ -61,7 +61,7 @@ CREATE TABLE products (
     sku_code VARCHAR(100) NOT NULL,
     name VARCHAR(255) NOT NULL,
     category ENUM('sacks', 'twines') NOT NULL,
-    base_uom ENUM('piece', 'roll', 'kilo') NOT NULL,
+    base_uom ENUM('piece', 'roll') NOT NULL,
     weight_per_unit DECIMAL(10,4) DEFAULT NULL,
     current_quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     total_asset_value DECIMAL(15,2) NOT NULL DEFAULT 0.00,

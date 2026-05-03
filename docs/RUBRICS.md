@@ -72,33 +72,33 @@ CSS libraries help developers create attractive, responsive interfaces faster. S
 # Security Implementation Checklist: Sacks & Twines App
 
 ### 1. Config
-[ ] **`php.ini` Hardening:** Set `display_errors = Off` and `expose_php = Off` to hide your PHP version and prevent raw database errors from being shown to users.
-[ ] **Server-Level Upload Limits:** Restrict `upload_max_filesize` and `post_max_size` in `php.ini` to limit the size of uploaded sack/twine reference images.
-[ ] **`.htaccess` Directory Protection:** Add `Options -Indexes` to your root folder to disable directory listing.
-[ ] **`.htaccess` File Protection:** Use `<FilesMatch>` to enforce `Require all denied` on sensitive files like your `.json` audit logs, `.htpasswd`, or database configurations.
-[ ] **Disable PHP in Uploads:** Place an `.htaccess` file inside your image uploads folder with `php_flag engine off` to prevent execution of malicious scripts.
+[ ] **`php.ini` Hardening:** Set `display_errors = Off` and `expose_php = Off` to hide your PHP version and prevent raw database errors from being shown to users. *(Server-level config - not in app code)*
+[ ] **Server-Level Upload Limits:** Restrict `upload_max_filesize` and `post_max_size` in `php.ini` to limit the size of uploaded sack/twine reference images. *(Server-level config - not in app code)*
+[ ] **`.htaccess` Directory Protection:** Add `Options -Indexes` to your root folder to disable directory listing. *(Not implemented - root .htaccess missing this directive)*
+[ ] **`.htaccess` File Protection:** Use `<FilesMatch>` to enforce `Require all denied` on sensitive files like your `.json` audit logs, `.htpasswd`, or database configurations. *(Partial - app/.htaccess protects app dir, but no specific file protection)*
+[ ] **Disable PHP in Uploads:** Place an `.htaccess` file inside your image uploads folder with `php_flag engine off` to prevent execution of malicious scripts. *(No uploads directory exists yet)*
 
 ### 2. Validation (Client and Server Side)
-[ ] **Client-Side Validation:** Use HTML5 attributes (e.g., `type="number"`, `min`, `max`, `required`) and front-end JavaScript to validate that inputs like "Quantity", "SRP Price", and "Low Stock Threshold" are formatted correctly before submission.
-[ ] **Server-Side Validation:** Never trust user input. Check the data again in PHP using functions like `strlen()` or `preg_match()` to ensure data types are correct and to prevent buffer overflow attacks.
-[ ] **Code-Level Extension Validation:** Explicitly validate uploaded image files on the server using `in_array()` against an allowed list (e.g., `jpg`, `png`).
+[x] **Client-Side Validation:** Use HTML5 attributes (e.g., `type="number"`, `min`, `max`, `required`) and front-end JavaScript to validate that inputs like "Quantity", "SRP Price", and "Low Stock Threshold" are formatted correctly before submission.
+[x] **Server-Side Validation:** Never trust user input. Check the data again in PHP using functions like `strlen()` or `preg_match()` to ensure data types are correct and to prevent buffer overflow attacks.
+[ ] **Code-Level Extension Validation:** Explicitly validate uploaded image files on the server using `in_array()` against an allowed list (e.g., `jpg`, `png`). *(No image upload feature implemented yet)*
 
 ### 3. Sanitization (Client and Server Side)
-[ ] **Client-Side Sanitization:** Utilize JavaScript to filter out dangerous characters from text fields (like "Item Name" or "Supplier") before the form is sent to the server.
-[ ] **Server-Side Sanitization:** Clean all incoming data in PHP to strip out HTML tags (e.g., `<script>`) to prevent Cross-Site Scripting (XSS) attacks before saving it to your database.
+[ ] **Client-Side Sanitization:** Utilize JavaScript to filter out dangerous characters from text fields (like "Item Name" or "Supplier") before the form is sent to the server. *(Relies on server-side sanitization)*
+[x] **Server-Side Sanitization:** Clean all incoming data in PHP to strip out HTML tags (e.g., `<script>`) to prevent Cross-Site Scripting (XSS) attacks before saving it to your database.
 
 ### 4. Hash (Updated from Pre-Lesson 6)
-[ ] **Avoid Vulnerable Algorithms:** Never use fast hashing algorithms like MD5 or SHA1 for passwords, as they are easily cracked using pre-computed rainbow tables (like CrackStation).
-[ ] **Modern Password Hashing:** Use PHP's native `password_hash()` function with `PASSWORD_DEFAULT` (which currently uses the strong bcrypt algorithm) to convert plain-text passwords into irreversible gibberish.
-[ ] **Automatic Cryptographic Salting:** Rely on `password_hash()` to automatically generate and apply a random "salt" to your hashes. This eliminates the possibility of attackers looking up the hash in a pre-calculated rainbow table.
-[ ] **Optimized Database Storage:** Ensure your `password_hash` column in the database is set to `VARCHAR(255)`. Even though bcrypt currently generates a 60-character string, `PASSWORD_DEFAULT` is designed to change and expand over time as stronger algorithms (like Argon2) are added to PHP.
-[ ] **Secure Login Verification:** Use the `password_verify()` function during the login process to securely check if the user's entered plain-text password matches the salted hash stored in the database.
+[x] **Avoid Vulnerable Algorithms:** Never use fast hashing algorithms like MD5 or SHA1 for passwords, as they are easily cracked using pre-computed rainbow tables (like CrackStation).
+[x] **Modern Password Hashing:** Use PHP's native `password_hash()` function with `PASSWORD_DEFAULT` (which currently uses the strong bcrypt algorithm) to convert plain-text passwords into irreversible gibberish.
+[x] **Automatic Cryptographic Salting:** Rely on `password_hash()` to automatically generate and apply a random "salt" to your hashes. This eliminates the possibility of attackers looking up the hash in a pre-calculated rainbow table.
+[x] **Optimized Database Storage:** Ensure your `password_hash` column in the database is set to `VARCHAR(255)`. Even though bcrypt currently generates a 60-character string, `PASSWORD_DEFAULT` is designed to change and expand over time as stronger algorithms (like Argon2) are added to PHP.
+[x] **Secure Login Verification:** Use the `password_verify()` function during the login process to securely check if the user's entered plain-text password matches the salted hash stored in the database.
 
 ### 5. Session Management
-[ ] **Session Hijacking Defenses:** Enforce secure session cookies by setting `session.cookie_httponly = 1`, `session.cookie_secure = 1`, and `session.use_only_cookies = 1` in your `php.ini` or session initiation code.
-[ ] **Role-Based Access Control (RBAC):** Use session variables to strictly enforce user roles. Cashiers should only have permission to view products and process "Stock Out" transactions, while only Admins can access "Stock In", user management, and product editing.
+[ ] **Session Hijacking Defenses:** Enforce secure session cookies by setting `session.cookie_httponly = 1`, `session.cookie_secure = 1`, and `session.use_only_cookies = 1` in your `php.ini` or session initiation code. *(Not implemented - no cookie security settings in bootstrap.php)*
+[x] **Role-Based Access Control (RBAC):** Use session variables to strictly enforce user roles. Cashiers should only have permission to view products and process "Stock Out" transactions, while only Admins can access "Stock In", user management, and product editing.
 
 ### 6. Additional Security Features (Optional / Score Boosters)
-[ ] **Prepared Statements (CRUD Security):** Defeat SQL Injection completely by using `mysqli_prepare()`, `mysqli_stmt_bind_param()`, and `mysqli_stmt_execute()` for all database transactions (Stock In, Stock Out, Add Product).
-[ ] **JSON Audit Logs:** Track all FIFO inventory rotations (Stock In/Out) by saving the action, user, and timestamp into a local `.json` file that is protected by `.htaccess`.
-[ ] **Frontend Snooping Deterrents:** Write a JavaScript event listener to disable the right-click context menu (`contextmenu`) and specific keyboard shortcuts (like F12 or Ctrl+Shift+I) to deter casual code snooping.
+[x] **Prepared Statements (CRUD Security):** Defeat SQL Injection completely by using `mysqli_prepare()`, `mysqli_stmt_bind_param()`, and `mysqli_stmt_execute()` for all database transactions (Stock In, Stock Out, Add Product). *(Uses PDO prepare/execute)*
+[ ] **JSON Audit Logs:** Track all FIFO inventory rotations (Stock In/Out) by saving the action, user, and timestamp into a local `.json` file that is protected by `.htaccess`. *(Uses database audit_logs table instead)*
+[ ] **Frontend Snooping Deterrents:** Write a JavaScript event listener to disable the right-click context menu (`contextmenu`) and specific keyboard shortcuts (like F12 or Ctrl+Shift+I) to deter casual code snooping. *(Not implemented)*

@@ -1,6 +1,5 @@
 <?php
-// The top navigation changes based on the active role to keep owner and
-// staff workflows separate.
+$escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 ?>
 <header class="fixed w-full p-4 bg-background border-b">
   <?php if (app_current_user_role() === 'owner'): ?>
@@ -17,12 +16,15 @@
   <?php elseif (app_current_user_role() === 'staff'): ?>
     <!-- Staff get a slimmer action set focused on common tasks. -->
     <div class="flex items-center gap-4 ml-auto">
-      <button class="btn">Add Product</button>
-      <a href="<?= routeUrl('/audit-logs/personal') ?>">
-        <button class="btn-outline" type="button">
-          Audit Logs
-        </button>
+      <a class="btn-secondary" href="<?= routeUrl('/audit-logs/personal') ?>">
+        Audit Logs
       </a>
+      <form action="<?php echo $escape(routeUrl('/sign-out')); ?>" method="post">
+        <button class="btn-destructive" type="submit">
+          <?php echo app_icon_svg('sign-out'); ?>
+          <span>Sign Out</span>
+        </button>
+      </form>
     </div>
   <?php endif; ?>
 </header>

@@ -14,17 +14,25 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
     <section class="scrollbar">
       <?php foreach ($visibleSections as $sectionIndex => $section): ?>
         <div role="group" aria-labelledby="group-label-content-<?php echo $sectionIndex + 1; ?>">
-          <h3 id="group-label-content-<?php echo $sectionIndex + 1; ?>"><?php echo $escape($section['label']); ?></h3>
+          <h3 id="group-label-content-<?php echo $sectionIndex + 1; ?>">
+            <?php echo $escape($section['label']); ?>
+          </h3>
 
           <ul>
             <?php foreach ($section['links'] as $link): ?>
               <!-- Route URLs are resolved through the helper so subfolder installs keep working. -->
               <?php $linkHref = routeUrl($link['href']); ?>
               <li>
-                <a href="<?php echo $escape($linkHref); ?>" <?php echo $currentPath === $link['href'] ? ' aria-current="page"' : ''; ?>>
+                <a 
+                  class="[&_svg]:opacity-70 hover:[&_svg]:opacity-100 aria-[current=page]:text-primary aria-[current=page]:bg-primary/10" 
+                  href="<?php echo $escape($linkHref); ?>" 
+                  <?php echo $currentPath === $link['href'] ? ' aria-current="page"' : ''; ?>
+                >
                   <?php $iconMarkup = app_icon_svg($link['icon']); ?>
                   <?php if ($iconMarkup !== ''): ?>
-                    <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center" aria-hidden="true"><?php echo $iconMarkup; ?></span>
+                    <span class="inline-flex items-center justify-center size-6 shrink-0" aria-hidden="true">
+                      <?php echo $iconMarkup; ?>
+                    </span>
                   <?php endif; ?>
                   <span><?php echo $escape($link['label']); ?></span>
                 </a>
@@ -36,9 +44,9 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
     </section>
     <div role="group" aria-label="Session actions">
       <ul>
-        <li>
+        <li class="p-2">
           <form action="<?php echo $escape(routeUrl('/sign-out')); ?>" method="post">
-            <button class="btn-ghost w-full" type="submit">
+            <button class="justify-start w-full btn-ghost hover:text-destructive hover:bg-destructive/20" type="submit">
               <?php echo app_icon_svg('sign-out'); ?>
               <span>Sign Out</span>
             </button>

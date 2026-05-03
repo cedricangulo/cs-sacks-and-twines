@@ -198,4 +198,30 @@ return [
       'show' => false,
     ],
   ],
+  '/api/dispatches/today' => [
+    'title' => 'API Today Dispatches',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/dispatches/DispatchesController.php',
+    'class' => 'DispatchesController',
+    'method' => 'getTodayDispatchesJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner', 'staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/dispatches/items' => [
+    'title' => 'API Dispatch Items',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/dispatches/DispatchesController.php',
+    'class' => 'DispatchesController',
+    'method' => 'getDispatchItemsJson',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner', 'staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
 ];

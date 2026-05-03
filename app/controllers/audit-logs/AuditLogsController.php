@@ -26,7 +26,7 @@ class AuditLogsController
 	}
 
 	/**
-	 * Return all audit logs as JSON.
+	 * Return all audit logs as JSON with filtering, sorting, and pagination.
 	 *
 	 * @return void
 	 */
@@ -34,28 +34,34 @@ class AuditLogsController
 	{
 		$auditLog = new AuditLog(app_db());
 
-		$page = max(1, (int) ($_GET['page'] ?? 1));
-		$limit = max(1, min(100, (int) ($_GET['limit'] ?? 50)));
-		$offset = ($page - 1) * $limit;
+		$params = [
+			'search' => trim((string) ($_GET['search'] ?? '')),
+			'action' => trim((string) ($_GET['action'] ?? '')),
+			'user_id' => isset($_GET['user_id']) && is_numeric($_GET['user_id']) ? (int) $_GET['user_id'] : null,
+			'date_from' => trim((string) ($_GET['date_from'] ?? '')),
+			'date_to' => trim((string) ($_GET['date_to'] ?? '')),
+			'sort' => trim((string) ($_GET['sort'] ?? '')),
+			'dir' => strtoupper(trim((string) ($_GET['dir'] ?? ''))),
+			'page' => max(1, (int) ($_GET['page'] ?? 1)),
+			'limit' => max(1, min(100, (int) ($_GET['limit'] ?? 20))),
+		];
 
-		$logs = $auditLog->getAll($limit, $offset);
-		$total = $auditLog->countAll();
-		$totalPages = (int) ceil($total / $limit);
+		$result = $auditLog->getFiltered($params);
+		$filters = [
+			'actions' => $auditLog->getDistinctActions(),
+			'users' => $auditLog->getUsersWithLogs(),
+		];
 
 		$this->jsonResponse([
 			'success' => true,
-			'logs' => $logs,
-			'pagination' => [
-				'page' => $page,
-				'limit' => $limit,
-				'total' => $total,
-				'total_pages' => $totalPages,
-			],
+			'logs' => $result['logs'],
+			'pagination' => $result['pagination'],
+			'filters' => $filters,
 		], 200);
 	}
 
 	/**
-	 * Return personal audit logs (for staff).
+	 * Return personal audit logs (for staff) with filtering and pagination.
 	 *
 	 * @return void
 	 */
@@ -71,23 +77,24 @@ class AuditLogsController
 
 		$auditLog = new AuditLog(app_db());
 
-		$page = max(1, (int) ($_GET['page'] ?? 1));
-		$limit = max(1, min(100, (int) ($_GET['limit'] ?? 50)));
-		$offset = ($page - 1) * $limit;
+		$params = [
+			'search' => trim((string) ($_GET['search'] ?? '')),
+			'action' => trim((string) ($_GET['action'] ?? '')),
+			'user_id' => $userId,
+			'date_from' => trim((string) ($_GET['date_from'] ?? '')),
+			'date_to' => trim((string) ($_GET['date_to'] ?? '')),
+			'sort' => trim((string) ($_GET['sort'] ?? '')),
+			'dir' => strtoupper(trim((string) ($_GET['dir'] ?? ''))),
+			'page' => max(1, (int) ($_GET['page'] ?? 1)),
+			'limit' => max(1, min(100, (int) ($_GET['limit'] ?? 20))),
+		];
 
-		$logs = $auditLog->getByUserId($userId, $limit, $offset);
-		$total = $auditLog->countByUserId($userId);
-		$totalPages = (int) ceil($total / $limit);
+		$result = $auditLog->getFiltered($params);
 
 		$this->jsonResponse([
 			'success' => true,
-			'logs' => $logs,
-			'pagination' => [
-				'page' => $page,
-				'limit' => $limit,
-				'total' => $total,
-				'total_pages' => $totalPages,
-			],
+			'logs' => $result['logs'],
+			'pagination' => $result['pagination'],
 		], 200);
 	}
 }
