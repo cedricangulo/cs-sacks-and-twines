@@ -36,7 +36,7 @@ $tableHeaders = [
               <button
                 type="button"
                 data-sort-btn="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>"
-                class="h-auto gap-2 p-1 -ml-3 font-medium btn-ghost text-muted-foreground/80">
+                class="h-auto gap-2 p-1 -ml-1 font-medium btn-ghost text-muted-foreground/80 dark:text-muted-foreground">
                 <?= htmlspecialchars($header['label'], ENT_QUOTES, 'UTF-8') ?>
               </button>
             </th>

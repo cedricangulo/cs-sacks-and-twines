@@ -1,6 +1,8 @@
 <?php
 
 include __DIR__ . '/add-inventory-dialog.php';
+include __DIR__ . '/edit-inventory-dialog.php';
+include __DIR__ . '/void-batch-dialog.php';
 
 $tableHeaders = [
   ['key' => 'name', 'label' => 'Product Name'],
@@ -30,7 +32,7 @@ $tableHeaders = [
     </button>
   </div>
 
-  <div data-filter-bar-placeholder="inventory" class="min-h-[4.25rem]"></div>
+  <div data-filter-bar-placeholder="inventory" class="min-h-17"></div>
 
   <div class="overflow-x-auto">
     <table class="table">
@@ -43,7 +45,7 @@ $tableHeaders = [
               <button
                 type="button"
                 data-sort-btn="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>"
-                class="h-auto gap-2 p-1 -ml-3 font-medium btn-ghost text-muted-foreground/80">
+                class="h-auto gap-2 p-1 -ml-1 font-medium btn-ghost text-muted-foreground/80 dark:text-muted-foreground">
                 <?= htmlspecialchars($header['label'], ENT_QUOTES, 'UTF-8') ?>
               </button>
             </th>
@@ -51,7 +53,7 @@ $tableHeaders = [
           <th></th>
         </tr>
       </thead>
-      <tbody id="products-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/products'), ENT_QUOTES, 'UTF-8') ?>" data-batches-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches'), ENT_QUOTES, 'UTF-8') ?>" data-batches-count-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches/count'), ENT_QUOTES, 'UTF-8') ?>">
+      <tbody id="products-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/products'), ENT_QUOTES, 'UTF-8') ?>" data-batches-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches'), ENT_QUOTES, 'UTF-8') ?>" data-batches-count-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches/count'), ENT_QUOTES, 'UTF-8') ?>" data-batch-detail-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches/detail'), ENT_QUOTES, 'UTF-8') ?>">
         <tr>
           <td colspan="8" class="py-12">
             <div class="flex flex-col items-center justify-center gap-3">

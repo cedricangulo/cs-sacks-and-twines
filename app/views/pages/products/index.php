@@ -19,7 +19,7 @@
     <div id="products-filter-bar"></div>
     <div
       id="products-grid"
-      class="grid grid-cols-1 gap-4 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3 pb-6"
+      class="grid grid-cols-1 gap-4 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-6"
       data-products-url="<?= htmlspecialchars(routeUrl('/api/products/list'), ENT_QUOTES, 'UTF-8') ?>"
       data-dispatch-url="<?= htmlspecialchars(routeUrl('/api/stock-out'), ENT_QUOTES, 'UTF-8') ?>">
       <div class="col-span-full py-12">
