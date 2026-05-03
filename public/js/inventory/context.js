@@ -1,3 +1,10 @@
+/**
+ * Create and return the inventory dialog state object by querying DOM elements.
+ *
+ * @code INV-createState
+ * @param {HTMLDialogElement} dialog
+ * @returns {ReturnType<typeof import('./context.js').createInventoryState> | null}
+ */
 export function createInventoryState(dialog) {
   if (!(dialog instanceof HTMLDialogElement)) {
     return null;

@@ -1,16 +1,3 @@
-import { initSuppliersTable, refreshSuppliers } from './get-suppliers.js';
-import { initSuppliersForm } from './submit.js';
-
-function initSuppliersPage() {
-  const tableBody = document.getElementById('suppliers-container');
-  if (!tableBody) {
-    return;
-  }
-
-  initSuppliersTable();
-  initSuppliersForm({
-    onSuccess: () => refreshSuppliers(),
-  });
-}
+import { initSuppliersPage } from './events.js';
 
 initSuppliersPage();

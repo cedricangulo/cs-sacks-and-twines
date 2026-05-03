@@ -14,11 +14,24 @@
 
 let _debounceTimer = null;
 
+/**
+ * Debounce a function with a shared timer.
+ *
+ * @code UTIL-debounce
+ * @param {() => void} fn
+ * @param {number} ms
+ */
 function debounce(fn, ms) {
   clearTimeout(_debounceTimer);
   _debounceTimer = setTimeout(fn, ms);
 }
 
+/**
+ * Sync table filter params to the URL.
+ *
+ * @code UTIL-syncUrlParams
+ * @param {Record<string, string>} params
+ */
 function syncUrlParams(params) {
   const url = new URL(window.location.href);
   const existing = Object.fromEntries(url.searchParams);
@@ -33,6 +46,12 @@ function syncUrlParams(params) {
   window.history.pushState({ dt: current }, '', newUrl.toString());
 }
 
+/**
+ * Read table filter params from the URL.
+ *
+ * @code UTIL-readUrlParams
+ * @returns {Record<string, string>}
+ */
 function readUrlParams() {
   const params = new URLSearchParams(window.location.search);
   return {
@@ -51,6 +70,14 @@ function readUrlParams() {
   };
 }
 
+/**
+ * Render a sort indicator on a column header.
+ *
+ * @code UTIL-renderSortIndicator
+ * @param {HTMLElement} btn
+ * @param {boolean} isActive
+ * @param {string} direction
+ */
 export function renderSortIndicator(btn, isActive, direction) {
   const existing = btn.querySelector('[data-sort-icon]');
   if (existing) existing.remove();
@@ -59,11 +86,20 @@ export function renderSortIndicator(btn, isActive, direction) {
 
   const icon = document.createElement('span');
   icon.setAttribute('data-sort-icon', '');
-  icon.className = 'text-muted-foreground/80';
+  icon.className = 'text-muted-foreground/80 dark:text-muted-foreground';
   icon.textContent = direction === 'asc' ? '\u2191' : '\u2193';
   btn.appendChild(icon);
 }
 
+/**
+ * Sort rows for a table column.
+ *
+ * @code UTIL-applyColumnSort
+ * @param {Array<Record<string, unknown>>} data
+ * @param {string} key
+ * @param {string} direction
+ * @returns {Array<Record<string, unknown>>}
+ */
 function applyColumnSort(data, key, direction) {
   const dir = direction === 'asc' ? 1 : -1;
 
@@ -90,8 +126,9 @@ function applyColumnSort(data, key, direction) {
 }
 
 /**
- * Render a single Basecoat-styled select component.
+ * Render a Basecoat-styled select.
  *
+ * @code UTIL-renderBasecoatSelect
  * @param {object} config
  * @param {string} config.id - Unique ID for the select element
  * @param {string} config.key - Filter key (used as data-filter attribute)
@@ -113,8 +150,9 @@ export function renderBasecoatSelect(config = {}) {
 }
 
 /**
- * Build a filter bar HTML string with native Basecoat-styled selects.
+ * Render the filter bar HTML.
  *
+ * @code UTIL-renderFilterBar
  * @param {object} config
  * @param {string} [config.searchPlaceholder]
  * @param {Array<{key: string, label: string, options: Array<{value: string, label: string}>}>} [config.selects]
@@ -161,6 +199,12 @@ export function renderFilterBar(config = {}) {
  *
  * @param {HTMLElement} bar
  */
+/**
+ * Reset all select filters in a bar.
+ *
+ * @code UTIL-resetSelects
+ * @param {HTMLElement} bar
+ */
 function resetSelects(bar) {
   bar.querySelectorAll('select[data-filter]').forEach((s) => { s.value = ''; });
 }
@@ -168,6 +212,7 @@ function resetSelects(bar) {
 /**
  * Create a client-side data table controller.
  *
+ * @code UTIL-createClientTable
  * @param {object} config
  * @param {string} config.container - CSS selector for the table body or grid container
  * @param {() => Promise<Array>} config.fetchFn - Function to fetch raw data
@@ -191,11 +236,23 @@ export function createClientTable(config) {
     filters: {},
   };
 
+  /**
+   * Get the table container element.
+   *
+   * @code UTIL-clientGetContainer
+   * @returns {HTMLElement | null}
+   */
   function getContainer() {
     const el = typeof container === 'string' ? document.querySelector(container) : container;
     return el;
   }
 
+  /**
+   * Get filtered and sorted data.
+   *
+   * @code UTIL-clientGetFilteredData
+   * @returns {Array<Record<string, unknown>>}
+   */
   function getFilteredData() {
     let data = [...allData];
 
@@ -220,6 +277,11 @@ export function createClientTable(config) {
     return data;
   }
 
+  /**
+   * Render the client table.
+   *
+   * @code UTIL-clientRender
+   */
   function render() {
     const el = getContainer();
     if (!el) return;
@@ -227,9 +289,22 @@ export function createClientTable(config) {
     const filtered = getFilteredData();
     el.innerHTML = renderFn(filtered);
     updateClearButton();
-    if (typeof afterRender === 'function') afterRender();
+    if (typeof afterRender === 'function') afterRender(filtered);
+
+    const section = el.closest('section') || el.parentElement;
+    section?.dispatchEvent(new CustomEvent('table:rendered', {
+      detail: {
+        id,
+        container: el,
+      },
+    }));
   }
 
+  /**
+   * Update visibility of the clear button.
+   *
+   * @code UTIL-clientUpdateClear
+   */
   function updateClearButton() {
     const el = getContainer();
     if (!el) return;
@@ -243,6 +318,12 @@ export function createClientTable(config) {
     clearBtn.classList.toggle('hidden', !hasFilters);
   }
 
+  /**
+   * Bind search input events.
+   *
+   * @code UTIL-clientBindSearch
+   * @param {HTMLElement} bar
+   */
   function bindSearch(bar) {
     const input = bar.querySelector('[data-filter-search]');
     if (!input) return;
@@ -255,6 +336,12 @@ export function createClientTable(config) {
     });
   }
 
+  /**
+   * Bind clear button events.
+   *
+   * @code UTIL-clientBindClear
+   * @param {HTMLElement} bar
+   */
   function bindClear(bar) {
     const btn = bar.querySelector('[data-filter-clear]');
     if (!btn) return;
@@ -285,6 +372,12 @@ export function createClientTable(config) {
     });
   }
 
+  /**
+   * Load data for the client table.
+   *
+   * @code UTIL-clientLoad
+   * @returns {Promise<void>}
+   */
   async function load() {
     try {
       allData = await fetchFn();
@@ -298,6 +391,13 @@ export function createClientTable(config) {
     }
   }
 
+  /**
+   * Insert the filter bar UI.
+   *
+   * @code UTIL-clientInsertFilterBar
+   * @param {HTMLElement} section
+   * @param {HTMLElement} el
+   */
   function insertFilterBar(section, el) {
     const placeholder = section?.querySelector(`[data-filter-bar-placeholder="${id}"]`);
     if (placeholder) {
@@ -315,6 +415,11 @@ export function createClientTable(config) {
     }
   }
 
+  /**
+   * Initialize the client table.
+   *
+   * @code UTIL-clientInit
+   */
   function init() {
     const urlParams = readUrlParams();
     state.search = urlParams.search || '';
@@ -398,17 +503,12 @@ export function createClientTable(config) {
 /**
  * Create a server-side data table controller (for paginated data).
  *
+ * @code UTIL-createServerTable
  * @param {object} config
- * @param {string} config.container - CSS selector for the table body
- * @param {(params: object) => Promise<object>} config.fetchFn - Function that receives {search, sort, dir, page, ...} and returns {success, data, pagination, filters}
- * @param {(data: Array) => string} config.renderFn - Function to render data rows
- * @param {(pagination: object, containerId: string) => string} [config.renderPagination] - Render pagination HTML
- * @param {object} [config.filterBar] - Filter bar config
- * @param {string} [config.id] - Unique ID
  * @returns {object}
  */
 export function createServerTable(config) {
-  const { container, fetchFn, renderFn, renderPagination, filterBar, id = 'server-table' } = config;
+  const { container, fetchFn, renderFn, renderPagination, filterBar, afterRender, id = 'server-table' } = config;
 
   let state = {
     search: '',
@@ -423,11 +523,24 @@ export function createServerTable(config) {
 
   let filterOptions = { actions: [], users: [] };
 
+  /**
+   * Get the server table container element.
+   *
+   * @code UTIL-serverGetContainer
+   * @returns {HTMLElement | null}
+   */
   function getContainer() {
     const el = typeof container === 'string' ? document.querySelector(container) : container;
     return el;
   }
 
+  /**
+   * Load data for the server table.
+   *
+   * @code UTIL-serverLoad
+   * @param {number} [page]
+   * @returns {Promise<void>}
+   */
   async function load(page) {
     if (page !== undefined) state.page = page;
 
@@ -452,7 +565,10 @@ export function createServerTable(config) {
         throw new Error(result?.message || 'Server returned error');
       }
 
-      el.innerHTML = renderFn(result.logs || result.data || []);
+      const logs = result.logs || result.data || [];
+      el.innerHTML = renderFn(logs);
+
+      if (typeof afterRender === 'function') afterRender(logs);
 
       if (result.pagination && renderPagination) {
         const pagEl = document.getElementById('pagination-container');
@@ -474,6 +590,12 @@ export function createServerTable(config) {
     }
   }
 
+  /**
+   * Bind pagination events.
+   *
+   * @code UTIL-serverBindPagination
+   * @param {HTMLElement} pagEl
+   */
   function bindPagination(pagEl) {
     pagEl.addEventListener('click', (event) => {
       const button = event.target.closest('button[data-page]');
@@ -483,6 +605,11 @@ export function createServerTable(config) {
     });
   }
 
+  /**
+   * Update visibility of the clear button.
+   *
+   * @code UTIL-serverUpdateClear
+   */
   function updateClearButton() {
     const el = getContainer();
     if (!el) return;
@@ -496,6 +623,11 @@ export function createServerTable(config) {
     clearBtn.classList.toggle('hidden', !hasFilters);
   }
 
+  /**
+   * Rebuild filter select options.
+   *
+   * @code UTIL-serverRebuildFilters
+   */
   function rebuildFilterSelects() {
     const el = getContainer();
     if (!el) return;
@@ -534,6 +666,12 @@ export function createServerTable(config) {
     }
   }
 
+  /**
+   * Bind search input events.
+   *
+   * @code UTIL-serverBindSearch
+   * @param {HTMLElement} bar
+   */
   function bindSearch(bar) {
     const input = bar.querySelector('[data-filter-search]');
     if (!input) return;
@@ -547,6 +685,12 @@ export function createServerTable(config) {
     });
   }
 
+  /**
+   * Bind clear button events.
+   *
+   * @code UTIL-serverBindClear
+   * @param {HTMLElement} bar
+   */
   function bindClear(bar) {
     const btn = bar.querySelector('[data-filter-clear]');
     if (!btn) return;
@@ -570,6 +714,13 @@ export function createServerTable(config) {
     });
   }
 
+  /**
+   * Insert the filter bar UI.
+   *
+   * @code UTIL-serverInsertFilterBar
+   * @param {HTMLElement} section
+   * @param {HTMLElement} el
+   */
   function insertFilterBar(section, el) {
     const placeholder = section?.querySelector(`[data-filter-bar-placeholder="${id}"]`);
     if (placeholder) {
@@ -587,6 +738,11 @@ export function createServerTable(config) {
     }
   }
 
+  /**
+   * Initialize the server table.
+   *
+   * @code UTIL-serverInit
+   */
   function init() {
     const urlParams = readUrlParams();
     state.search = urlParams.search || '';

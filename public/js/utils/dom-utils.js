@@ -1,6 +1,7 @@
 /**
  * Escape text for safe HTML output.
  *
+ * @code UTIL-escapeHtml
  * @param {unknown} value
  * @returns {string}
  */
@@ -20,6 +21,7 @@ export function escapeHtml(value) {
 /**
  * Render an empty-state using Basecoat UI patterns.
  *
+ * @code UTIL-renderEmptyState
  * @param {'products' | 'users' | 'suppliers' | 'batches' | 'audit-logs' | 'dispatch-history' | 'error' | 'loading'} type
  * @param {string} [title]
  * @param {string} [description]
@@ -74,6 +76,7 @@ export function renderEmptyState(type, title, description) {
  * @deprecated Use renderEmptyState() instead.
  * Render an empty-state table row.
  *
+ * @code UTIL-renderEmptyRow
  * @param {{ colspan: number, message: string }} options
  * @returns {string}
  */
@@ -90,6 +93,7 @@ export function renderEmptyRow({ colspan, message }) {
 /**
  * Render a loading row with spinner for table bodies.
  *
+ * @code UTIL-renderLoadingRow
  * @param {number} colspan - Number of columns to span
  * @param {string} [message] - Loading text
  * @returns {string}
@@ -110,6 +114,7 @@ export function renderLoadingRow(colspan = 5, message = 'Loading...') {
 /**
  * Render a loading state for grid layouts.
  *
+ * @code UTIL-renderLoadingGrid
  * @param {string} [message] - Loading text
  * @returns {string}
  */
@@ -122,4 +127,25 @@ export function renderLoadingGrid(message = 'Loading...') {
       </div>
     </div>
   `;
+}
+
+/**
+ * Get the application base path for constructing URLs.
+ * Extracts the subfolder path from the current URL.
+ *
+ * @code UTIL-getBasePath
+ * @returns {string} Base path (e.g., '/cs-sacks-and-twines' or '')
+ */
+export function getBasePath() {
+  const pathname = window.location.pathname;
+  // Remove the script filename or route segment to get base path
+  // For /cs-sacks-and-twines/products, return /cs-sacks-and-twines
+  // For /products, return ''
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments.length <= 1) {
+    return '';
+  }
+  // Remove the last segment (the current page/route)
+  segments.pop();
+  return '/' + segments.join('/');
 }

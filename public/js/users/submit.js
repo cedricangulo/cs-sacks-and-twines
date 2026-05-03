@@ -2,6 +2,14 @@ import { fetchJson } from '../utils/fetch-utils.js';
 import { validateUserCreateForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 
+/**
+ * Set field error message and state.
+ *
+ * @code USR-setFieldError
+ * @param {HTMLFormElement} form
+ * @param {string} fieldName
+ * @param {string} message
+ */
 function setFieldError(form, fieldName, message) {
   const field = form.querySelector(`[data-field="${fieldName}"]`);
   const input = form.querySelector(`[data-field-input="${fieldName}"]`);
@@ -17,6 +25,13 @@ function setFieldError(form, fieldName, message) {
   error.classList.remove('hidden');
 }
 
+/**
+ * Clear a field error message and state.
+ *
+ * @code USR-clearFieldError
+ * @param {HTMLFormElement} form
+ * @param {string} fieldName
+ */
 function clearFieldError(form, fieldName) {
   const field = form.querySelector(`[data-field="${fieldName}"]`);
   const input = form.querySelector(`[data-field-input="${fieldName}"]`);
@@ -32,20 +47,46 @@ function clearFieldError(form, fieldName) {
   error.classList.add('hidden');
 }
 
+/**
+ * Clear multiple field errors.
+ *
+ * @code USR-clearFieldErrors
+ * @param {HTMLFormElement} form
+ * @param {string[]} fieldNames
+ */
 function clearFieldErrors(form, fieldNames) {
   fieldNames.forEach((fieldName) => clearFieldError(form, fieldName));
 }
 
+/**
+ * Show a form-level error message.
+ *
+ * @code USR-showError
+ * @param {HTMLElement} box
+ * @param {string} message
+ */
 function showError(box, message) {
   box.textContent = message;
   box.classList.remove('hidden');
 }
 
+/**
+ * Hide a form-level error message.
+ *
+ * @code USR-hideError
+ * @param {HTMLElement} box
+ */
 function hideError(box) {
   box.textContent = '';
   box.classList.add('hidden');
 }
 
+/**
+ * Focus the first invalid field in the form.
+ *
+ * @code USR-focusFirstInvalid
+ * @param {HTMLFormElement} form
+ */
 function focusFirstInvalid(form) {
   const firstField = form.querySelector('[data-invalid] [data-field-input]');
   if (firstField instanceof HTMLElement) {
@@ -56,6 +97,12 @@ function focusFirstInvalid(form) {
 /**
  * Initialize create user form submission.
  *
+ * @param {{ onSuccess?: () => void }} [options]
+ */
+/**
+ * Initialize create user form submission.
+ *
+ * @code USR-initCreateForm
  * @param {{ onSuccess?: () => void }} [options]
  */
 export function initUserCreateForm(options = {}) {
@@ -169,4 +216,28 @@ export function initUserCreateForm(options = {}) {
   });
 
   dialog.addEventListener('close', resetForm);
+}
+
+/**
+ * Deactivate a user via API.
+ *
+ * @code USR-deactivateUser
+ * @param {string} userId
+ * @returns {Promise<unknown>}
+ */
+export async function deactivateUser(userId) {
+  const container = document.getElementById('users-container');
+  const apiUrl = container?.getAttribute('data-deactivate-url') || '/api/users/deactivate';
+
+  const formData = new FormData();
+  formData.append('user_id', userId);
+
+  return await fetchJson(apiUrl, {
+    method: 'POST',
+    body: formData,
+    credentials: 'same-origin',
+    headers: {
+      'X-Requested-With': 'fetch',
+    },
+  });
 }

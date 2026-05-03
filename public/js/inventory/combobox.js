@@ -6,6 +6,12 @@ import {
   openCombobox,
 } from './state.js';
 
+/**
+ * Initialize the inventory combobox event handlers.
+ *
+ * @code INV-initCombobox
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 export function initInventoryCombobox(state) {
   const ownerDocument = state.dialog.ownerDocument || document;
 

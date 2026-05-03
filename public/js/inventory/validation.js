@@ -5,6 +5,13 @@
 import { normalizedString, positiveNumber, formatZodErrors, formatResult } from '../utils/validation.js';
 import { z } from 'zod';
 
+/**
+ * Create an optional positive number schema.
+ *
+ * @code VAL-optionalPositiveNumber
+ * @param {string} message
+ * @returns {z.ZodEffects<z.ZodNumber, number | undefined, unknown>}
+ */
 const optionalPositiveNumber = (message) => z.preprocess(
   (value) => {
     if (value === '' || value === null || value === undefined) {
@@ -16,6 +23,13 @@ const optionalPositiveNumber = (message) => z.preprocess(
   z.number().gt(0, message).optional(),
 );
 
+/**
+ * Create an optional non-negative number schema.
+ *
+ * @code VAL-optionalNonNegativeNumber
+ * @param {string} message
+ * @returns {z.ZodEffects<z.ZodNumber, number | undefined, unknown>}
+ */
 const optionalNonNegativeNumber = (message) => z.preprocess(
   (value) => {
     if (value === '' || value === null || value === undefined) {
@@ -51,6 +65,13 @@ const inventorySchema = z.discriminatedUnion('mode', [
   inventoryNewSchema,
 ]);
 
+/**
+ * Validate the inventory form payload.
+ *
+ * @code VAL-inventory
+ * @param {Record<string, unknown>} values
+ * @returns {ReturnType<typeof formatResult>}
+ */
 export function validateInventoryForm(values) {
   return formatResult(inventorySchema.safeParse(values));
 }

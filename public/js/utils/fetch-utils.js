@@ -1,6 +1,7 @@
 /**
  * Fetch JSON and return the parsed payload.
  *
+ * @code UTIL-fetchJson
  * @param {string} url
  * @param {RequestInit} [options]
  * @returns {Promise<unknown>}
@@ -42,6 +43,7 @@ export async function fetchJson(url, options) {
  * Fetch JSON but return both response and parsed payload without throwing.
  * Useful for callers that need to inspect `payload.errors` when the response is not OK.
  *
+ * @code UTIL-fetchJsonResponse
  * @param {string} url
  * @param {RequestInit} [options]
  * @returns {Promise<{ response: Response, payload: unknown }>}

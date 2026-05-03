@@ -1,6 +1,12 @@
 import { fetchJson } from '../utils/fetch-utils.js';
 import { escapeHtml } from '../utils/dom-utils.js';
 
+/**
+ * Fetch the products list from the API.
+ *
+ * @code PRD-getProductsList
+ * @returns {Promise<unknown[]>}
+ */
 export async function getProductsList() {
   const grid = document.getElementById('products-grid');
   const apiUrl = grid?.getAttribute('data-products-url') || '/api/products/list';

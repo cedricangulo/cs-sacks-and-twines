@@ -1,27 +1,45 @@
-import { escapeHtml } from '../utils/dom-utils.js';
-import { getSelectedItems, getSelectedItemsArray, setQuantity, setDispatchUom, incrementQuantity, decrementQuantity, removeItem } from './state.js';
+import { escapeHtml, getBasePath } from '../utils/dom-utils.js';
+import { getInitials } from '../utils/format.js';
+import {
+  getSelectedItems,
+  getSelectedItemsArray,
+  setQuantity,
+  setDispatchUom,
+  incrementQuantity,
+  decrementQuantity,
+  removeItem
+} from './state.js';
 
-function getDefaultImage(firstTwo) {
-  return `<div class="aspect-video bg-muted flex items-center justify-center text-muted-foreground overflow-hidden type-lg font-medium">${firstTwo}</div>`;
-}
-
+/**
+ * Render the product image or initials fallback.
+ *
+ * @code PRD-getProductImage
+ * @param {Record<string, unknown>} product
+ * @returns {string}
+ */
 function getProductImage(product) {
-  const firstTwo = (product.name || '').slice(0, 2).toUpperCase();
   if (product.image_path) {
-    const uploadsBase = (() => {
-      const apiElem = document.querySelector('[data-api-url]');
-      const api = apiElem?.getAttribute('data-api-url') || '/api';
-      const pathname = new URL(api, window.location.origin).pathname;
-      const idx = pathname.indexOf('/api');
-      return idx !== -1 ? pathname.slice(0, idx) : '';
-    })();
-
+    const uploadsBase = getBasePath();
     const imageUrl = `${uploadsBase}/public/uploads/products/${escapeHtml(product.image_path)}`;
-    return `<img src="${imageUrl}" class="aspect-video object-none object-center" alt="${escapeHtml(product.name || '')}" />`;
+    return `<img src="${imageUrl}" class="aspect-auto w-full object-contain object-center" alt="${escapeHtml(product.name || '')}" />`;
   }
-  return getDefaultImage(firstTwo);
+
+  // Fallback to initials placeholder if no image is available
+  return `
+    <div class="aspect-auto bg-muted flex items-center h-full w-full justify-center text-muted-foreground overflow-hidden type-lg font-medium">
+      ${getInitials(product.name)}
+    </div>
+  `;
 }
 
+/**
+ * Render the unit toggle control for a product.
+ *
+ * @code PRD-getUnitToggle
+ * @param {Record<string, unknown>} product
+ * @param {unknown} selectedItem
+ * @returns {string}
+ */
 function getUnitToggle(product, selectedItem) {
   const category = product.category || '';
   const baseUom = product.base_uom || 'piece';
@@ -45,6 +63,13 @@ function getUnitToggle(product, selectedItem) {
   return '';
 }
 
+/**
+ * Render a product card for the grid.
+ *
+ * @code PRD-renderCard
+ * @param {Record<string, unknown>} product
+ * @returns {string}
+ */
 export function renderProductCard(product) {
   const selectedItems = getSelectedItems();
   const selectedItem = selectedItems.get(product.product_id);
@@ -57,17 +82,15 @@ export function renderProductCard(product) {
 
   return `
     <div class="card p-0 gap-0 justify-between overflow-hidden" data-product-id="${product.product_id}" data-stock="${stock}" data-category="${product.category || ''}">
-      <div>
-        <section class="px-0 max-h-32 overflow-hidden">
+      <div class="relative">
+        ${isLowStock ? '<span class="badge-destructive absolute top-1 right-1">Low</span>' : ''}
+        <section class="px-0 h-32 overflow-hidden flex items-center">
           ${getProductImage(product)}
         </section>
         <header class="p-2 border-t">
-          <div class="flex w-full items-start justify-between gap-2">
-            <h3 class="type-sm font-medium truncate">${escapeHtml(product.name || '')}</h3>
-            ${isLowStock ? '<span class="badge-destructive type-xs">Low</span>' : ''}
-          </div>
-          <p class="mb-2 type-xs text-muted-foreground">${escapeHtml(product.sku_code || '')}</p>
-          <span class="type-base text-muted-foreground">${stock} ${baseUom}</span>
+          <h3 class="type-sm font-medium truncate">${escapeHtml(product.name || '')}</h3>
+          <p class="mb-2 type-sm text-muted-foreground">${escapeHtml(product.sku_code || '')}</p>
+          <span class="type-base text-foreground">${stock} ${baseUom}</span>
         </header>
       </div>
       <footer class="p-2 flex flex-col gap-2">
@@ -114,6 +137,13 @@ export function renderProductCard(product) {
   `;
 }
 
+/**
+ * Render the products grid.
+ *
+ * @code PRD-renderGrid
+ * @param {Array<Record<string, unknown>>} products
+ * @returns {string}
+ */
 export function renderProductsGrid(products) {
   if (products.length === 0) {
     return `
@@ -134,6 +164,11 @@ export function renderProductsGrid(products) {
   return products.map(renderProductCard).join('');
 }
 
+/**
+ * Render the dispatch queue sidebar.
+ *
+ * @code PRD-renderQueue
+ */
 export function renderDispatchQueue() {
   const items = getSelectedItemsArray();
   const queueContainer = document.getElementById('dispatch-queue');
@@ -164,10 +199,11 @@ export function renderDispatchQueue() {
   }
 
   if (queueContainer) {
+    const uploadsBase = getBasePath();
     queueContainer.innerHTML = items.map(item => {
       const firstTwo = (item.name || '').slice(0, 2).toUpperCase();
       const imageHtml = item.image_path
-        ? `<img src="${(() => { const apiElem = document.querySelector('[data-api-url]'); const api = apiElem?.getAttribute('data-api-url') || '/api'; const pathname = new URL(api, window.location.origin).pathname; const idx = pathname.indexOf('/api'); const base = idx !== -1 ? pathname.slice(0, idx) : ''; return `${base}/public/uploads/products/${escapeHtml(item.image_path)}`; })()}" class="size-10 object-cover rounded" alt="" />`
+        ? `<img src="${uploadsBase}/public/uploads/products/${escapeHtml(item.image_path)}" class="size-10 object-cover rounded" alt="" />`
         : `<div class="size-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium">${firstTwo}</div>`;
 
       return `
@@ -192,6 +228,12 @@ export function renderDispatchQueue() {
   }
 }
 
+/**
+ * Bind handlers for product cards.
+ *
+ * @code PRD-initCardHandlers
+ * @param {HTMLElement} container
+ */
 export function initProductCardHandlers(container) {
   container.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');
@@ -262,6 +304,12 @@ export function initProductCardHandlers(container) {
   });
 }
 
+/**
+ * Bind handlers for dispatch queue actions.
+ *
+ * @code PRD-initQueueHandlers
+ * @param {HTMLElement} container
+ */
 export function initQueueHandlers(container) {
   container.addEventListener('click', async (event) => {
     const button = event.target.closest('button[data-action]');
@@ -301,6 +349,12 @@ export function initQueueHandlers(container) {
   });
 }
 
+/**
+ * Update a product card's quantity UI.
+ *
+ * @code PRD-updateCardQuantity
+ * @param {number} productId
+ */
 function updateCardQuantity(productId) {
   const card = document.querySelector(`.card[data-product-id="${productId}"]`);
   if (!card) return;

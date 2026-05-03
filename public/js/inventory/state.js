@@ -1,3 +1,10 @@
+/**
+ * Generate a draft code with a prefix and date stamp.
+ *
+ * @code INV-generateDraftCode
+ * @param {string} prefix
+ * @returns {string}
+ */
 function generateDraftCode(prefix) {
   const now = new Date();
   const datePart = [
@@ -10,11 +17,23 @@ function generateDraftCode(prefix) {
   return `${prefix}-${datePart}-${randomPart}`;
 }
 
+/**
+ * Populate draft SKU and batch codes.
+ *
+ * @code INV-populateDraftCodes
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function populateDraftCodes(state) {
   state.skuInput.value = generateDraftCode('SKU');
   state.batchInput.value = generateDraftCode('BAT');
 }
 
+/**
+ * Sync category defaults for unit and weight fields.
+ *
+ * @code INV-syncCategoryDefaults
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function syncCategoryDefaults(state) {
   const category = state.categoryInput.value;
 
@@ -29,11 +48,25 @@ function syncCategoryDefaults(state) {
   }
 }
 
+/**
+ * Clear the dialog-level error message.
+ *
+ * @code INV-clearDialogError
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function clearDialogError(state) {
   state.formError.textContent = '';
   state.formError.classList.add(state.hiddenClass);
 }
 
+/**
+ * Set a field-level error message.
+ *
+ * @code INV-setFieldError
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {string} fieldName
+ * @param {string} message
+ */
 function setFieldError(state, fieldName, message) {
   const field = state.form.querySelector(`[data-field="${fieldName}"]`);
   const input = state.form.querySelector(`[data-field-input="${fieldName}"]`);
@@ -49,6 +82,13 @@ function setFieldError(state, fieldName, message) {
   error.classList.remove(state.hiddenClass);
 }
 
+/**
+ * Clear a field-level error message.
+ *
+ * @code INV-clearFieldError
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {string} fieldName
+ */
 function clearFieldError(state, fieldName) {
   const field = state.form.querySelector(`[data-field="${fieldName}"]`);
   const input = state.form.querySelector(`[data-field-input="${fieldName}"]`);
@@ -64,6 +104,12 @@ function clearFieldError(state, fieldName) {
   error.classList.add(state.hiddenClass);
 }
 
+/**
+ * Clear all field errors.
+ *
+ * @code INV-clearFieldErrors
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function clearFieldErrors(state) {
   [
     'product_id',
@@ -80,15 +126,36 @@ function clearFieldErrors(state) {
   });
 }
 
+/**
+ * Show a dialog-level error message.
+ *
+ * @code INV-showDialogError
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {string} message
+ */
 function showDialogError(state, message) {
   state.formError.textContent = message;
   state.formError.classList.remove(state.hiddenClass);
 }
 
+/**
+ * Update the image preview helper text.
+ *
+ * @code INV-updatePreviewMessage
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {string} message
+ */
 function updatePreviewMessage(state, message) {
   state.imagePreviewMessage.textContent = message;
 }
 
+/**
+ * Set the submitting UI state.
+ *
+ * @code INV-setSubmittingState
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {boolean} isSubmitting
+ */
 function setSubmittingState(state, isSubmitting) {
   state.saveButton.disabled = isSubmitting;
   state.saveButton.textContent = isSubmitting ? 'Saving...' : state.saveButtonLabel;
@@ -96,6 +163,14 @@ function setSubmittingState(state, isSubmitting) {
   state.cancelNewButton.disabled = isSubmitting;
 }
 
+/**
+ * Lock or unlock a field group.
+ *
+ * @code INV-setLockedState
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {string} name
+ * @param {boolean} locked
+ */
 function setLockedState(state, name, locked) {
   const input = state.fieldInputs[name];
   const group = state.fieldGroups[name];
@@ -110,6 +185,12 @@ function setLockedState(state, name, locked) {
   group.dataset.locked = locked ? 'true' : 'false';
 }
 
+/**
+ * Lock fields when editing an existing item.
+ *
+ * @code INV-lockExistingFields
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function lockExistingItemFields(state) {
   setLockedState(state, 'image', true);
   setLockedState(state, 'category', true);
@@ -119,6 +200,12 @@ function lockExistingItemFields(state) {
   setLockedState(state, 'low_stock_threshold', true);
 }
 
+/**
+ * Unlock all item fields.
+ *
+ * @code INV-unlockAllFields
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function unlockAllItemFields(state) {
   setLockedState(state, 'image', false);
   setLockedState(state, 'category', false);
@@ -128,6 +215,12 @@ function unlockAllItemFields(state) {
   setLockedState(state, 'low_stock_threshold', false);
 }
 
+/**
+ * Switch UI to existing item mode.
+ *
+ * @code INV-showExistingMode
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function showExistingMode(state) {
   state.modeField.value = 'existing';
   state.existingPanel.hidden = false;
@@ -136,6 +229,12 @@ function showExistingMode(state) {
   state.itemNameInput.required = false;
 }
 
+/**
+ * Switch UI to new item mode.
+ *
+ * @code INV-showNewMode
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function showNewMode(state) {
   state.modeField.value = 'new';
   state.existingPanel.hidden = true;
@@ -144,6 +243,12 @@ function showNewMode(state) {
   state.itemNameInput.required = true;
 }
 
+/**
+ * Close the inventory combobox.
+ *
+ * @code INV-closeCombobox
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function closeCombobox(state) {
   state.popover.classList.add(state.hiddenClass);
   state.trigger.setAttribute('aria-expanded', 'false');
@@ -151,6 +256,12 @@ function closeCombobox(state) {
   filterOptions(state, '');
 }
 
+/**
+ * Open the inventory combobox.
+ *
+ * @code INV-openCombobox
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function openCombobox(state) {
   if (state.existingPanel.hidden) {
     return;
@@ -164,6 +275,13 @@ function openCombobox(state) {
   });
 }
 
+/**
+ * Filter combobox options by query.
+ *
+ * @code INV-filterOptions
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {string} query
+ */
 function filterOptions(state, query) {
   const normalized = query.trim().toLowerCase();
   let visibleCount = 0;
@@ -185,6 +303,12 @@ function filterOptions(state, query) {
   }
 }
 
+/**
+ * Reset the inventory form state.
+ *
+ * @code INV-resetForm
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function resetForm(state) {
   state.form.reset();
   clearDialogError(state);
@@ -205,6 +329,13 @@ function resetForm(state) {
   closeCombobox(state);
 }
 
+/**
+ * Populate form with existing item data.
+ *
+ * @code INV-fillExistingItem
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {HTMLElement} option
+ */
 function fillExistingItem(state, option) {
   const label = option.dataset.label || option.textContent?.trim() || '';
   const productId = option.dataset.value || '';
@@ -232,15 +363,11 @@ function fillExistingItem(state, option) {
   state.imageInput.value = '';
 
   if (imagePath) {
-    const uploadsBase = (() => {
-      const apiElem = document.querySelector('[data-api-url]');
-      const api = apiElem?.getAttribute('data-api-url') || '/api';
-      const pathname = new URL(api, window.location.origin).pathname;
-      const idx = pathname.indexOf('/api');
-      return idx !== -1 ? pathname.slice(0, idx) : '';
-    })();
+    const pathname = window.location.pathname;
+    const segments = pathname.split('/').filter(Boolean);
+    const basePath = segments.length > 1 ? '/' + segments.slice(0, -1).join('/') : '';
 
-    showImagePreview(state, `${uploadsBase}/public/uploads/products/${imagePath}`);
+    showImagePreview(state, `${basePath}/public/uploads/products/${imagePath}`);
   } else {
     showImageUpload(state);
   }
@@ -253,6 +380,12 @@ function fillExistingItem(state, option) {
   state.quantityInput.focus();
 }
 
+/**
+ * Switch the form into new item mode.
+ *
+ * @code INV-switchToNewItem
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function switchToNewItem(state) {
   clearDialogError(state);
   clearFieldErrors(state);
@@ -276,10 +409,24 @@ function switchToNewItem(state) {
   state.itemNameInput.focus();
 }
 
+/**
+ * Find the first visible combobox option.
+ *
+ * @code INV-findFirstVisibleOption
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @returns {HTMLElement | undefined}
+ */
 function findFirstVisibleOption(state) {
   return state.options.find((option) => !option.classList.contains(state.hiddenClass));
 }
 
+/**
+ * Prepare values before validation.
+ *
+ * @code INV-validateBeforeSubmit
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @returns {{ values: Record<string, string> }}
+ */
 function validateBeforeSubmit(state) {
   clearDialogError(state);
   clearFieldErrors(state);
@@ -300,23 +447,49 @@ function validateBeforeSubmit(state) {
   return { values };
 }
 
+/**
+ * Show the image preview UI.
+ *
+ * @code INV-showImagePreview
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {string} imageSrc
+ */
 function showImagePreview(state, imageSrc) {
   state.imageUploadContainer.classList.add(state.hiddenClass);
   state.imagePreviewContainer.classList.remove(state.hiddenClass);
   state.imagePreviewImg.src = imageSrc;
 }
 
+/**
+ * Show the image upload UI.
+ *
+ * @code INV-showImageUpload
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function showImageUpload(state) {
   state.imageUploadContainer.classList.remove(state.hiddenClass);
   state.imagePreviewContainer.classList.add(state.hiddenClass);
   state.imagePreviewImg.src = '';
 }
 
+/**
+ * Clear the image preview.
+ *
+ * @code INV-clearImagePreview
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function clearImagePreview(state) {
   state.imageInput.value = '';
   showImageUpload(state);
 }
 
+/**
+ * Validate image file type and size.
+ *
+ * @code INV-validateImageFile
+ * @param {File} file
+ * @returns {string | null}
+ */
 function validateImageFile(file) {
   const maxSize = 5 * 1024 * 1024;
   const allowedTypes = ['image/jpeg', 'image/png'];
@@ -332,6 +505,13 @@ function validateImageFile(file) {
   return null;
 }
 
+/**
+ * Handle image file selection.
+ *
+ * @code INV-handleImageSelect
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ * @param {File} file
+ */
 function handleImageFileSelect(state, file) {
   clearFieldError(state, 'image');
 
@@ -348,6 +528,12 @@ function handleImageFileSelect(state, file) {
   reader.readAsDataURL(file);
 }
 
+/**
+ * Initialize image input handlers.
+ *
+ * @code INV-initImageHandlers
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 function initImageHandlers(state) {
   state.imageInput.addEventListener('change', (event) => {
     const file = event.target.files?.[0];

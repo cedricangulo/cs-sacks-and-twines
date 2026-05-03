@@ -1,8 +1,13 @@
 import { fetchJson } from '../utils/fetch-utils.js';
-import { renderLogsTable, renderPagination } from './render.js';
-import { createServerTable } from '../utils/data-table.js';
 
-async function fetchAuditLogs(params) {
+/**
+ * Fetch audit logs from the API with filters.
+ *
+ * @code AUD-fetchLogs
+ * @param {Record<string, string>} params
+ * @returns {Promise<unknown>}
+ */
+export async function fetchAuditLogs(params) {
   const container = document.getElementById('audit-logs-container');
   const apiUrl = container?.getAttribute('data-api-url') || '/api/audit-logs';
 
@@ -17,38 +22,4 @@ async function fetchAuditLogs(params) {
   if (params.date_to) url.searchParams.set('date_to', params.date_to);
 
   return await fetchJson(url.toString());
-}
-
-let serverTable;
-
-export function initAuditLogsTable() {
-  const container = document.getElementById('audit-logs-container');
-  const apiUrl = container?.getAttribute('data-api-url') || '';
-  const isPersonal = apiUrl.includes('personal');
-
-  const config = {
-    container: '#audit-logs-container',
-    fetchFn: fetchAuditLogs,
-    renderFn: (logs) => renderLogsTable(logs, !isPersonal),
-    renderPagination: renderPagination,
-    id: isPersonal ? 'personal-audit-logs' : 'audit-logs',
-  };
-
-  if (!isPersonal) {
-    config.filterBar = {
-      id: 'audit-logs',
-      searchPlaceholder: 'Search logs...',
-      selects: [
-        { key: 'action', label: 'All actions', options: [] },
-        { key: 'user_id', label: 'All users', options: [] },
-      ],
-      inputs: [
-        { key: 'date_from', label: 'From date', type: 'date' },
-        { key: 'date_to', label: 'To date', type: 'date' },
-      ],
-    };
-  }
-
-  serverTable = createServerTable(config);
-  serverTable.init();
 }

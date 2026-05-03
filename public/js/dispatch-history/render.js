@@ -12,6 +12,13 @@ import { formatCurrency } from '../utils/format.js';
  * @param {string} status
  * @returns {string}
  */
+/**
+ * Render dispatch status badge.
+ *
+ * @code DSP-renderStatusBadge
+ * @param {string} status
+ * @returns {string}
+ */
 function renderStatusBadge(status) {
   const isCompleted = status === 'completed';
   const classes = isCompleted ? 'primary' : 'secondary';
@@ -23,6 +30,13 @@ function renderStatusBadge(status) {
 /**
  * Render dispatch table rows.
  *
+ * @param {Array<Record<string, unknown>>} dispatches
+ * @returns {string}
+ */
+/**
+ * Render dispatch table rows.
+ *
+ * @code DSP-renderRows
  * @param {Array<Record<string, unknown>>} dispatches
  * @returns {string}
  */
@@ -60,6 +74,12 @@ export function renderDispatchRows(dispatches) {
  *
  * @returns {string}
  */
+/**
+ * Render dispatch items table header.
+ *
+ * @code DSP-renderItemsHeader
+ * @returns {string}
+ */
 function renderDispatchItemsHeader() {
   const tableHeaders = [
     { key: 'product_name', label: 'Item Name', align: 'left' },
@@ -71,9 +91,9 @@ function renderDispatchItemsHeader() {
 
   return `
     <thead>
-      <tr class="text-muted-foreground/80">
+      <tr class="text-muted-foreground/80 dark:text-muted-foreground">
         ${tableHeaders.map(header => `
-          <th data-dispatch-items-sort="${header.key}" class="text-muted-foreground/80 font-normal ${header.align === 'right' ? 'text-right' : ''}">
+          <th data-dispatch-items-sort="${header.key}" class="text-muted-foreground/80 dark:text-muted-foreground font-normal ${header.align === 'right' ? 'text-right' : ''}">
             ${escapeHtml(header.label)}
           </th>
         `).join('')}
@@ -85,6 +105,13 @@ function renderDispatchItemsHeader() {
 /**
  * Render dispatch items table rows.
  *
+ * @param {Array<Record<string, unknown>>} items
+ * @returns {string}
+ */
+/**
+ * Render dispatch items table rows.
+ *
+ * @code DSP-renderItemsRows
  * @param {Array<Record<string, unknown>>} items
  * @returns {string}
  */
@@ -116,6 +143,13 @@ export function renderDispatchItemsRows(items) {
  * @param {string} dispatchId
  * @returns {string}
  */
+/**
+ * Render dispatch detail row (expandable container).
+ *
+ * @code DSP-renderDetailRow
+ * @param {string} dispatchId
+ * @returns {string}
+ */
 export function renderDispatchDetailRow(dispatchId) {
   return `
     <tr class="dispatch-detail-row" data-dispatch-detail="${dispatchId}">
@@ -141,6 +175,13 @@ export function renderDispatchDetailRow(dispatchId) {
  * @param {Array<Record<string, unknown>>} dispatches
  * @returns {string}
  */
+/**
+ * Render the full dispatch table with header and body.
+ *
+ * @code DSP-renderTable
+ * @param {Array<Record<string, unknown>>} dispatches
+ * @returns {string}
+ */
 export function renderDispatchTable(dispatches) {
   return `
     <table class="table">
@@ -157,6 +198,12 @@ export function renderDispatchTable(dispatches) {
  *
  * @returns {string}
  */
+/**
+ * Render loading state for dispatch table.
+ *
+ * @code DSP-renderLoading
+ * @returns {string}
+ */
 export function renderDispatchLoading() {
   return renderLoadingRow(6, 'Loading dispatches...');
 }
@@ -166,6 +213,12 @@ export function renderDispatchLoading() {
  *
  * @returns {string}
  */
+/**
+ * Render loading state for dispatch items.
+ *
+ * @code DSP-renderItemsLoading
+ * @returns {string}
+ */
 export function renderDispatchItemsLoading() {
   return renderLoadingRow(5, 'Loading items...');
 }
@@ -173,6 +226,13 @@ export function renderDispatchItemsLoading() {
 /**
  * Render error state for dispatch items.
  *
+ * @param {string} message
+ * @returns {string}
+ */
+/**
+ * Render error state for dispatch items.
+ *
+ * @code DSP-renderItemsError
  * @param {string} message
  * @returns {string}
  */
@@ -189,6 +249,13 @@ export function renderDispatchItemsError(message = 'Failed to load items.') {
 /**
  * Render error state for dispatch table.
  *
+ * @param {string} message
+ * @returns {string}
+ */
+/**
+ * Render error state for dispatch table.
+ *
+ * @code DSP-renderError
  * @param {string} message
  * @returns {string}
  */

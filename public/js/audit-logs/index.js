@@ -1,3 +1,12 @@
-import { initAuditLogsTable } from './get-logs.js';
+import { initAuditLogsTable } from './events.js';
 
-initAuditLogsTable();
+/**
+ * Initialize audit logs page.
+ *
+ * @code AUD-initPage
+ */
+function initAuditLogsPage() {
+  initAuditLogsTable();
+}
+
+initAuditLogsPage();

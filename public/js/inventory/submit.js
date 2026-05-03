@@ -11,11 +11,12 @@ import {
 import { validateInventoryForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 import { fetchJsonResponse } from '../utils/fetch-utils.js';
-import { refreshComboboxOptions, loadProducts } from './get-products.js';
+import { loadProducts } from './get-products.js';
 
 /**
  * Attach inventory submit handling.
  *
+ * @code INV-initSubmission
  * @param {ReturnType<import('./context.js').createInventoryState>} state
  * @param {{ onSuccess?: () => void }} [options]
  */

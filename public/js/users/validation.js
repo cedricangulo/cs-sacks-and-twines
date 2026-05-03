@@ -32,10 +32,24 @@ const userUpdateSchema = z.object({
   ).optional().or(z.literal('')),
 });
 
+/**
+ * Validate the create user form payload.
+ *
+ * @code VAL-userCreate
+ * @param {Record<string, unknown>} values
+ * @returns {ReturnType<typeof formatResult>}
+ */
 export function validateUserCreateForm(values) {
   return formatResult(userCreateSchema.safeParse(values));
 }
 
+/**
+ * Validate the update user form payload.
+ *
+ * @code VAL-userUpdate
+ * @param {Record<string, unknown>} values
+ * @returns {ReturnType<typeof formatResult>}
+ */
 export function validateUserUpdateForm(values) {
   return formatResult(userUpdateSchema.safeParse(values));
 }

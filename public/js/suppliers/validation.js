@@ -12,6 +12,13 @@ const supplierSchema = z.object({
   address: normalizedString(10, 500, 'Enter a valid address.'),
 });
 
+/**
+ * Validate supplier form values.
+ *
+ * @code VAL-supplier
+ * @param {Record<string, unknown>} values
+ * @returns {ReturnType<typeof formatResult>}
+ */
 export function validateSupplierForm(values) {
   return formatResult(supplierSchema.safeParse(values));
 }

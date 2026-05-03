@@ -5,6 +5,7 @@ import { toast } from '../utils/toast.js';
 /**
  * Initialize supplier form submission and validation.
  *
+ * @code SUP-initForm
  * @param {{ onSuccess?: () => void }} [options]
  */
 export function initSuppliersForm(options = {}) {
@@ -28,6 +29,11 @@ export function initSuppliersForm(options = {}) {
     return;
   }
 
+  /**
+   * Reset the supplier form.
+   *
+   * @code SUP-resetForm
+   */
   const resetForm = () => {
     form.reset();
     errorBox.textContent = '';
@@ -35,16 +41,35 @@ export function initSuppliersForm(options = {}) {
     clearFieldErrors();
   };
 
+  /**
+   * Toggle submitting UI state.
+   *
+   * @code SUP-setSubmitting
+   * @param {boolean} isSubmitting
+   */
   const setSubmitting = (isSubmitting) => {
     saveButton.disabled = isSubmitting;
     saveButton.textContent = isSubmitting ? 'Saving...' : 'Save supplier';
   };
 
+  /**
+   * Show a form-level error message.
+   *
+   * @code SUP-showError
+   * @param {string} message
+   */
   const showError = (message) => {
     errorBox.textContent = message;
     errorBox.classList.remove('hidden');
   };
 
+  /**
+   * Set field error message and state.
+   *
+   * @code SUP-setFieldError
+   * @param {string} fieldName
+   * @param {string} message
+   */
   const setFieldError = (fieldName, message) => {
     const field = form.querySelector(`[data-field="${fieldName}"]`);
     const input = form.querySelector(`[data-field-input="${fieldName}"]`);
@@ -60,6 +85,12 @@ export function initSuppliersForm(options = {}) {
     error.classList.remove('hidden');
   };
 
+  /**
+   * Clear a field error message and state.
+   *
+   * @code SUP-clearFieldError
+   * @param {string} fieldName
+   */
   const clearFieldError = (fieldName) => {
     const field = form.querySelector(`[data-field="${fieldName}"]`);
     const input = form.querySelector(`[data-field-input="${fieldName}"]`);
@@ -75,12 +106,23 @@ export function initSuppliersForm(options = {}) {
     error.classList.add('hidden');
   };
 
+  /**
+   * Clear all supplier field errors.
+   *
+   * @code SUP-clearFieldErrors
+   */
   const clearFieldErrors = () => {
     ['company_name', 'contact_person', 'contact_number', 'address'].forEach((fieldName) => {
       clearFieldError(fieldName);
     });
   };
 
+  /**
+   * Gather supplier form values.
+   *
+   * @code SUP-getValues
+   * @returns {Record<string, string>}
+   */
   const getValues = () => ({
     company_name: fields.companyName.value,
     contact_person: fields.contactPerson.value,

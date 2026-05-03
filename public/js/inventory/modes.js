@@ -6,6 +6,12 @@ import {
   setLockedState,
 } from './state.js';
 
+/**
+ * Initialize inventory mode switching and edit field handlers.
+ *
+ * @code INV-initModes
+ * @param {ReturnType<import('./context.js').createInventoryState>} state
+ */
 export function initInventoryModes(state) {
   state.addNewButton.addEventListener('click', () => switchToNewItem(state));
   state.cancelNewButton.addEventListener('click', () => resetForm(state));

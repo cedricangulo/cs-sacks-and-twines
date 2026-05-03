@@ -7,6 +7,7 @@ import { z } from 'zod';
 /**
  * Normalize a raw value by converting it to a trimmed single-space string.
  *
+ * @code VAL-normalizeText
  * @param {unknown} value
  * @returns {string}
  */
@@ -15,6 +16,7 @@ export const normalizeText = (value) => String(value ?? '').trim().replace(/\s+/
 /**
  * Create a string schema that normalizes whitespace and enforces min/max length.
  *
+ * @code VAL-normalizedString
  * @param {number} min - Minimum length (inclusive).
  * @param {number} max - Maximum length (inclusive).
  * @param {string} message - Error message when length bounds are violated.
@@ -33,6 +35,7 @@ export const normalizedString = (min, max, message) => z.preprocess(
  * - Mobile: `09xxxxxxxxx` (11 digits) or `639xxxxxxxxx` (13 digits).
  * - Landline: `0[area]xxxxxxx` or `63[area]xxxxxxx`.
  *
+ * @code VAL-contactNumberSchema
  * @type {z.ZodEffects<z.ZodEffects<z.ZodString, string, string>, string, string>}
  */
 export const contactNumberSchema = z.string()
@@ -53,6 +56,7 @@ export const contactNumberSchema = z.string()
  * Convert a raw input value to a number safely.
  * Returns the original value when conversion fails so Zod can flag it.
  *
+ * @code VAL-coerceNumber
  * @param {unknown} value
  * @returns {number | unknown}
  */
@@ -77,6 +81,7 @@ const coerceNumber = (value) => {
  * Create a numeric schema that accepts values strictly greater than zero.
  * Works with both `number` inputs and string-formatted numbers (e.g., form data).
  *
+ * @code VAL-positiveNumber
  * @param {string} message - Error message for missing, invalid, or non-positive values.
  * @returns {z.ZodEffects<z.ZodNumber, number, unknown>}
  */
@@ -91,6 +96,7 @@ export const positiveNumber = (message) => z.preprocess(
  * Flatten a Zod `ZodError` into a simple `{ [fieldName]: message }` object.
  * Only the first issue per field is kept.
  *
+ * @code VAL-formatZodErrors
  * @param {z.ZodError} error
  * @returns {Record<string, string>}
  */
@@ -122,6 +128,7 @@ export const formatZodErrors = (error) => {
 /**
  * Normalize a `safeParse` result into a uniform shape used by form handlers.
  *
+ * @code VAL-formatResult
  * @param {z.SafeParseReturnType<object, object>} result
  * @returns {ValidationResult}
  */
