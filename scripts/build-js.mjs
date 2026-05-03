@@ -1,5 +1,6 @@
 import * as esbuild from 'esbuild';
-import { readdir, stat } from 'node:fs/promises';
+import { readdir, stat, writeFile, unlink } from 'node:fs/promises';
+import { writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { statSync, readdirSync } from 'node:fs';
 
@@ -58,23 +59,77 @@ if (entryFiles.length === 0) {
 console.log(`Bundling ${entryFiles.length} entries...\n`);
 
 const isWatch = process.argv.includes('--watch');
-const base = {
+let startTime = Date.now();
+
+const options = {
   entryPoints: entryFiles,
   bundle: true,
   format: 'esm',
   outdir: OUT_DIR,
   outbase: JS_DIR,
   sourcemap: true,
+  metafile: true,
+  plugins: [{
+    name: 'reload-plugin',
+    setup(build) {
+      build.onEnd(async (result) => {
+        console.log('--- PLUGIN FIRED, errors:', result.errors.length);
+        if (result.errors.length > 0) {
+          console.error('Build errors:', result.errors);
+          return;
+        }
+
+        const duration = Date.now() - startTime;
+        try {
+          console.log('CWD:', process.cwd());
+          const outPath = join(process.cwd(), 'public', 'dist', 'latest.json');
+          console.log('Writing to:', outPath);
+          writeFileSync(outPath, JSON.stringify({ t: Date.now() }));
+        } catch (e) {
+          console.error('Failed to write latest.json:', e.message);
+          return;
+        }
+
+        console.log(`\n[${new Date().toLocaleTimeString()}] Rebuild complete (${duration}ms)`);
+
+        if (result.metafile) {
+          const outputs = result.metafile.outputs;
+          Object.keys(outputs).forEach(file => {
+            if (file.endsWith('.js')) {
+              console.log(`  \x1b[34m${file.padEnd(45)}\x1b[0m \x1b[32m${formatSize(outputs[file].bytes)}\x1b[0m`);
+            }
+          });
+        }
+
+        startTime = Date.now();
+      });
+    },
+  }],
 };
 
-if (isWatch) {
-  const ctx = await esbuild.context(base);
-  await ctx.rebuild();
-  printOutput();
-  await ctx.watch();
-  console.log('Watching for changes...');
-} else {
-  await esbuild.build(base);
-  printOutput();
-  console.log('Done.');
+async function runBuild() {
+  startTime = Date.now();
+  if (isWatch) {
+    const ctx = await esbuild.context(options);
+    await ctx.watch();
+    writeFileSync(join(process.cwd(), 'public', 'dist', 'latest.json'), JSON.stringify({ t: Date.now() }));
+    await esbuild.build(options);
+    console.log('\nWatching for changes... (Ctrl+C to stop)');
+    // Handle manual exit (Ctrl+C) to prevent zombie processes
+    process.on('SIGINT', async () => {
+      console.log('\nStopping watcher...');
+      try { await unlink(join(OUT_DIR, 'latest.json')); } catch {}
+      await ctx.dispose();
+      process.exit(0);
+    });
+    await new Promise(() => { });
+  } else {
+    await esbuild.build(options);
+    console.log('Done.');
+  }
 }
+
+runBuild();
+
+// Quick test write
+writeFileSync('test-direct.txt', 'test at end');

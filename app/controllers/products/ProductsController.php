@@ -282,8 +282,16 @@ class ProductsController
 			$auditLog->log(
 				$userId,
 				'stock_in',
-				"Added {$quantityReceived} {$baseUom} of {$productName} (Batch: {$batchCode})",
-				$_SERVER['REMOTE_ADDR'] ?? null
+				json_encode([
+					'product_name' => $productName,
+					'quantity' => (float) $quantityReceived,
+					'uom' => $baseUom,
+					'batch_code' => $batchCode,
+					'resource_type' => 'product',
+					'resource_id' => $productId,
+				]),
+				$_SERVER['REMOTE_ADDR'] ?? null,
+				$_SERVER['HTTP_USER_AGENT'] ?? null
 			);
 
 			$this->jsonResponse([
@@ -368,6 +376,7 @@ class ProductsController
 
 			$totalQuantityDispatched = 0;
 			$itemsDispatched = 0;
+			$dispatchedProducts = [];
 
 			foreach ($items as $item) {
 				$productId = isset($item['product_id']) ? (int) $item['product_id'] : 0;
@@ -407,6 +416,13 @@ class ProductsController
 
 				$totalQuantityDispatched += $quantity;
 				$itemsDispatched += 1;
+
+				$dispatchedProducts[] = [
+					'name' => $productRecord['name'] ?? 'Unknown Product',
+					'quantity' => $quantity,
+					'uom' => $dispatchUom,
+					'category' => $category,
+				];
 			}
 
 			if ($itemsDispatched === 0) {
@@ -416,12 +432,19 @@ class ProductsController
 			$pdo->commit();
 
 			$auditLog = new AuditLog($pdo);
-			$refText = $customerReference ? " (Ref: {$customerReference})" : '';
 			$auditLog->log(
 				$userId,
 				'stock_out',
-				"Dispatched {$totalQuantityDispatched} units across {$itemsDispatched} product(s){$refText}",
-				$_SERVER['REMOTE_ADDR'] ?? null
+				json_encode([
+					'items_count' => $itemsDispatched,
+					'total_quantity' => (float) $totalQuantityDispatched,
+					'products' => $dispatchedProducts,
+					'customer_reference' => $customerReference ?? '',
+					'resource_type' => 'dispatch',
+					'resource_id' => $dispatchId,
+				]),
+				$_SERVER['REMOTE_ADDR'] ?? null,
+				$_SERVER['HTTP_USER_AGENT'] ?? null
 			);
 
 			$this->jsonResponse([

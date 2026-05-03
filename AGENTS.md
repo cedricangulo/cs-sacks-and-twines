@@ -2,6 +2,16 @@
 
 This is a vanilla PHP MVC-style app styled with Tailwind CSS v4 and Basecoat. It is designed to run from a subfolder install, so generated URLs must stay base-path aware.
 
+## Agent Quick Reference
+- **Package manager**: `pnpm` (see `package.json` scripts)
+- **Common build commands**: `pnpm run build:css`, `pnpm run build:js`, `pnpm run build`, `pnpm run watch`.
+- **Entry point**: [index.php](index.php) — boots [app/core/bootstrap.php](app/core/bootstrap.php).
+- **Routing**: [app/config/routes/web.php](app/config/routes/web.php), [app/config/routes/api.php](app/config/routes/api.php), merged by [app/core/routes.php](app/core/routes.php).
+- **JS source**: `public/js/` (feature folders) → built by `scripts/build-js.mjs` to `public/dist/`.
+- **CSS**: `public/css/input.css` → built by Tailwind to `public/css/output.css`.
+- **DB schema & migrations**: [docs/schema.sql](docs/schema.sql), [docs/migrations/](docs/migrations/).
+- **Quick agent checklist**: link to docs first; avoid duplicating docs; use `routeUrl()` for subfolder-safe links.
+
 ## Start Here
 - Read [docs/ROUTING.md](docs/ROUTING.md), [docs/FORMS.md](docs/FORMS.md), [docs/JS-BUILD.md](docs/JS-BUILD.md), and [docs/RUBRICS.md](docs/RUBRICS.md) before changing routing, forms, or client-side behavior.
 - Prefer linking to those docs instead of repeating their contents here.
@@ -41,6 +51,10 @@ This is a vanilla PHP MVC-style app styled with Tailwind CSS v4 and Basecoat. It
 - Use `require_once __DIR__ . '/...'` for nested includes.
 - Use `<?= ... ?>` in views and `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')` for output that can contain user data.
 - Use prepared statements (PDO) and keep controllers responsible for validation, orchestration, and response shape.
+- **DB Injection**: Instantiate models by passing the PDO singleton: `new ModelName(app_db());`. Models do not hold static connections.
+- **Filtering & Lists**: Always use `QueryFilter` (`app/core/QueryFilter.php`) for paginated, searchable data grids instead of raw LIMIT/OFFSET.
+- **Validation**: Perform validation directly in controllers (type checking, length validation) and return explicit HTTP failure codes (e.g. 422). Do not pull in heavy external validation packages.
+- **File Uploads**: Delegate all upload processing and moving to helpers in `app/core/uploads.php`.
 
 ## Quality Bar
 - Follow [docs/RUBRICS.md](docs/RUBRICS.md) for CRUD, async, and CSS expectations.

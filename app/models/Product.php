@@ -171,6 +171,76 @@ class Product
 	}
 
 	/**
+	 * Find a batch record with its related product and supplier context.
+	 *
+	 * @param int $batchId
+	 * @return array<string, mixed>|null
+	 */
+	public function findBatchById(int $batchId): ?array
+	{
+		$statement = $this->pdo->prepare(
+			'SELECT
+				b.batch_id,
+				b.product_id,
+				b.supplier_id,
+				b.user_id,
+				b.batch_code,
+				b.total_procurement_cost,
+				b.unit_cost,
+				b.quantity_received,
+				b.quantity_remaining,
+				b.status,
+				b.created_at,
+				b.updated_at,
+				p.name AS product_name,
+				p.category,
+				p.base_uom,
+				p.weight_per_unit,
+				p.low_stock_threshold,
+				p.image_path,
+				s.company_name AS supplier_name
+			FROM batches b
+			JOIN products p ON p.product_id = b.product_id
+			JOIN suppliers s ON s.supplier_id = b.supplier_id
+			WHERE b.batch_id = :batch_id
+			LIMIT 1'
+		);
+		$statement->execute(['batch_id' => $batchId]);
+		$batch = $statement->fetch();
+
+		return $batch === false ? null : $batch;
+	}
+
+	/**
+	 * Update editable product fields.
+	 *
+	 * @param int $productId
+	 * @param array{category?: string, base_uom?: string, weight_per_unit?: string|int|float|null, low_stock_threshold?: string|int|float|null, image_path?: string|null} $attributes
+	 * @return void
+	 */
+	public function updateProductFields(int $productId, array $attributes): void
+	{
+		$statement = $this->pdo->prepare(
+			'UPDATE products
+			 SET category = COALESCE(:category, category),
+			     base_uom = COALESCE(:base_uom, base_uom),
+			     weight_per_unit = COALESCE(:weight_per_unit, weight_per_unit),
+			     low_stock_threshold = COALESCE(:low_stock_threshold, low_stock_threshold),
+			     image_path = COALESCE(:image_path, image_path),
+			     updated_at = CURRENT_TIMESTAMP
+			 WHERE product_id = :product_id'
+		);
+		$statement->execute([
+			'category' => $attributes['category'] ?? null,
+			'base_uom' => $attributes['base_uom'] ?? null,
+			'weight_per_unit' => $attributes['weight_per_unit'] ?? null,
+			'low_stock_threshold' => $attributes['low_stock_threshold'] ?? null,
+			'image_path' => $attributes['image_path'] ?? null,
+			'product_id' => $productId,
+		]);
+	}
+
+	/**
 	 * Create a product record.
 	 *
 	 * @param string $skuCode

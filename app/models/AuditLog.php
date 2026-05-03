@@ -23,18 +23,20 @@ class AuditLog
 	 * @param string $action
 	 * @param string $description
 	 * @param string|null $ipAddress
+	 * @param string|null $userAgent
 	 * @return int
 	 */
-	public function log(int $userId, string $action, string $description, ?string $ipAddress = null): int
+	public function log(int $userId, string $action, string $description, ?string $ipAddress = null, ?string $userAgent = null): int
 	{
 		$statement = $this->pdo->prepare(
-			'INSERT INTO audit_logs (user_id, action, description, ip_address) VALUES (:user_id, :action, :description, :ip_address)'
+			'INSERT INTO audit_logs (user_id, action, description, ip_address, user_agent) VALUES (:user_id, :action, :description, :ip_address, :user_agent)'
 		);
 		$statement->execute([
 			'user_id' => $userId,
 			'action' => $action,
 			'description' => $description,
 			'ip_address' => $ipAddress,
+			'user_agent' => $userAgent,
 		]);
 
 		return (int) $this->pdo->lastInsertId();
@@ -55,6 +57,7 @@ class AuditLog
 				al.action,
 				al.description,
 				al.ip_address,
+				al.user_agent,
 				al.created_at,
 				u.name AS user_name,
 				u.email AS user_email,
@@ -87,6 +90,7 @@ class AuditLog
 				al.action,
 				al.description,
 				al.ip_address,
+				al.user_agent,
 				al.created_at,
 				u.name AS user_name,
 				u.email AS user_email,
@@ -139,7 +143,7 @@ class AuditLog
 	 */
 	public function getFiltered(array $params): array
 	{
-		$columns = 'al.log_id, al.action, al.description, al.ip_address, al.created_at, u.name AS user_name, u.email AS user_email, u.role AS user_role';
+		$columns = 'al.log_id, al.user_id, al.action, al.description, al.ip_address, al.user_agent, al.created_at, u.name AS user_name, u.email AS user_email, u.role AS user_role';
 		$searchColumns = ['al.description', 'u.name', 'u.email'];
 		$allowedSortColumns = ['al.created_at', 'al.action', 'al.description', 'u.name', 'u.email'];
 		$defaultSort = 'al.created_at';

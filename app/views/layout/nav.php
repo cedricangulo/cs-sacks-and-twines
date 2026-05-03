@@ -1,7 +1,7 @@
 <?php
 $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 ?>
-<header class="fixed w-full p-4 bg-background border-b">
+<header class="fixed w-full p-4 bg-background border-b z-50">
   <?php if (app_current_user_role() === 'owner'): ?>
     <!-- Owners get the sidebar toggle because they can navigate the full app. -->
     <button class="btn-icon-outline" type="button" onclick="document.dispatchEvent(new CustomEvent('basecoat:sidebar'))">
