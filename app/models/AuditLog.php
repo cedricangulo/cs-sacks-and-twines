@@ -130,4 +130,65 @@ class AuditLog
 
 		return (int) $statement->fetchColumn();
 	}
+
+	/**
+	 * Get filtered, sorted, paginated audit logs.
+	 *
+	 * @param array{search?: string, action?: string, user_id?: int, date_from?: string, date_to?: string, sort?: string, dir?: string, page?: int, limit?: int} $params
+	 * @return array{logs: array<int, array<string, mixed>>, pagination: array{page: int, limit: int, total: int, total_pages: int}}
+	 */
+	public function getFiltered(array $params): array
+	{
+		$columns = 'al.log_id, al.action, al.description, al.ip_address, al.created_at, u.name AS user_name, u.email AS user_email, u.role AS user_role';
+		$searchColumns = ['al.description', 'u.name', 'u.email'];
+		$allowedSortColumns = ['al.created_at', 'al.action', 'al.description', 'u.name', 'u.email'];
+		$defaultSort = 'al.created_at';
+		$defaultDir = 'DESC';
+
+		$qf = new QueryFilter($this->pdo, 'audit_logs al');
+		$qf->join('users u ON u.user_id = al.user_id');
+		$qf->search($params['search'] ?? '', $searchColumns);
+		$qf->where('al.action', $params['action'] ?? '');
+		$qf->where('al.user_id', isset($params['user_id']) ? (int) $params['user_id'] : null);
+		$qf->dateRange('al.created_at', $params['date_from'] ?? null, $params['date_to'] ?? null);
+		$qf->sort($defaultSort, $defaultDir, $params['sort'] ?? '', $params['dir'] ?? '', $allowedSortColumns);
+		$qf->paginate($params['page'] ?? 1, $params['limit'] ?? 20);
+
+		$logs = $qf->select($columns);
+		$pagination = $qf->pagination();
+
+		return [
+			'logs' => $logs,
+			'pagination' => $pagination,
+		];
+	}
+
+	/**
+	 * Get all unique actions for filter dropdown.
+	 *
+	 * @return array<string>
+	 */
+	public function getDistinctActions(): array
+	{
+		$statement = $this->pdo->query('SELECT DISTINCT action FROM audit_logs ORDER BY action ASC');
+
+		return array_map(static fn($row): string => (string) $row['action'], $statement->fetchAll());
+	}
+
+	/**
+	 * Get all users who have audit logs (for filter dropdown).
+	 *
+	 * @return array<int, array{user_id: int, name: string}>
+	 */
+	public function getUsersWithLogs(): array
+	{
+		$statement = $this->pdo->query(
+			'SELECT DISTINCT u.user_id, u.name
+			 FROM audit_logs al
+			 JOIN users u ON u.user_id = al.user_id
+			 ORDER BY u.name ASC'
+		);
+
+		return $statement->fetchAll();
+	}
 }

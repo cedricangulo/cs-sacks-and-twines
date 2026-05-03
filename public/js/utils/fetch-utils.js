@@ -37,3 +37,24 @@ export async function fetchJson(url, options) {
     throw new Error('API returned invalid JSON.');
   }
 }
+
+/**
+ * Fetch JSON but return both response and parsed payload without throwing.
+ * Useful for callers that need to inspect `payload.errors` when the response is not OK.
+ *
+ * @param {string} url
+ * @param {RequestInit} [options]
+ * @returns {Promise<{ response: Response, payload: unknown }>}
+ */
+export async function fetchJsonResponse(url, options) {
+  const response = await fetch(url, options);
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch (e) {
+    payload = null;
+  }
+
+  return { response, payload };
+}
