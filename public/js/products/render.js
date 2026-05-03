@@ -2,14 +2,22 @@ import { escapeHtml } from '../utils/dom-utils.js';
 import { getSelectedItems, getSelectedItemsArray, setQuantity, setDispatchUom, incrementQuantity, decrementQuantity, removeItem } from './state.js';
 
 function getDefaultImage(firstTwo) {
-  return `<div class="aspect-video bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium">${firstTwo}</div>`;
+  return `<div class="aspect-video bg-muted flex items-center justify-center text-muted-foreground overflow-hidden type-lg font-medium">${firstTwo}</div>`;
 }
 
 function getProductImage(product) {
   const firstTwo = (product.name || '').slice(0, 2).toUpperCase();
   if (product.image_path) {
-    const imageUrl = `/cs-sacks-and-twines/public/uploads/products/${escapeHtml(product.image_path)}`;
-    return `<img src="${imageUrl}" class="aspect-video object-none object-center" alt="" />`;
+    const uploadsBase = (() => {
+      const apiElem = document.querySelector('[data-api-url]');
+      const api = apiElem?.getAttribute('data-api-url') || '/api';
+      const pathname = new URL(api, window.location.origin).pathname;
+      const idx = pathname.indexOf('/api');
+      return idx !== -1 ? pathname.slice(0, idx) : '';
+    })();
+
+    const imageUrl = `${uploadsBase}/public/uploads/products/${escapeHtml(product.image_path)}`;
+    return `<img src="${imageUrl}" class="aspect-video object-none object-center" alt="${escapeHtml(product.name || '')}" />`;
   }
   return getDefaultImage(firstTwo);
 }
@@ -20,22 +28,21 @@ function getUnitToggle(product, selectedItem) {
   const currentUom = selectedItem && typeof selectedItem === 'object' ? selectedItem.dispatch_uom : baseUom;
 
   if (category === 'sacks') {
-    return `<input type="hidden" name="dispatch_uom" value="piece" data-dispatch-uom="${product.product_id}" />`;
+    return '';
   }
 
   if (category === 'twines') {
     const isRoll = currentUom === 'roll';
     const isKilo = currentUom === 'kilo';
     return `
-      <div class="flex gap-1 w-full" data-unit-toggle="${product.product_id}">
-        <button type="button" class="flex-1 btn${isRoll ? '-primary' : '-ghost'}" data-uom="roll">Roll</button>
-        <button type="button" class="flex-1 btn${isKilo ? '-primary' : '-ghost'}" data-uom="kilo">Kg</button>
-        <input type="hidden" name="dispatch_uom" value="${currentUom}" data-dispatch-uom="${product.product_id}" />
+      <div role="group" class="button-group w-full border rounded-(--radius-md)" data-unit-toggle="${product.product_id}">
+        <button type="button" class="flex-1 h-7! type-sm btn${isRoll ? '-secondary' : '-ghost'}" data-uom="roll">Roll</button>
+        <button type="button" class="flex-1 h-7! type-sm btn${isKilo ? '-secondary' : '-ghost'}" data-uom="kilo">Kg</button>
       </div>
     `;
   }
 
-  return `<input type="hidden" name="dispatch_uom" value="${baseUom}" data-dispatch-uom="${product.product_id}" />`;
+  return '';
 }
 
 export function renderProductCard(product) {
@@ -49,20 +56,18 @@ export function renderProductCard(product) {
   const isAtMax = quantity >= stock && stock > 0;
 
   return `
-    <div class="card p-0 gap-0 justify-between" data-product-id="${product.product_id}" data-stock="${stock}" data-category="${product.category || ''}">
+    <div class="card p-0 gap-0 justify-between overflow-hidden" data-product-id="${product.product_id}" data-stock="${stock}" data-category="${product.category || ''}">
       <div>
         <section class="px-0 max-h-32 overflow-hidden">
           ${getProductImage(product)}
         </section>
         <header class="p-2 border-t">
-          <h3 class="type-sm font-medium truncate">${escapeHtml(product.name || '')}</h3>
-          <p class="type-xs text-muted-foreground">${escapeHtml(product.sku_code || '')}</p>
-          <div class="flex w-full items-start justify-between">
-            <span class="type-xs text-muted-foreground">${stock} ${baseUom}</span>
-            <div class="flex items-start gap-2">
-              ${isLowStock ? '<span class="badge-warning text-xs">Low</span>' : ''}
-            </div>
+          <div class="flex w-full items-start justify-between gap-2">
+            <h3 class="type-sm font-medium truncate">${escapeHtml(product.name || '')}</h3>
+            ${isLowStock ? '<span class="badge-destructive type-xs">Low</span>' : ''}
           </div>
+          <p class="mb-2 type-xs text-muted-foreground">${escapeHtml(product.sku_code || '')}</p>
+          <span class="type-base text-muted-foreground">${stock} ${baseUom}</span>
         </header>
       </div>
       <footer class="p-2 flex flex-col gap-2">
@@ -112,9 +117,16 @@ export function renderProductCard(product) {
 export function renderProductsGrid(products) {
   if (products.length === 0) {
     return `
-      <div class="col-span-full py-12 text-center">
-        <p class="type-md text-muted-foreground">No products found</p>
-        <p class="type-sm text-muted-foreground">Add products via stock-in to see them here.</p>
+      <div class="col-span-full flex items-center justify-center py-12">
+        <div class="flex flex-col items-center justify-center gap-4 rounded-lg border-dashed p-8 text-center">
+          <div class="flex max-w-sm flex-col items-center gap-3 text-center">
+            <div class="bg-muted text-foreground flex size-12 shrink-0 items-center justify-center rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </div>
+            <h3 class="text-lg font-medium tracking-tight">No Products</h3>
+            <p class="text-muted-foreground text-sm/relaxed">Add your first product to start tracking inventory.</p>
+          </div>
+        </div>
       </div>
     `;
   }
@@ -155,7 +167,7 @@ export function renderDispatchQueue() {
     queueContainer.innerHTML = items.map(item => {
       const firstTwo = (item.name || '').slice(0, 2).toUpperCase();
       const imageHtml = item.image_path
-        ? `<img src="/cs-sacks-and-twines/public/uploads/products/${escapeHtml(item.image_path)}" class="size-10 object-cover rounded" alt="" />`
+        ? `<img src="${(() => { const apiElem = document.querySelector('[data-api-url]'); const api = apiElem?.getAttribute('data-api-url') || '/api'; const pathname = new URL(api, window.location.origin).pathname; const idx = pathname.indexOf('/api'); const base = idx !== -1 ? pathname.slice(0, idx) : ''; return `${base}/public/uploads/products/${escapeHtml(item.image_path)}`; })()}" class="size-10 object-cover rounded" alt="" />`
         : `<div class="size-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium">${firstTwo}</div>`;
 
       return `
@@ -163,10 +175,17 @@ export function renderDispatchQueue() {
           ${imageHtml}
           <div class="flex-1 min-w-0">
             <p class="type-sm truncate">${escapeHtml(item.name || '')}</p>
-            <p>${item.quantity}
-              <span class="type-xs text-muted-foreground ml-1">${item.dispatch_uom}</span>
+            <p class="type-base font-semibold">
+              ${item.quantity}
+              <span class="type-xs text-muted-foreground">${item.dispatch_uom}</span>
             </p>
           </div>
+          <button type="button" class="btn-icon-destructive" data-action="remove" title="Remove">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
         </div>
       `;
     }).join('');
@@ -214,13 +233,9 @@ export function initProductCardHandlers(container) {
         const buttons = toggleContainer.querySelectorAll('button[data-uom]');
         buttons.forEach(btn => {
           const isSelected = btn.getAttribute('data-uom') === newUom;
-          btn.classList.toggle('btn-primary', isSelected);
+          btn.classList.toggle('btn-secondary', isSelected);
           btn.classList.toggle('btn-ghost', !isSelected);
         });
-        const hiddenInput = toggleContainer.querySelector('input[name="dispatch_uom"]');
-        if (hiddenInput) {
-          hiddenInput.value = newUom;
-        }
       }
 
       renderDispatchQueue();

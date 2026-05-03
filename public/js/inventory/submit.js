@@ -10,6 +10,7 @@ import {
 } from './state.js';
 import { validateInventoryForm } from './validation.js';
 import { toast } from '../utils/toast.js';
+import { fetchJsonResponse } from '../utils/fetch-utils.js';
 import { refreshComboboxOptions, loadProducts } from './get-products.js';
 
 /**
@@ -60,7 +61,7 @@ export function initInventorySubmission(state, options = {}) {
     clearFieldErrors(state);
 
     try {
-      const response = await fetch(state.submitUrl, {
+      const { response, payload } = await fetchJsonResponse(state.submitUrl, {
         method: 'POST',
         body: new FormData(state.form),
         credentials: 'same-origin',
@@ -69,7 +70,6 @@ export function initInventorySubmission(state, options = {}) {
         },
       });
 
-      const payload = await response.json().catch(() => null);
       const message = payload && typeof payload.message === 'string'
         ? payload.message
         : 'Unable to save inventory right now. Please try again.';

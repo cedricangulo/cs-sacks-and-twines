@@ -1,4 +1,4 @@
-import { loadSuppliers } from './get-suppliers.js';
+import { initSuppliersTable, refreshSuppliers } from './get-suppliers.js';
 import { initSuppliersForm } from './submit.js';
 
 function initSuppliersPage() {
@@ -7,9 +7,9 @@ function initSuppliersPage() {
     return;
   }
 
-  loadSuppliers();
+  initSuppliersTable();
   initSuppliersForm({
-    onSuccess: () => loadSuppliers({ force: true }),
+    onSuccess: () => refreshSuppliers(),
   });
 }
 

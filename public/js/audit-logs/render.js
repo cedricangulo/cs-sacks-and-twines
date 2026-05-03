@@ -1,4 +1,4 @@
-import { escapeHtml } from '../utils/dom-utils.js';
+import { escapeHtml, renderEmptyState } from '../utils/dom-utils.js';
 import { formatDate } from '../utils/date-utils.js';
 
 export function renderLogRow(log, includeUser = true) {
@@ -18,13 +18,17 @@ export function renderLogRow(log, includeUser = true) {
       <td class="whitespace-nowrap">${formatDate(log.created_at)}</td>
       ${userColumn}
       <td>${actionBadge}</td>
-      <td class="max-w-md">${escapeHtml(log.description || '')}</td>
+      <td>
+        <p class="max-w-prose type-base truncate line-clamp-1">
+          ${escapeHtml(log.description || '')}
+        </p>
+      </td>
     </tr>
   `;
 }
 
 function getActionBadge(action) {
-  const badgeClass = action === 'stock_in' ? '-secondary' : action === 'stock_out' ? '-destructive' : '-outline';
+  const badgeClass = action === 'stock_in' ? '-secondary' : action === 'stock_out' ? '-outline' : '-ghost';
   const label = action === 'stock_in' ? 'Stock In' : action === 'stock_out' ? 'Stock Out' : action;
 
   return `<span class="badge${badgeClass}">${escapeHtml(label)}</span>`;
@@ -32,14 +36,7 @@ function getActionBadge(action) {
 
 export function renderLogsTable(logs, includeUser = true) {
   if (logs.length === 0) {
-    const colSpan = includeUser ? 4 : 3;
-    return `
-      <tr>
-        <td colspan="${colSpan}" class="py-8 text-center text-muted-foreground">
-          No audit logs found.
-        </td>
-      </tr>
-    `;
+    return renderEmptyState('audit-logs', 'No audit logs found', 'Activity history will appear here once actions are recorded.');
   }
 
   return logs.map(log => renderLogRow(log, includeUser)).join('');
@@ -92,7 +89,7 @@ export function renderPagination(pagination, containerId) {
   }
 
   return `
-    <nav role="navigation" aria-label="pagination" class="mx-auto flex w-full justify-center">
+    <nav role="navigation" aria-label="pagination" class="ml-auto flex w-full justify-center">
       <ul class="flex flex-row items-center gap-1">
         <li>
           <button

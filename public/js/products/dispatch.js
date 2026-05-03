@@ -28,7 +28,7 @@ export async function submitDispatch(customerReference) {
       dispatch_uom: item.dispatch_uom || 'piece',
     }))));
 
-    const response = await fetch(dispatchUrl, {
+    const payload = await fetchJson(dispatchUrl, {
       method: 'POST',
       body: formData,
       credentials: 'same-origin',
@@ -37,10 +37,8 @@ export async function submitDispatch(customerReference) {
       },
     });
 
-    const payload = await response.json();
-
-    if (!response.ok || !payload.success) {
-      throw new Error(payload.message || 'Failed to submit dispatch');
+    if (!payload || !payload.success) {
+      throw new Error((payload && payload.message) || 'Failed to submit dispatch');
     }
 
     clearSelection();

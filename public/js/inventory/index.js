@@ -3,7 +3,7 @@ import { initInventoryCombobox } from './combobox.js';
 import { initInventoryModes } from './modes.js';
 import { initInventorySubmission } from './submit.js';
 import { resetForm, initImageHandlers, fillExistingItem } from './state.js';
-import { loadProducts, refreshComboboxOptions } from './get-products.js';
+import { loadProducts, refreshComboboxOptions, initProductsTable } from './get-products.js';
 
 async function onInventorySaveSuccess() {
   await loadProducts({ force: true });
@@ -36,7 +36,7 @@ function initInventoryPage() {
     resetForm(state);
   });
 
-  loadProducts();
+  initProductsTable();
   resetForm(state);
 }
 

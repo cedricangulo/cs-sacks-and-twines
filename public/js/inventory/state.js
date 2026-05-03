@@ -232,7 +232,15 @@ function fillExistingItem(state, option) {
   state.imageInput.value = '';
 
   if (imagePath) {
-    showImagePreview(state, `/cs-sacks-and-twines/public/uploads/products/${imagePath}`);
+    const uploadsBase = (() => {
+      const apiElem = document.querySelector('[data-api-url]');
+      const api = apiElem?.getAttribute('data-api-url') || '/api';
+      const pathname = new URL(api, window.location.origin).pathname;
+      const idx = pathname.indexOf('/api');
+      return idx !== -1 ? pathname.slice(0, idx) : '';
+    })();
+
+    showImagePreview(state, `${uploadsBase}/public/uploads/products/${imagePath}`);
   } else {
     showImageUpload(state);
   }
@@ -262,7 +270,7 @@ function switchToNewItem(state) {
   state.lowStockInput.value = '0.00';
   state.imageInput.value = '';
   state.imagePreviewMessage.textContent = 'Preview';
-  updatePreviewMessage(state, 'New item mode enabled. Enter the item name and details below.');
+  updatePreviewMessage(state, 'New item mode enabled. Enter the item name and details.');
   state.itemNameInput.value = '';
   closeCombobox(state);
   state.itemNameInput.focus();

@@ -1,5 +1,5 @@
 import { fetchJson } from '../utils/fetch-utils.js';
-import { loadUsers } from './get-users.js';
+import { initUsersTable, refreshUsers } from './get-users.js';
 import { initUserCreateForm } from './submit.js';
 import { toast } from '../utils/toast.js';
 
@@ -25,7 +25,7 @@ async function deactivateUser(userId) {
 
 function showDeactivateDialog(userId, userName) {
   const dialog = document.getElementById('confirm-deactivate-dialog');
-  const nameElement = document.getElementById('deactivate-staff-name');
+  const nameElement = document.getElementById('deactivate-user-description');
   const confirmButton = dialog?.querySelector('[data-confirm-deactivate]');
 
   if (!dialog || !nameElement || !confirmButton) {
@@ -46,7 +46,7 @@ function showDeactivateDialog(userId, userName) {
         'Staff deactivated successfully',
         `${userNameForToast || 'The staff member'} can no longer sign in.`
       );
-      await loadUsers({ force: true });
+      await refreshUsers();
     } catch (error) {
       const message = error instanceof Error && error.message
         ? error.message
@@ -93,10 +93,10 @@ function initUsersPage() {
     return;
   }
 
-  loadUsers();
+  initUsersTable();
   bindUserActions();
   initUserCreateForm({
-    onSuccess: () => loadUsers({ force: true }),
+    onSuccess: () => refreshUsers(),
   });
 }
 
