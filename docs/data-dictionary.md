@@ -23,6 +23,7 @@ Records all movements and actions within the system.
 | **action**      | String    | VARCHAR(255)      | -    | Maikling title ng action (e.g., "Created Dispatch"). |
 | **description** | Text      | TEXT              | -    | Buong detalye ng ginawa ng user.                     |
 | **ip_address**  | String    | VARCHAR(45)       | -    | IP Address ng device na ginamit.                     |
+| **user_agent**  | String    | VARCHAR(512)      | -    | User agent string ng browser/device na ginamit.      |
 | **created_at**  | Timestamp | DATETIME          | -    |                                                      |
 | **updated_at**  | Timestamp | DATETIME          | -    |                                                      |
 

@@ -6,6 +6,7 @@ This file indexes all JavaScript functions by their `@code` tag for easy referen
 
 | Code                          | File                                           |
 | ----------------------------- | ---------------------------------------------- |
+| AUD-bindExport                | `public/js/audit-logs/events.js`               |
 | AUD-bindRowEvents             | `public/js/audit-logs/events.js`               |
 | AUD-fetchLogs                 | `public/js/audit-logs/get-logs.js`             |
 | AUD-formatFieldLabel          | `public/js/audit-logs/render.js`               |
@@ -215,6 +216,10 @@ This file indexes all JavaScript functions by their `@code` tag for easy referen
 | UTIL-renderLoadingRow         | `public/js/utils/dom-utils.js`                 |
 | UTIL-renderSortIndicator      | `public/js/utils/data-table.js`                |
 | UTIL-resetSelects             | `public/js/utils/data-table.js`                |
+| UTIL-sanitizeFieldsForSubmit  | `public/js/utils/sanitize.js`                  |
+| UTIL-sanitizeFormData         | `public/js/utils/fetch-utils.js`               |
+| UTIL-sanitizeForSubmit        | `public/js/utils/sanitize.js`                  |
+| UTIL-sanitizeInput            | `public/js/utils/sanitize.js`                  |
 | UTIL-serverBindClear          | `public/js/utils/data-table.js`                |
 | UTIL-serverBindPagination     | `public/js/utils/data-table.js`                |
 | UTIL-serverBindSearch         | `public/js/utils/data-table.js`                |

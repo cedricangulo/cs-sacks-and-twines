@@ -74,17 +74,17 @@ CSS libraries help developers create attractive, responsive interfaces faster. S
 ### 1. Config
 [ ] **`php.ini` Hardening:** Set `display_errors = Off` and `expose_php = Off` to hide your PHP version and prevent raw database errors from being shown to users. *(Server-level config - not in app code)*
 [ ] **Server-Level Upload Limits:** Restrict `upload_max_filesize` and `post_max_size` in `php.ini` to limit the size of uploaded sack/twine reference images. *(Server-level config - not in app code)*
-[ ] **`.htaccess` Directory Protection:** Add `Options -Indexes` to your root folder to disable directory listing. *(Not implemented - root .htaccess missing this directive)*
-[ ] **`.htaccess` File Protection:** Use `<FilesMatch>` to enforce `Require all denied` on sensitive files like your `.json` audit logs, `.htpasswd`, or database configurations. *(Partial - app/.htaccess protects app dir, but no specific file protection)*
-[ ] **Disable PHP in Uploads:** Place an `.htaccess` file inside your image uploads folder with `php_flag engine off` to prevent execution of malicious scripts. *(No uploads directory exists yet)*
+[x] **`.htaccess` Directory Protection:** Add `Options -Indexes` to your root folder to disable directory listing. *(Implemented in root .htaccess)*
+[x] **`.htaccess` File Protection:** Use `<FilesMatch>` to enforce `Require all denied` on sensitive files like your `.json` audit logs, `.htpasswd`, or database configurations. *(Implemented in root .htaccess)*
+[x] **Disable PHP in Uploads:** Place an `.htaccess` file inside your image uploads folder with `php_flag engine off` to prevent execution of malicious scripts. *(Implemented in public/uploads/.htaccess)*
 
 ### 2. Validation (Client and Server Side)
 [x] **Client-Side Validation:** Use HTML5 attributes (e.g., `type="number"`, `min`, `max`, `required`) and front-end JavaScript to validate that inputs like "Quantity", "SRP Price", and "Low Stock Threshold" are formatted correctly before submission.
 [x] **Server-Side Validation:** Never trust user input. Check the data again in PHP using functions like `strlen()` or `preg_match()` to ensure data types are correct and to prevent buffer overflow attacks.
-[ ] **Code-Level Extension Validation:** Explicitly validate uploaded image files on the server using `in_array()` against an allowed list (e.g., `jpg`, `png`). *(No image upload feature implemented yet)*
+[x] **Code-Level Extension Validation:** Explicitly validate uploaded image files on the server using `in_array()` against an allowed list (e.g., `jpg`, `png`). *(Implemented in app/core/uploads.php)*
 
 ### 3. Sanitization (Client and Server Side)
-[ ] **Client-Side Sanitization:** Utilize JavaScript to filter out dangerous characters from text fields (like "Item Name" or "Supplier") before the form is sent to the server. *(Relies on server-side sanitization)*
+[x] **Client-Side Sanitization:** Utilize JavaScript to filter out dangerous characters from text fields (like "Item Name" or "Supplier") before the form is sent to the server. *(Implemented in public/js/utils/sanitize.js and submit flows)*
 [x] **Server-Side Sanitization:** Clean all incoming data in PHP to strip out HTML tags (e.g., `<script>`) to prevent Cross-Site Scripting (XSS) attacks before saving it to your database.
 
 ### 4. Hash (Updated from Pre-Lesson 6)
@@ -95,10 +95,10 @@ CSS libraries help developers create attractive, responsive interfaces faster. S
 [x] **Secure Login Verification:** Use the `password_verify()` function during the login process to securely check if the user's entered plain-text password matches the salted hash stored in the database.
 
 ### 5. Session Management
-[ ] **Session Hijacking Defenses:** Enforce secure session cookies by setting `session.cookie_httponly = 1`, `session.cookie_secure = 1`, and `session.use_only_cookies = 1` in your `php.ini` or session initiation code. *(Not implemented - no cookie security settings in bootstrap.php)*
+[x] **Session Hijacking Defenses:** Enforce secure session cookies by setting `session.cookie_httponly = 1`, `session.cookie_secure = 1`, and `session.use_only_cookies = 1` in your `php.ini` or session initiation code. *(Implemented in app/core/bootstrap.php)*
 [x] **Role-Based Access Control (RBAC):** Use session variables to strictly enforce user roles. Cashiers should only have permission to view products and process "Stock Out" transactions, while only Admins can access "Stock In", user management, and product editing.
 
 ### 6. Additional Security Features (Optional / Score Boosters)
 [x] **Prepared Statements (CRUD Security):** Defeat SQL Injection completely by using `mysqli_prepare()`, `mysqli_stmt_bind_param()`, and `mysqli_stmt_execute()` for all database transactions (Stock In, Stock Out, Add Product). *(Uses PDO prepare/execute)*
-[ ] **JSON Audit Logs:** Track all FIFO inventory rotations (Stock In/Out) by saving the action, user, and timestamp into a local `.json` file that is protected by `.htaccess`. *(Uses database audit_logs table instead)*
-[ ] **Frontend Snooping Deterrents:** Write a JavaScript event listener to disable the right-click context menu (`contextmenu`) and specific keyboard shortcuts (like F12 or Ctrl+Shift+I) to deter casual code snooping. *(Not implemented)*
+[x] **JSON Audit Logs:** Track all FIFO inventory rotations (Stock In/Out) by saving the action, user, and timestamp into a local `.json` file that is protected by `.htaccess`. *(Implemented in app/core/audit.php and app/logs/.htaccess)*
+[x] **Frontend Snooping Deterrents:** Write a JavaScript event listener to disable the right-click context menu (`contextmenu`) and specific keyboard shortcuts (like F12 or Ctrl+Shift+I) to deter casual code snooping. *(Implemented in public/js/security-deterrents.js)*

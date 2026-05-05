@@ -1,0 +1,2 @@
+# This directory stores audit log files as JSON Lines.
+# Files are named audit-YYYY-MM.log and rotate monthly.

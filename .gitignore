@@ -9,6 +9,8 @@
 
 # Ignore logs and debug files
 /logs/
+/app/logs/*.log
+/app/logs/audit/*.log
 *.log
 npm-debug.log*
 pnpm-debug.log*
