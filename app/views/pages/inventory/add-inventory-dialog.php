@@ -1,10 +1,14 @@
 <?php
+
+require_once __DIR__ . '/../../../core/sanitize.php';
+
 if (!isset($products) || !is_array($products)) {
   $products = [];
 }
 if (!isset($suppliers) || !is_array($suppliers)) {
   $suppliers = [];
 }
+
 ?>
 
 <dialog id="add-inventory-dialog" class="w-full dialog sm:max-w-5xl max-h-164" aria-labelledby="add-inventory-dialog-title" aria-describedby="add-inventory-dialog-description" data-inventory-dialog onclick="if (event.target === this) this.close()">
@@ -15,7 +19,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
     </header>
 
     <section class="overflow-y-auto scrollbar">
-      <form id="inventory-form" class="pb-4 form" data-inventory-form action="<?= htmlspecialchars(routeUrl('/api/stock-in'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
+      <form id="inventory-form" class="pb-4 form" data-inventory-form action="<?= escape_for_html(routeUrl('/api/stock-in')) ?>" method="POST" novalidate>
         <input type="hidden" name="mode" value="existing" data-inventory-mode />
         <input type="hidden" name="product_id" value="" data-product-id />
 
@@ -112,18 +116,18 @@ if (!isset($suppliers) || !is_array($suppliers)) {
                           tabindex="0"
                           class="flex-col items-start w-full gap-1 transition h-fit btn-ghost inventory-option"
                           data-combobox-option
-                          data-value="<?= htmlspecialchars($productId, ENT_QUOTES, 'UTF-8') ?>"
-                          data-label="<?= htmlspecialchars($productName, ENT_QUOTES, 'UTF-8') ?>"
-                          data-sku="<?= htmlspecialchars($productSku, ENT_QUOTES, 'UTF-8') ?>"
-                          data-category="<?= htmlspecialchars($productCategory, ENT_QUOTES, 'UTF-8') ?>"
-                          data-unit="<?= htmlspecialchars($productUnit, ENT_QUOTES, 'UTF-8') ?>"
-                          data-weight="<?= htmlspecialchars($productWeight, ENT_QUOTES, 'UTF-8') ?>"
-                          data-image="<?= htmlspecialchars($productImage, ENT_QUOTES, 'UTF-8') ?>"
-                          data-supplier-id="<?= htmlspecialchars($defaultSupplierId, ENT_QUOTES, 'UTF-8') ?>"
-                          data-low-stock-threshold="<?= htmlspecialchars($productLowStockThreshold, ENT_QUOTES, 'UTF-8') ?>"
-                          data-filter="<?= htmlspecialchars($filterText, ENT_QUOTES, 'UTF-8') ?>">
-                          <h4 class="font-medium type-base text-foreground"><?= htmlspecialchars($productName, ENT_QUOTES, 'UTF-8') ?></h4>
-                          <div class="type-xs text-muted-foreground"><?= htmlspecialchars($productSku, ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars($productCategory, ENT_QUOTES, 'UTF-8') ?> · <?= htmlspecialchars($productUnit, ENT_QUOTES, 'UTF-8') ?></div>
+                          data-value="<?= escape_for_html($productId) ?>"
+                          data-label="<?= escape_for_html($productName) ?>"
+                          data-sku="<?= escape_for_html($productSku) ?>"
+                          data-category="<?= escape_for_html($productCategory) ?>"
+                          data-unit="<?= escape_for_html($productUnit) ?>"
+                          data-weight="<?= escape_for_html($productWeight) ?>"
+                          data-image="<?= escape_for_html($productImage) ?>"
+                          data-supplier-id="<?= escape_for_html($defaultSupplierId) ?>"
+                          data-low-stock-threshold="<?= escape_for_html($productLowStockThreshold) ?>"
+                          data-filter="<?= escape_for_html($filterText) ?>">
+                          <h4 class="font-medium type-base text-foreground"><?= escape_for_html($productName) ?></h4>
+                          <div class="type-xs text-muted-foreground"><?= escape_for_html($productSku) ?> · <?= escape_for_html($productCategory) ?> · <?= escape_for_html($productUnit) ?></div>
                         </div>
                       <?php endforeach; ?>
 
@@ -226,7 +230,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
                 <select class="w-full select" id="inventory-item-supplier" name="supplier_id" disabled required data-field-input="supplier_id" aria-describedby="supplier_id-error">
                   <option value="">Select supplier</option>
                   <?php foreach ($suppliers as $supplier): ?>
-                    <option value="<?= htmlspecialchars((string) ($supplier['supplier_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($supplier['company_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></option>
+                    <option value="<?= escape_for_html((string) ($supplier['supplier_id'] ?? '')) ?>"><?= escape_for_html((string) ($supplier['company_name'] ?? '')) ?></option>
                   <?php endforeach; ?>
                 </select>
                 <p id="supplier_id-error" class="hidden text-sm text-destructive" role="alert" data-field-error="supplier_id"></p>

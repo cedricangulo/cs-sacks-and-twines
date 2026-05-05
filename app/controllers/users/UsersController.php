@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../models/Users.php';
+require_once __DIR__ . '/../../core/sanitize.php';
 
 class UsersController
 {
@@ -58,16 +59,21 @@ class UsersController
       ], 405);
     }
 
-    $name = $this->normalizeText($_POST['name'] ?? '');
-    $email = $this->normalizeText($_POST['email'] ?? '');
+    // Normalize inputs
+    $name = normalize_text($_POST['name'] ?? '');
+    $email = normalize_text($_POST['email'] ?? '');
     $role = 'staff';
-    $password = $this->normalizePassword($_POST['password'] ?? '');
+    $password = normalize_password($_POST['password'] ?? '');
 
-    $name = $this->sanitizePlainText($name);
-    $email = $this->sanitizePlainText($email);
-    $password = $this->sanitizePassword($password);
+    // Centralized sanitization for storage
+    $name = sanitize_plain_text($name);
+
+    $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+    $email = sanitize_plain_text($email);
+    $password = sanitize_password($password);
 
     $errors = $this->validateNewUser($name, $email, $role, $password);
+
     if ($errors !== []) {
       $this->jsonResponse([
         'success' => false,
@@ -149,7 +155,7 @@ class UsersController
       if (!$deactivated) {
         $this->jsonResponse([
           'success' => false,
-        'message' => 'Staff member not found or already deactivated.',
+          'message' => 'Staff member not found or already deactivated.',
         ], 404);
       }
 
@@ -163,58 +169,6 @@ class UsersController
         'message' => 'Unable to deactivate staff right now. Please try again.',
       ], 500);
     }
-  }
-
-  /**
-   * Normalize input text by trimming and collapsing whitespace.
-   *
-   * @param mixed $value
-   * @return string
-   */
-  private function normalizeText($value): string
-  {
-    $text = trim((string) $value);
-    $text = preg_replace('/\s+/', ' ', $text);
-
-    return $text ?? '';
-  }
-
-  /**
-   * Normalize password input by trimming.
-   *
-   * @param mixed $value
-   * @return string
-   */
-  private function normalizePassword($value): string
-  {
-    return trim((string) $value);
-  }
-
-  /**
-   * Strip tags and control characters from input.
-   *
-   * @param string $value
-   * @return string
-   */
-  private function sanitizePlainText(string $value): string
-  {
-    $cleaned = strip_tags($value);
-    $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $cleaned);
-
-    return $cleaned ?? '';
-  }
-
-  /**
-   * Remove control characters from passwords.
-   *
-   * @param string $value
-   * @return string
-   */
-  private function sanitizePassword(string $value): string
-  {
-    $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $value);
-
-    return $cleaned ?? '';
   }
 
   /**
@@ -248,5 +202,4 @@ class UsersController
 
     return $errors;
   }
-
 }

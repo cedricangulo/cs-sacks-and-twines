@@ -10,7 +10,7 @@ import {
 } from './state.js';
 import { validateInventoryForm } from './validation.js';
 import { toast } from '../utils/toast.js';
-import { fetchJsonResponse } from '../utils/fetch-utils.js';
+import { fetchJsonResponse, sanitizeFormData } from '../utils/fetch-utils.js';
 import { loadProducts } from './get-products.js';
 
 /**
@@ -64,7 +64,7 @@ export function initInventorySubmission(state, options = {}) {
     try {
       const { response, payload } = await fetchJsonResponse(state.submitUrl, {
         method: 'POST',
-        body: new FormData(state.form),
+        body: sanitizeFormData(state.form),
         credentials: 'same-origin',
         headers: {
           'X-Requested-With': 'fetch',

@@ -1,6 +1,30 @@
+import { sanitizeFieldsForSubmit } from './sanitize.js';
+
 /**
- * Fetch JSON and return the parsed payload.
+ * Create a FormData object with sanitized text values.
+ * Preserves repeated keys, skips File objects.
  *
+ * @code UTIL-sanitizeFormData
+ * @param {HTMLFormElement} form
+ * @returns {FormData}
+ */
+export function sanitizeFormData(form) {
+  const formData = new FormData();
+
+  for (const [key, value] of new FormData(form)) {
+    if (value instanceof File) {
+      formData.append(key, value);
+    } else if (typeof value === 'string') {
+      formData.append(key, sanitizeFieldsForSubmit({ [key]: value })[key]);
+    } else {
+      formData.append(key, String(value));
+    }
+  }
+
+  return formData;
+}
+
+/**
  * @code UTIL-fetchJson
  * @param {string} url
  * @param {RequestInit} [options]

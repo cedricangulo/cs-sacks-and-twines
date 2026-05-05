@@ -5,6 +5,13 @@ declare(strict_types=1);
 // Start the session once for the whole request lifecycle so authentication
 // and route helpers can read and write role state safely.
 if (session_status() === PHP_SESSION_NONE) {
+	// Set session cookie security flags to prevent session hijacking
+	session_set_cookie_params([
+		'httponly' => true,
+		'secure' => true,
+		'samesite' => 'Strict',
+	]);
+	ini_set('session.use_only_cookies', '1');
 	session_start();
 }
 

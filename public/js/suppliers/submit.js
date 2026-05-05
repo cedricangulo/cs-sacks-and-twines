@@ -1,4 +1,4 @@
-import { fetchJson } from '../utils/fetch-utils.js';
+import { fetchJsonResponse, sanitizeFormData } from '../utils/fetch-utils.js';
 import { validateSupplierForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 
@@ -152,20 +152,24 @@ export function initSuppliersForm(options = {}) {
     setSubmitting(true);
 
     try {
-      const response = await fetchJson(form.action, {
+      const { response, payload } = await fetchJsonResponse(form.action, {
         method: 'POST',
-        body: new FormData(form),
+        body: sanitizeFormData(form),
         credentials: 'same-origin',
         headers: {
           'X-Requested-With': 'fetch',
         },
       });
 
-      if (!response || response.success !== true) {
-        if (response?.errors && typeof response.errors === 'object') {
-          Object.entries(response.errors).forEach(([fieldName, message]) => {
-            if (typeof message === 'string') {
-              setFieldError(fieldName, message);
+      const message = payload && typeof payload.message === 'string'
+        ? payload.message
+        : 'Unable to save supplier right now. Please try again.';
+
+      if (!response.ok || !payload || payload.success !== true) {
+        if (payload?.errors && typeof payload.errors === 'object') {
+          Object.entries(payload.errors).forEach(([fieldName, messageValue]) => {
+            if (typeof messageValue === 'string') {
+              setFieldError(fieldName, messageValue);
             }
           });
           const firstField = form.querySelector('[data-invalid] [data-field-input]');
@@ -175,7 +179,7 @@ export function initSuppliersForm(options = {}) {
           return;
         }
 
-        showError(response?.message || 'Unable to save supplier right now. Please try again.');
+        showError(message);
         return;
       }
 
@@ -191,11 +195,8 @@ export function initSuppliersForm(options = {}) {
       if (typeof options.onSuccess === 'function') {
         options.onSuccess();
       }
-    } catch (error) {
-      const message = error instanceof Error && error.message
-        ? error.message
-        : 'Unable to save supplier right now. Please try again.';
-      showError(message);
+    } catch {
+      showError('Unable to save supplier right now. Please try again.');
     } finally {
       setSubmitting(false);
     }

@@ -1,4 +1,5 @@
 import { fetchJson } from '../utils/fetch-utils.js';
+import { sanitizeForSubmit } from '../utils/sanitize.js';
 import { getSelectedItemsArray, clearSelection, setProducts } from './state.js';
 import { getProductsList } from './get-products.js';
 import { renderDispatchQueue, renderProductsGrid } from './render.js';
@@ -28,7 +29,7 @@ export async function submitDispatch(customerReference) {
 
   try {
     const formData = new FormData();
-    formData.append('customer_reference', customerReference || '');
+    formData.append('customer_reference', sanitizeForSubmit(customerReference || ''));
     formData.append('items', JSON.stringify(items.map(item => ({
       product_id: item.product_id,
       quantity: item.quantity,

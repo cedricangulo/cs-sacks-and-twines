@@ -1,9 +1,9 @@
 <?php
-$escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
-$routeUrl = static fn($path) => call_user_func('routeUrl', $path);
+require_once __DIR__ . '/../../../../core/sanitize.php';
 ?>
+
 <section class="p-6 pt-23 space-y-6">
-  <a class="block w-fit" href="<?= $escape($routeUrl('/products')) ?>">
+  <a class="block w-fit" href="<?= escape_for_html(routeUrl('/products')) ?>">
     <button class="btn-ghost">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left">
         <path d="m12 19-7-7 7-7" />
@@ -21,7 +21,7 @@ $routeUrl = static fn($path) => call_user_func('routeUrl', $path);
   </div>
 
   <table class="table">
-    <tbody id="audit-logs-container" data-api-url="<?= $escape($routeUrl('/api/audit-logs/personal')) ?>">
+    <tbody id="audit-logs-container" data-api-url="<?= escape_for_html(routeUrl('/api/audit-logs/personal')) ?>">
       <tr>
         <td colspan="4" class="py-12">
           <div class="flex flex-col items-center justify-center gap-3">
@@ -36,4 +36,4 @@ $routeUrl = static fn($path) => call_user_func('routeUrl', $path);
   <div id="pagination-container"></div>
 </section>
 
-<script type="module" src="<?= $escape($routeUrl('/public/dist/audit-logs/index.js?v=4')) ?>"></script>
+<script type="module" src="<?= escape_for_html(routeUrl('/public/dist/audit-logs/index.js?v=4')) ?>"></script>

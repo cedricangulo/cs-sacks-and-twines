@@ -1,7 +1,11 @@
 <?php
+
+require_once __DIR__ . '/../../../core/sanitize.php';
+
 if (!isset($suppliers) || !is_array($suppliers)) {
   $suppliers = [];
 }
+
 ?>
 
 <dialog id="edit-inventory-dialog" class="w-full dialog sm:max-w-lg" aria-labelledby="edit-inventory-dialog-title" aria-describedby="edit-inventory-dialog-description" data-edit-inventory-dialog onclick="if (event.target === this) this.close()">
@@ -12,7 +16,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
     </header>
 
     <section class="overflow-y-auto scrollbar">
-      <form id="edit-inventory-form" class="pb-4 form" data-edit-inventory-form action="<?= htmlspecialchars(routeUrl('/api/inventory/batches/update'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
+      <form id="edit-inventory-form" class="pb-4 form" data-edit-inventory-form action="<?= escape_for_html(routeUrl('/api/inventory/batches/update')) ?>" method="POST" novalidate>
         <input type="hidden" name="batch_id" value="" data-field-input="batch_id" data-edit-batch-id />
         <input type="hidden" name="product_id" value="" data-field-input="product_id" data-edit-product-id />
 
@@ -24,7 +28,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
             <select class="w-full select" id="edit-inventory-supplier" name="supplier_id" required data-field-input="supplier_id" aria-describedby="edit-supplier-id-error">
               <option value="">Select supplier</option>
               <?php foreach ($suppliers as $supplier): ?>
-                <option value="<?= htmlspecialchars((string) ($supplier['supplier_id'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) ($supplier['company_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></option>
+                <option value="<?= escape_for_html((string) ($supplier['supplier_id'] ?? '')) ?>"><?= escape_for_html((string) ($supplier['company_name'] ?? '')) ?></option>
               <?php endforeach; ?>
             </select>
             <p id="edit-supplier-id-error" class="hidden text-sm text-destructive" role="alert" data-field-error="supplier_id"></p>

@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../../../core/sanitize.php';
+?>
+
 <dialog id="add-user-dialog" class="w-full dialog sm:max-w-5xl max-h-164" aria-labelledby="add-user-dialog-title" aria-describedby="add-user-dialog-description" data-user-dialog onclick="if (event.target === this) this.close()">
   <div>
     <header>
@@ -6,7 +10,7 @@
     </header>
 
     <section class="overflow-y-auto scrollbar">
-      <form id="users-form" class="form pb-4" data-users-form action="<?= htmlspecialchars(routeUrl('/api/users/save'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
+      <form id="users-form" class="form pb-4" data-users-form action="<?= escape_for_html(routeUrl('/api/users/save')) ?>" method="POST" novalidate>
         <div class="hidden px-4 py-3 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-form-error></div>
         <fieldset class="fieldset">
           <div class="grid gap-4">

@@ -1,4 +1,4 @@
-import { fetchJson, fetchJsonResponse } from '../utils/fetch-utils.js';
+import { fetchJson, fetchJsonResponse, sanitizeFormData } from '../utils/fetch-utils.js';
 import { toast } from '../utils/toast.js';
 
 const hiddenClass = 'hidden';
@@ -229,7 +229,7 @@ function initVoidDialog() {
     try {
       const { response, payload } = await fetchJsonResponse(form.action, {
         method: 'POST',
-        body: new FormData(form),
+        body: sanitizeFormData(form),
         credentials: 'same-origin',
         headers: {
           'X-Requested-With': 'fetch',

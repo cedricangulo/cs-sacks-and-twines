@@ -71,7 +71,7 @@ class Users
   {
     $statement = $this->pdo->prepare(
       'INSERT INTO users (name, email, password_hash, role)
-       VALUES (:name, :email, :password_hash, :role)'
+      VALUES (:name, :email, :password_hash, :role)'
     );
     $statement->execute([
       'name' => $name,

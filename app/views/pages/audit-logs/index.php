@@ -1,4 +1,6 @@
-<?php ?>
+<?php 
+require_once __DIR__ . '/../../../core/sanitize.php';
+?>
 
 <section class="p-6 pt-23">
   <div class="flex items-center justify-between w-full gap-4">
@@ -22,7 +24,7 @@
   <div data-filter-bar-placeholder="audit-logs" class="min-h-[4.25rem]"></div>
 
   <table class="table">
-    <tbody id="audit-logs-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/audit-logs'), ENT_QUOTES, 'UTF-8') ?>">
+    <tbody id="audit-logs-container" data-api-url="<?= escape_for_html(routeUrl('/api/audit-logs')) ?>">
       <tr>
         <td colspan="4" class="py-12">
           <div class="flex flex-col items-center justify-center gap-3">
@@ -39,4 +41,4 @@
   <div id="pagination-container"></div>
 </section>
 
-<script type="module" src="<?= htmlspecialchars(routeUrl('/public/dist/audit-logs/index.js?v=4'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script type="module" src="<?= escape_for_html(routeUrl('/public/dist/audit-logs/index.js?v=4')) ?>"></script>

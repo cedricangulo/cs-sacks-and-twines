@@ -4,6 +4,8 @@ include __DIR__ . '/add-inventory-dialog.php';
 include __DIR__ . '/edit-inventory-dialog.php';
 include __DIR__ . '/void-batch-dialog.php';
 
+require_once __DIR__ . '/../../../core/sanitize.php';
+
 $tableHeaders = [
   ['key' => 'name', 'label' => 'Product Name'],
   ['key' => 'sku_code', 'label' => 'SKU'],
@@ -15,6 +17,7 @@ $tableHeaders = [
 ];
 
 ?>
+
 <section class="p-6 pt-23">
   <div class="flex items-center justify-between w-full gap-4">
     <div>
@@ -41,19 +44,19 @@ $tableHeaders = [
           <?php foreach ($tableHeaders as $header): ?>
             <th
               class="<?= $header['key'] === 'current_quantity' || $header['key'] === 'total_asset_value' ? 'text-right' : '' ?>"
-              data-sort="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>">
+              data-sort="<?= escape_for_html($header['key']) ?>">
               <button
                 type="button"
-                data-sort-btn="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>"
+                data-sort-btn="<?= escape_for_html($header['key']) ?>"
                 class="h-auto gap-2 p-1 -ml-1 font-medium btn-ghost text-muted-foreground/80 dark:text-muted-foreground">
-                <?= htmlspecialchars($header['label'], ENT_QUOTES, 'UTF-8') ?>
+                <?= escape_for_html($header['label']) ?>
               </button>
             </th>
           <?php endforeach; ?>
           <th></th>
         </tr>
       </thead>
-      <tbody id="products-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/products'), ENT_QUOTES, 'UTF-8') ?>" data-batches-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches'), ENT_QUOTES, 'UTF-8') ?>" data-batches-count-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches/count'), ENT_QUOTES, 'UTF-8') ?>" data-batch-detail-url="<?= htmlspecialchars(routeUrl('/api/inventory/batches/detail'), ENT_QUOTES, 'UTF-8') ?>">
+      <tbody id="products-container" data-api-url="<?= escape_for_html(routeUrl('/api/products')) ?>" data-batches-url="<?= escape_for_html(routeUrl('/api/inventory/batches')) ?>" data-batches-count-url="<?= escape_for_html(routeUrl('/api/inventory/batches/count')) ?>" data-batch-detail-url="<?= escape_for_html(routeUrl('/api/inventory/batches/detail')) ?>">
         <tr>
           <td colspan="8" class="py-12">
             <div class="flex flex-col items-center justify-center gap-3">
@@ -69,4 +72,4 @@ $tableHeaders = [
   </div>
 </section>
 
-<script type="module" src="<?= htmlspecialchars(routeUrl('/public/dist/inventory/index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script type="module" src="<?= escape_for_html(routeUrl('/public/dist/inventory/index.js')) ?>"></script>

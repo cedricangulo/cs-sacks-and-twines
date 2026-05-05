@@ -1,6 +1,8 @@
 <?php
+
 include __DIR__ . '/add-user-dialog.php';
 include __DIR__ . '/deactivate-user-dialog.php';
+require_once __DIR__ . '/../../../core/sanitize.php';
 
 $tableHeaders = [
   ['key' => 'name', 'label' => 'Name'],
@@ -35,18 +37,18 @@ $tableHeaders = [
       <thead>
         <tr>
           <?php foreach ($tableHeaders as $header): ?>
-            <th class="<?= $header['key'] === 'action' ? 'text-right' : '' ?>" data-sort="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>">
+            <th class="<?= $header['key'] === 'action' ? 'text-right' : '' ?>" data-sort="<?= escape_for_html($header['key']) ?>">
               <button
                 type="button"
-                data-sort-btn="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>"
+                data-sort-btn="<?= escape_for_html($header['key']) ?>"
                 class="h-auto gap-2 p-1 -ml-1 font-medium btn-ghost text-muted-foreground/80 dark:text-muted-foreground">
-                <?= htmlspecialchars($header['label'], ENT_QUOTES, 'UTF-8') ?>
+                <?= escape_for_html($header['label']) ?>
               </button>
             </th>
           <?php endforeach; ?>
         </tr>
       </thead>
-      <tbody id="users-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/users'), ENT_QUOTES, 'UTF-8') ?>" data-deactivate-url="<?= htmlspecialchars(routeUrl('/api/users/deactivate'), ENT_QUOTES, 'UTF-8') ?>">
+      <tbody id="users-container" data-api-url="<?= escape_for_html(routeUrl('/api/users')) ?>" data-deactivate-url="<?= escape_for_html(routeUrl('/api/users/deactivate')) ?>">
         <tr>
           <td colspan="4" class="py-12">
             <div class="flex flex-col items-center justify-center gap-3">
@@ -62,4 +64,4 @@ $tableHeaders = [
   </div>
 </section>
 
-<script type="module" src="<?= htmlspecialchars(routeUrl('/public/dist/users/index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script type="module" src="<?= escape_for_html(routeUrl('/public/dist/users/index.js')) ?>"></script>

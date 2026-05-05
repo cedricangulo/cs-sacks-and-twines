@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../../core/sanitize.php';
 ?>
 
 <dialog id="void-batch-dialog" class="w-full dialog sm:max-w-2xl" aria-labelledby="void-batch-dialog-title" aria-describedby="void-batch-dialog-description" data-void-batch-dialog onclick="if (event.target === this) this.close()">
@@ -19,7 +20,7 @@
     </header>
 
     <section class="overflow-y-auto scrollbar">
-      <form id="void-batch-form" class="pb-4 form" data-void-batch-form action="<?= htmlspecialchars(routeUrl('/api/inventory/batches/void'), ENT_QUOTES, 'UTF-8') ?>" method="POST" novalidate>
+      <form id="void-batch-form" class="pb-4 form" data-void-batch-form action="<?= escape_for_html(routeUrl('/api/inventory/batches/void')) ?>" method="POST" novalidate>
         <input type="hidden" name="batch_id" value="" data-void-batch-id />
 
         <div class="hidden px-4 py-3 mb-6 type-sm text-red-700 border border-red-200 bg-red-50 rounded-base" role="alert" data-void-form-error></div>

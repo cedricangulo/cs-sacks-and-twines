@@ -1,5 +1,7 @@
 <?php
+
 include __DIR__ . '/add-supplier-dialog.php';
+require_once __DIR__ . '/../../../core/sanitize.php';
 
 $tableHeaders = [
   ['key' => 'company_name', 'label' => 'Supplier Name'],
@@ -10,6 +12,7 @@ $tableHeaders = [
 ];
 
 ?>
+
 <section class="p-6 pt-23">
   <div class="flex items-center justify-between w-full gap-4">
     <div>
@@ -27,25 +30,25 @@ $tableHeaders = [
     </button>
   </div>
 
-  <div data-filter-bar-placeholder="suppliers" class="min-h-[4.25rem]"></div>
+  <div data-filter-bar-placeholder="suppliers" class="min-h-17"></div>
 
   <div class="overflow-x-auto">
     <table class="table">
       <thead>
         <tr>
           <?php foreach ($tableHeaders as $header): ?>
-            <th data-sort="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>">
+            <th data-sort="<?= escape_for_html($header['key']) ?>">
               <button
                 type="button"
-                data-sort-btn="<?= htmlspecialchars($header['key'], ENT_QUOTES, 'UTF-8') ?>"
+                data-sort-btn="<?= escape_for_html($header['key']) ?>"
                 class="h-auto gap-2 p-1 -ml-1 font-medium btn-ghost text-muted-foreground/80 dark:text-muted-foreground">
-                <?= htmlspecialchars($header['label'], ENT_QUOTES, 'UTF-8') ?>
+                <?= escape_for_html($header['label']) ?>
               </button>
             </th>
           <?php endforeach; ?>
         </tr>
       </thead>
-      <tbody id="suppliers-container" data-api-url="<?= htmlspecialchars(routeUrl('/api/suppliers'), ENT_QUOTES, 'UTF-8') ?>">
+      <tbody id="suppliers-container" data-api-url="<?= escape_for_html(routeUrl('/api/suppliers')) ?>">
         <tr>
           <td colspan="5" class="py-12">
             <div class="flex flex-col items-center justify-center gap-3">
@@ -61,4 +64,4 @@ $tableHeaders = [
   </div>
 </section>
 
-<script type="module" src="<?= htmlspecialchars(routeUrl('/public/dist/suppliers/index.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script type="module" src="<?= escape_for_html(routeUrl('/public/dist/suppliers/index.js')) ?>"></script>
