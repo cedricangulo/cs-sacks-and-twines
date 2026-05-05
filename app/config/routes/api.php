@@ -45,7 +45,7 @@ return [
   '/api/suppliers' => [
     'title' => 'API Suppliers',
     'type' => 'api',
-    'controller' => __DIR__ . '/../../controllers/Suppliers/SuppliersController.php',
+    'controller' => __DIR__ . '/../../controllers/suppliers/SuppliersController.php',
     'class' => 'SuppliersController',
     'method' => 'getSuppliersJson',
     'layout' => 'none',
@@ -58,7 +58,7 @@ return [
   '/api/suppliers/save' => [
     'title' => 'Save supplier',
     'type' => 'api',
-    'controller' => __DIR__ . '/../../controllers/Suppliers/SuppliersController.php',
+    'controller' => __DIR__ . '/../../controllers/suppliers/SuppliersController.php',
     'class' => 'SuppliersController',
     'method' => 'save',
     'layout' => 'none',
@@ -201,7 +201,7 @@ return [
   '/supplier/save' => [
     'title' => 'Save supplier (legacy)',
     'type' => 'api',
-    'controller' => __DIR__ . '/../../controllers/Suppliers/SuppliersController.php',
+    'controller' => __DIR__ . '/../../controllers/suppliers/SuppliersController.php',
     'class' => 'SuppliersController',
     'method' => 'save',
     'layout' => 'none',
@@ -233,6 +233,19 @@ return [
     'layout' => 'none',
     'methods' => ['GET'],
     'roles' => ['staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/audit-logs/export' => [
+    'title' => 'Export Audit Logs',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/audit-logs/AuditLogsController.php',
+    'class' => 'AuditLogsController',
+    'method' => 'exportCsv',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner'],
     'nav' => [
       'show' => false,
     ],

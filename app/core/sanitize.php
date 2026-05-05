@@ -65,8 +65,23 @@ function normalize_password(mixed $value): string
  */
 function sanitize_password(string $value): string
 {
+  // Remove control characters (ASCII 0-31 and 127) but keep punctuation and whitespace
+  // Example: "P@ssw0rd\n" becomes "P@ssw0rd"
   $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?: '';
   return $cleaned;
+}
+
+/**
+ * Normalize a submitted decimal value.
+ *
+ * @param string $value
+ * @return string
+ */
+function normalize_decimal(string $value): string
+{
+  $normalized = trim((string) $value);
+
+  return is_numeric($normalized) ? $normalized : '';
 }
 
 // Backwards-compatible aliases for any code using camelCase names (optional).
@@ -78,11 +93,15 @@ function sanitizePassword(string $value): string
 {
   return sanitize_password($value);
 }
-function normalizeText($value): string
+function normalizeText(string $value): string
 {
   return normalize_text($value);
 }
-function normalizePassword($value): string
+function normalizePassword(string $value): string
 {
   return normalize_password($value);
+}
+function normalizeDecimal(string $value): string
+{
+  return normalize_decimal($value);
 }

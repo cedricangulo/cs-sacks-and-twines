@@ -28,6 +28,14 @@ if (!function_exists('app_base_path')) {
 			if ($basePath === '/' || $basePath === '.') {
 				$basePath = '';
 			}
+
+			// Strip a trailing /public so URLs stay clean when the front controller lives there.
+			if ($basePath !== '' && str_ends_with($basePath, '/public')) {
+				$basePath = substr($basePath, 0, -strlen('/public'));
+				if ($basePath === '/' || $basePath === '.') {
+					$basePath = '';
+				}
+			}
 		}
 
 		return $basePath;

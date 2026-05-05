@@ -1,9 +1,12 @@
 Options -MultiViews
+Options -Indexes
+
+<FilesMatch "\.(log|json|sql|env|ini|sqlite|db)$">
+	Require all denied
+</FilesMatch>
 
 RewriteEngine On
 
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-RewriteRule ^ index.php [L]
+RewriteRule ^public/ - [L]
+RewriteRule ^$ public/index.php [L]
+RewriteRule ^(.*)$ public/$1 [L]
