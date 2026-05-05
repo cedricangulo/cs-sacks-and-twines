@@ -5,7 +5,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/uploads.php';
 require_once __DIR__ . '/../../models/Product.php';
-require_once __DIR__ . '/../../models/AuditLog.php';
+require_once __DIR__ . '/../../core/audit.php';
+require_once __DIR__ . '/../../core/sanitize.php';
 
 /**
  * Handles inventory screens and data loading.
@@ -25,19 +26,6 @@ class ProductsController
 		http_response_code($statusCode);
 		echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
 		exit;
-	}
-
-	/**
-	 * Normalize a submitted decimal value.
-	 *
-	 * @param mixed $value
-	 * @return string
-	 */
-	private function normalizeDecimal($value): string
-	{
-		$normalized = trim((string) $value);
-
-		return is_numeric($normalized) ? $normalized : '';
 	}
 
 	/**
@@ -127,88 +115,71 @@ class ProductsController
 	public function save(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'Method not allowed.',
-			], 405);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Method not allowed.',
+				],
+				405
+			);
 		}
 
 		$userId = (int) ($_SESSION['user']['user_id'] ?? 0);
 		if ($userId <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'You must be signed in to save inventory.',
-			], 401);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'You must be signed in to save inventory.',
+				],
+				401
+			);
 		}
 
 		$pdo = app_db();
 		$product = new Product($pdo);
-		$mode = strtolower(trim((string) ($_POST['mode'] ?? 'existing')));
+		$mode = strtolower(normalize_text((string) ($_POST['mode'] ?? 'existing')));
 		$productId = (int) ($_POST['product_id'] ?? 0);
-		$itemName = trim((string) ($_POST['name'] ?? ''));
-		$category = trim((string) ($_POST['category'] ?? ''));
-		$baseUom = trim((string) ($_POST['base_uom'] ?? ''));
-		$weightPerUnit = $this->normalizeDecimal($_POST['weight_per_unit'] ?? '');
+		$itemName = normalize_text((string) ($_POST['name'] ?? ''));
+		$itemName = sanitize_plain_text($itemName);
+		$category = normalize_text((string) ($_POST['category'] ?? ''));
+		$category = sanitize_plain_text($category);
+		$baseUom = normalize_text((string) ($_POST['base_uom'] ?? ''));
+		$baseUom = sanitize_plain_text($baseUom);
+		$weightPerUnit = (float) ($_POST['weight_per_unit'] ?? 0);
 		$supplierId = (int) ($_POST['supplier_id'] ?? 0);
-		$quantityReceived = $this->normalizeDecimal($_POST['quantity_received'] ?? '');
-		$totalProcurementCost = $this->normalizeDecimal($_POST['total_procurement_cost'] ?? '');
-		$lowStockThreshold = $this->normalizeDecimal($_POST['low_stock_threshold'] ?? '0');
+		$quantityReceived = normalize_decimal($_POST['quantity_received'] ?? '');
+		$totalProcurementCost = normalize_decimal($_POST['total_procurement_cost'] ?? '');
+		$lowStockThreshold = normalize_decimal($_POST['low_stock_threshold'] ?? '0');
 		$imagePath = null;
+
 		if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
 			$imagePath = app_upload_product_image($_FILES['image']);
 		}
+
 		$allowedCategories = ['sacks', 'twines'];
 		$allowedUnits = ['piece', 'roll'];
 
-		$errors = [];
-
-		if (!in_array($mode, ['existing', 'new'], true)) {
-			$errors['mode'] = 'Choose a valid inventory mode.';
-		}
-
-		if ($quantityReceived === '' || (float) $quantityReceived <= 0) {
-			$errors['quantity_received'] = 'Quantity must be greater than zero.';
-		}
-
-		if ($totalProcurementCost === '' || (float) $totalProcurementCost <= 0) {
-			$errors['total_procurement_cost'] = 'Total procurement cost must be greater than zero.';
-		}
-
-		if ($mode === 'new') {
-			if ($itemName === '') {
-				$errors['name'] = 'Enter an item name for the new product.';
-			}
-
-			if ($category === '' || !in_array($category, $allowedCategories, true)) {
-				$errors['category'] = 'Select a valid category for the new product.';
-			}
-
-			if ($baseUom === '' || !in_array($baseUom, $allowedUnits, true)) {
-				$errors['base_uom'] = 'Select a valid unit of measurement for the new product.';
-			}
-
-			if ($weightPerUnit !== '' && (float) $weightPerUnit <= 0) {
-				$errors['weight_per_unit'] = 'Weight per unit must be greater than zero.';
-			}
-
-			if ($supplierId <= 0) {
-				$errors['supplier_id'] = 'Select a supplier for the new item.';
-			}
-
-			if ($lowStockThreshold !== '' && (float) $lowStockThreshold < 0) {
-				$errors['low_stock_threshold'] = 'Low stock threshold must be zero or greater.';
-			}
-		}
-
-		if ($mode === 'existing' && $productId <= 0) {
-			$errors['product_id'] = 'Choose an existing item before saving stock.';
-		}
+		$errors = $this->validateInventoryInput(
+			$mode,
+			$productId,
+			$itemName,
+			$category,
+			$baseUom,
+			$weightPerUnit,
+			$supplierId,
+			$quantityReceived,
+			$totalProcurementCost,
+			$lowStockThreshold,
+		);
 
 		if ($errors !== []) {
-			$this->jsonResponse([
-				'success' => false,
-				'errors' => $errors,
-			], 422);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'errors' => $errors,
+				],
+				422
+			);
 		}
 
 		try {
@@ -277,49 +248,51 @@ class ProductsController
 
 			$pdo->commit();
 
-			$auditLog = new AuditLog($pdo);
 			$productName = $mode === 'new' ? $itemName : ($productRecord['name'] ?? 'product');
-			$auditLog->log(
-				$userId,
-				'stock_in',
-				json_encode([
-					'product_name' => $productName,
-					'quantity' => (float) $quantityReceived,
-					'uom' => $baseUom,
-					'batch_code' => $batchCode,
-					'resource_type' => 'product',
-					'resource_id' => $productId,
-				]),
-				$_SERVER['REMOTE_ADDR'] ?? null,
-				$_SERVER['HTTP_USER_AGENT'] ?? null
-			);
+			app_audit_log('stock_in', 'product', $productId, [
+				'product_name' => $productName,
+				'quantity' => (float) $quantityReceived,
+				'uom' => $baseUom,
+				'batch_code' => $batchCode,
+				'resource_type' => 'product',
+				'resource_id' => $productId,
+			]);
 
-			$this->jsonResponse([
-				'success' => true,
-				'message' => $mode === 'new' ? 'New item saved successfully.' : 'Stock saved successfully.',
-				'data' => [
-					'product_id' => $productId,
-					'batch_code' => $batchCode,
+			$this->jsonResponse(
+				[
+					'success' => true,
+					'message' => $mode === 'new' ? 'New item saved successfully.' : 'Stock saved successfully.',
+					'data' => [
+						'product_id' => $productId,
+						'batch_code' => $batchCode,
+					],
 				],
-			], 200);
-		} catch (InvalidArgumentException|DomainException $throwable) {
+				200
+			);
+		} catch (InvalidArgumentException | DomainException $throwable) {
 			if ($pdo->inTransaction()) {
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse([
-				'success' => false,
-				'message' => $throwable->getMessage(),
-			], 422);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => $throwable->getMessage(),
+				],
+				422
+			);
 		} catch (Throwable $throwable) {
 			if ($pdo->inTransaction()) {
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'Unable to save inventory right now. Please try again.',
-			], 422);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Unable to save inventory right now. Please try again.',
+				],
+				422
+			);
 		}
 	}
 
@@ -331,42 +304,49 @@ class ProductsController
 	public function dispatch(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'Method not allowed.',
-			], 405);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Method not allowed.',
+				],
+				405
+			);
 		}
 
 		$userId = (int) ($_SESSION['user']['user_id'] ?? 0);
 		if ($userId <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'You must be signed in to dispatch items.',
-			], 401);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'You must be signed in to dispatch items.',
+				],
+				401
+			);
 		}
 
 		$pdo = app_db();
 		$product = new Product($pdo);
 
 		$customerReference = isset($_POST['customer_reference']) ? trim((string) $_POST['customer_reference']) : null;
+		$customerReference = $customerReference !== null ? sanitize_plain_text($customerReference) : null;
 		$itemsJson = $_POST['items'] ?? '[]';
 
-		$errors = [];
+		$errors = $this->validateDispatchInput($customerReference, $itemsJson);
 
-		if ($customerReference !== null && $customerReference === '') {
-			$customerReference = null;
+		if ($errors !== []) {
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'errors' => $errors,
+				],
+				422
+			);
 		}
 
 		$items = json_decode($itemsJson, true);
-		if (!is_array($items) || $items === []) {
-			$errors['items'] = 'Select at least one product to dispatch.';
-		}
 
-		if ($errors !== []) {
-			$this->jsonResponse([
-				'success' => false,
-				'errors' => $errors,
-			], 422);
+		if ($customerReference === '') {
+			$customerReference = null;
 		}
 
 		try {
@@ -431,49 +411,157 @@ class ProductsController
 
 			$pdo->commit();
 
-			$auditLog = new AuditLog($pdo);
-			$auditLog->log(
-				$userId,
-				'stock_out',
-				json_encode([
-					'items_count' => $itemsDispatched,
-					'total_quantity' => (float) $totalQuantityDispatched,
-					'products' => $dispatchedProducts,
-					'customer_reference' => $customerReference ?? '',
-					'resource_type' => 'dispatch',
-					'resource_id' => $dispatchId,
-				]),
-				$_SERVER['REMOTE_ADDR'] ?? null,
-				$_SERVER['HTTP_USER_AGENT'] ?? null
-			);
+			app_audit_log('stock_out', 'dispatch', $dispatchId, [
+				'items_count' => $itemsDispatched,
+				'total_quantity' => (float) $totalQuantityDispatched,
+				'products' => $dispatchedProducts,
+				'customer_reference' => $customerReference ?? '',
+				'resource_type' => 'dispatch',
+				'resource_id' => $dispatchId,
+			]);
 
-			$this->jsonResponse([
-				'success' => true,
-				'message' => 'Dispatch completed successfully.',
-				'data' => [
-					'dispatch_id' => $dispatchId,
-					'items_dispatched' => $itemsDispatched,
-					'total_quantity' => $totalQuantityDispatched,
+			$this->jsonResponse(
+				[
+					'success' => true,
+					'message' => 'Dispatch completed successfully.',
+					'data' => [
+						'dispatch_id' => $dispatchId,
+						'items_dispatched' => $itemsDispatched,
+						'total_quantity' => $totalQuantityDispatched,
+					],
 				],
-			], 200);
-		} catch (InvalidArgumentException|DomainException $throwable) {
+				200
+			);
+		} catch (InvalidArgumentException | DomainException $throwable) {
 			if ($pdo->inTransaction()) {
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse([
-				'success' => false,
-				'message' => $throwable->getMessage(),
-			], 422);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => $throwable->getMessage(),
+				],
+				422
+			);
 		} catch (Throwable $throwable) {
 			if ($pdo->inTransaction()) {
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'Unable to complete dispatch right now. Please try again.',
-			], 422);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Unable to complete dispatch right now. Please try again.',
+				],
+				422
+			);
 		}
+	}
+
+	/**
+	 * Validate inventory input data and return an array of errors if any.
+	 * 
+	 * Validation rules:
+	 * 1. Mode must be either 'existing' or 'new'.
+	 * 2. For 'existing' mode, product_id must be a positive integer.
+	 * 3. For 'new' mode, item name is required and must be unique.
+	 * 4. Category must be one of the allowed categories.
+	 * 5. Base unit of measurement must be one of the allowed units.
+	 * 6. Weight per unit, if provided, must be greater than zero.
+	 * 7. Supplier ID must be a positive integer.
+	 * 8. Quantity received must be greater than zero.
+	 * 9. Total procurement cost must be greater than zero.
+	 * 10. Low stock threshold, if provided, must be zero or greater.
+	 * 
+	 * @param string $mode
+	 * @param int $productId
+	 * @param string $itemName
+	 * @param string $category
+	 * @param string $baseUom
+	 * @param float $weightPerUnit
+	 * @param int $supplierId
+	 * @param string $quantityReceived
+	 * @param string $totalProcurementCost
+	 * @param string $lowStockThreshold
+	 * @return array<string, string>
+	 */
+	private function validateInventoryInput(
+		string $mode,
+		int $productId,
+		string $itemName,
+		string $category,
+		string $baseUom,
+		float $weightPerUnit,
+		int $supplierId,
+		string $quantityReceived,
+		string $totalProcurementCost,
+		string $lowStockThreshold,
+	): array {
+		$errors = [];
+		$allowedCategories = ['sacks', 'twines'];
+		$allowedUnits = ['piece', 'roll'];
+
+		if (!in_array($mode, ['existing', 'new'], true)) {
+			$errors['mode'] = 'Choose a valid inventory mode.';
+		}
+
+		if ($quantityReceived === '' || (float) $quantityReceived <= 0) {
+			$errors['quantity_received'] = 'Quantity must be greater than zero.';
+		}
+
+		if ($totalProcurementCost === '' || (float) $totalProcurementCost <= 0) {
+			$errors['total_procurement_cost'] = 'Total procurement cost must be greater than zero.';
+		}
+
+		if ($mode === 'new') {
+			if ($itemName === '') {
+				$errors['name'] = 'Enter an item name for the new product.';
+			}
+
+			if ($category === '' || !in_array($category, $allowedCategories, true)) {
+				$errors['category'] = 'Select a valid category for the new product.';
+			}
+
+			if ($baseUom === '' || !in_array($baseUom, $allowedUnits, true)) {
+				$errors['base_uom'] = 'Select a valid unit of measurement for the new product.';
+			}
+
+			if ($weightPerUnit !== '' && (float) $weightPerUnit <= 0) {
+				$errors['weight_per_unit'] = 'Weight per unit must be greater than zero.';
+			}
+
+			if ($supplierId <= 0) {
+				$errors['supplier_id'] = 'Select a supplier for the new item.';
+			}
+
+			if ($lowStockThreshold !== '' && (float) $lowStockThreshold < 0) {
+				$errors['low_stock_threshold'] = 'Low stock threshold must be zero or greater.';
+			}
+		}
+
+		if ($mode === 'existing' && $productId <= 0) {
+			$errors['product_id'] = 'Choose an existing item before saving stock.';
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Validate dispatch input data and return an array of errors if any.
+	 *
+	 * @param string|null $customerReference
+	 * @param string $itemsJson
+	 * @return array<string, string>
+	 */
+	private function validateDispatchInput(?string $customerReference, string $itemsJson): array {
+		$errors = [];
+
+		$items = json_decode($itemsJson, true);
+		if (!is_array($items) || $items === []) {
+			$errors['items'] = 'Select at least one product to dispatch.';
+		}
+
+		return $errors;
 	}
 }

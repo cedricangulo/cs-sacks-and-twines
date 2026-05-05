@@ -19,14 +19,14 @@ class AuditLog
 	/**
 	 * Create a new audit log entry.
 	 *
-	 * @param int $userId
+	 * @param int|null $userId
 	 * @param string $action
 	 * @param string $description
 	 * @param string|null $ipAddress
 	 * @param string|null $userAgent
 	 * @return int
 	 */
-	public function log(int $userId, string $action, string $description, ?string $ipAddress = null, ?string $userAgent = null): int
+	public function log(?int $userId, string $action, string $description, ?string $ipAddress = null, ?string $userAgent = null): int
 	{
 		$statement = $this->pdo->prepare(
 			'INSERT INTO audit_logs (user_id, action, description, ip_address, user_agent) VALUES (:user_id, :action, :description, :ip_address, :user_agent)'
@@ -63,7 +63,7 @@ class AuditLog
 				u.email AS user_email,
 				u.role AS user_role
 			FROM audit_logs al
-			JOIN users u ON u.user_id = al.user_id
+			LEFT JOIN users u ON u.user_id = al.user_id
 			ORDER BY al.created_at DESC
 			LIMIT :limit OFFSET :offset'
 		);
@@ -150,7 +150,7 @@ class AuditLog
 		$defaultDir = 'DESC';
 
 		$qf = new QueryFilter($this->pdo, 'audit_logs al');
-		$qf->join('users u ON u.user_id = al.user_id');
+		$qf->leftJoin('users u ON u.user_id = al.user_id');
 		$qf->search($params['search'] ?? '', $searchColumns);
 		$qf->where('al.action', $params['action'] ?? '');
 		$qf->where('al.user_id', isset($params['user_id']) ? (int) $params['user_id'] : null);

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/uploads.php';
+require_once __DIR__ . '/../../core/sanitize.php';
 require_once __DIR__ . '/../../models/Product.php';
-require_once __DIR__ . '/../../models/AuditLog.php';
+require_once __DIR__ . '/../../models/Batch.php';
+require_once __DIR__ . '/../../core/audit.php';
 require_once __DIR__ . '/../../models/Suppliers.php';
 
 /**
@@ -43,10 +45,13 @@ class BatchController
 
 		$productId = (int) ($_GET['product_id'] ?? 0);
 		if ($productId <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'A valid product ID is required.',
-			], 400);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'A valid product ID is required.',
+				],
+				400
+			);
 		}
 
 		$limit = max(1, min(50, (int) ($_GET['limit'] ?? 3)));
@@ -55,10 +60,13 @@ class BatchController
 		$product = new Product(app_db());
 		$batches = $product->batchesByProductId($productId, $limit, $offset);
 
-		$this->jsonResponse([
-			'success' => true,
-			'batches' => $batches,
-		], 200);
+		$this->jsonResponse(
+			[
+				'success' => true,
+				'batches' => $batches,
+			],
+			200
+		);
 	}
 
 	/**
@@ -72,20 +80,27 @@ class BatchController
 		header('Expires: ' . gmdate('D, d M Y H:i:s T', time() + 300));
 
 		$productId = (int) ($_GET['product_id'] ?? 0);
+
 		if ($productId <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'A valid product ID is required.',
-			], 400);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'A valid product ID is required.',
+				],
+				400
+			);
 		}
 
 		$product = new Product(app_db());
 		$batches = $product->getBatchesForDispatch($productId);
 
-		$this->jsonResponse([
-			'success' => true,
-			'batches' => $batches,
-		], 200);
+		$this->jsonResponse(
+			[
+				'success' => true,
+				'batches' => $batches,
+			],
+			200
+		);
 	}
 
 	/**
@@ -99,20 +114,27 @@ class BatchController
 		header('Expires: ' . gmdate('D, d M Y H:i:s T', time() + 300));
 
 		$productId = (int) ($_GET['product_id'] ?? 0);
+
 		if ($productId <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'A valid product ID is required.',
-			], 400);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'A valid product ID is required.',
+				],
+				400
+			);
 		}
 
 		$product = new Product(app_db());
 		$count = $product->batchCountByProductId($productId);
 
-		$this->jsonResponse([
-			'success' => true,
-			'count' => $count,
-		], 200);
+		$this->jsonResponse(
+			[
+				'success' => true,
+				'count' => $count,
+			],
+			200
+		);
 	}
 
 	/**
@@ -127,8 +149,15 @@ class BatchController
 		header('Expires: ' . gmdate('D, d M Y H:i:s T', time() - 3600));
 
 		$batchId = (int) ($_GET['batch_id'] ?? 0);
+
 		if ($batchId <= 0) {
-			$this->jsonResponse(['success' => false, 'message' => 'A valid batch ID is required.'], 400);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'A valid batch ID is required.'
+				],
+				400
+			);
 		}
 
 		$pdo = app_db();
@@ -136,19 +165,27 @@ class BatchController
 		$batch = $product->findBatchById($batchId);
 
 		if ($batch === null) {
-			$this->jsonResponse(['success' => false, 'message' => 'Batch not found.'], 404);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Batch not found.'
+				],
+				404
+			);
 		}
 
-		$dispatchCheck = $pdo->prepare('SELECT COUNT(*) FROM dispatch_items WHERE batch_id = :batch_id');
-		$dispatchCheck->execute(['batch_id' => $batchId]);
-		$adjustCheck = $pdo->prepare('SELECT COUNT(*) FROM stock_adjustments WHERE batch_id = :batch_id AND status = :status');
-		$adjustCheck->execute(['batch_id' => $batchId, 'status' => 'applied']);
-
-		$batch['dispatch_count'] = (int) $dispatchCheck->fetchColumn();
-		$batch['active_adjustment_count'] = (int) $adjustCheck->fetchColumn();
+		$batchModel = new Batch($pdo);
+		$batch['dispatch_count'] = $batchModel->countDispatchItems($batchId);
+		$batch['active_adjustment_count'] = $batchModel->countActiveAdjustments($batchId);
 		$batch['can_edit_quantities'] = $batch['dispatch_count'] === 0 && $batch['active_adjustment_count'] === 0;
 
-		$this->jsonResponse(['success' => true, 'batch' => $batch], 200);
+		$this->jsonResponse(
+			[
+				'success' => true,
+				'batch' => $batch
+			],
+			200
+		);
 	}
 
 	/**
@@ -159,38 +196,18 @@ class BatchController
 	private function requireSignedInUserId(): int
 	{
 		$userId = (int) ($_SESSION['user']['user_id'] ?? 0);
+
 		if ($userId <= 0) {
-			$this->jsonResponse(['success' => false, 'message' => 'You must be signed in to perform this action.'], 401);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'You must be signed in to perform this action.'
+				],
+				401
+			);
 		}
 
 		return $userId;
-	}
-
-	/**
-	 * Normalize an input value into a decimal string or empty string.
-	 *
-	 * @param mixed $value
-	 * @return string
-	 */
-	private function normalizeDecimal($value): string
-	{
-		$normalized = trim((string) $value);
-
-		return is_numeric($normalized) ? $normalized : '';
-	}
-
-	/**
-	 * Normalize text input.
-	 *
-	 * @param mixed $value
-	 * @return string
-	 */
-	private function normalizeText($value): string
-	{
-		$text = trim((string) $value);
-		$text = preg_replace('/\s+/', ' ', $text);
-
-		return $text ?? '';
 	}
 
 	/**
@@ -201,14 +218,26 @@ class BatchController
 	public function updateBatchJson(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse(['success' => false, 'message' => 'Method not allowed.'], 405);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Method not allowed.'
+				],
+				405
+			);
 		}
 
 		$userId = $this->requireSignedInUserId();
 
 		$batchId = (int) ($_POST['batch_id'] ?? 0);
 		if ($batchId <= 0) {
-			$this->jsonResponse(['success' => false, 'message' => 'Select a valid batch.'], 422);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Select a valid batch.'
+				],
+				422
+			);
 		}
 
 		$pdo = app_db();
@@ -218,11 +247,23 @@ class BatchController
 			$batch = $product->findBatchById($batchId);
 
 			if (!$batch) {
-				$this->jsonResponse(['success' => false, 'message' => 'Batch not found.'], 404);
+				$this->jsonResponse(
+					[
+						'success' => false,
+						'message' => 'Batch not found.'
+					],
+					404
+				);
 			}
 
 			if (($batch['status'] ?? '') !== 'active') {
-				$this->jsonResponse(['success' => false, 'message' => 'Only active batches may be edited.'], 422);
+				$this->jsonResponse(
+					[
+						'success' => false,
+						'message' => 'Only active batches may be edited.'
+					],
+					422
+				);
 			}
 
 			$productId = (int) $batch['product_id'];
@@ -239,13 +280,16 @@ class BatchController
 			$oldStatus = (string) ($batch['status'] ?? 'active');
 
 			// Parse inputs
-			$newName = $this->normalizeText($_POST['name'] ?? $oldName);
-			$newCategory = $this->normalizeText($_POST['category'] ?? $oldCategory);
-			$newBaseUom = $this->normalizeText($_POST['base_uom'] ?? $oldBaseUom);
-			$newWeightPerUnit = $this->normalizeDecimal($_POST['weight_per_unit'] ?? ($oldWeight ?? ''));
-			$newLowStockThreshold = $this->normalizeDecimal($_POST['low_stock_threshold'] ?? ($oldLowStock ?? '0'));
+			$newName = normalize_text($_POST['name'] ?? $oldName);
+			$newName = sanitize_plain_text($newName);
+			$newCategory = normalize_text($_POST['category'] ?? $oldCategory);
+			$newCategory = sanitize_plain_text($newCategory);
+			$newBaseUom = normalize_text($_POST['base_uom'] ?? $oldBaseUom);
+			$newBaseUom = sanitize_plain_text($newBaseUom);
+			$newWeightPerUnit = normalize_decimal($_POST['weight_per_unit'] ?? ($oldWeight ?? ''));
+			$newLowStockThreshold = normalize_decimal($_POST['low_stock_threshold'] ?? ($oldLowStock ?? '0'));
 			$newSupplierId = (int) ($_POST['supplier_id'] ?? $oldSupplierId);
-			$newQuantityReceived = $this->normalizeDecimal($_POST['quantity_received'] ?? (string) $oldQuantityReceived);
+			$newQuantityReceived = normalize_decimal($_POST['quantity_received'] ?? (string) $oldQuantityReceived);
 			$newTotalCost = isset($_POST['total_procurement_cost']) ? (float) $_POST['total_procurement_cost'] : $oldTotalCost;
 			$newImagePath = $oldImagePath;
 
@@ -256,46 +300,31 @@ class BatchController
 				}
 			}
 
-			$errors = [];
+			$errors = $this->validateBatchUpdate(
+				$newName,
+				$newCategory,
+				$newBaseUom,
+				$newWeightPerUnit,
+				$newLowStockThreshold,
+				$newSupplierId,
+				$newQuantityReceived,
+				$newTotalCost,
+				$batch,
+			);
 
-			if ($newName === '' || mb_strlen($newName) > 255) {
-				$errors['name'] = 'Enter a valid item name.';
-			}
-			if ($newName !== $oldName) {
-				$errors['name'] = 'Item name is read-only for batch edits.';
-			}
-			if ($newCategory === '' || !in_array($newCategory, self::ALLOWED_CATEGORIES, true)) {
-				$errors['category'] = 'Select a valid category.';
-			}
-			if ($newBaseUom === '' || !in_array($newBaseUom, self::ALLOWED_UNITS, true)) {
-				$errors['base_uom'] = 'Select a valid unit.';
-			}
-			if ($newSupplierId <= 0) {
-				$errors['supplier_id'] = 'Select a valid supplier.';
-			}
-			if ($newQuantityReceived === '' || (float) $newQuantityReceived <= 0) {
-				$errors['quantity_received'] = 'Quantity received must be greater than zero.';
-			}
-			if ($newTotalCost === '' || (float) $newTotalCost <= 0) {
-				$errors['total_procurement_cost'] = 'Total procurement cost must be greater than zero.';
-			}
-			if ($newWeightPerUnit !== '' && (float) $newWeightPerUnit < 0) {
-				$errors['weight_per_unit'] = 'Weight per unit must be zero or greater.';
-			}
-			if ($newLowStockThreshold !== '' && (float) $newLowStockThreshold < 0) {
-				$errors['low_stock_threshold'] = 'Low stock threshold must be zero or greater.';
-			}
 			if ($errors !== []) {
-				$this->jsonResponse(['success' => false, 'errors' => $errors], 422);
+				$this->jsonResponse(
+					[
+						'success' => false,
+						'errors' => $errors
+					],
+					422
+				);
 			}
 
-			$dispatchCheck = $pdo->prepare('SELECT 1 FROM dispatch_items WHERE batch_id = :batch_id LIMIT 1');
-			$dispatchCheck->execute(['batch_id' => $batchId]);
-			$hasDispatches = $dispatchCheck->fetchColumn() !== false;
-
-			$adjustCheck = $pdo->prepare('SELECT 1 FROM stock_adjustments WHERE batch_id = :batch_id AND status = :status LIMIT 1');
-			$adjustCheck->execute(['batch_id' => $batchId, 'status' => 'applied']);
-			$hasActiveAdjustments = $adjustCheck->fetchColumn() !== false;
+			$batchModel = new Batch($pdo);
+			$hasDispatches = $batchModel->hasDispatches($batchId);
+			$hasActiveAdjustments = $batchModel->hasActiveAdjustments($batchId);
 			$hasQuantityHistory = $hasDispatches || $hasActiveAdjustments;
 
 			$newQuantityRemaining = (float) $newQuantityReceived;
@@ -306,10 +335,13 @@ class BatchController
 			);
 
 			if ($hasQuantityHistory && $inventoryFieldsChanged) {
-				$this->jsonResponse([
-					'success' => false,
-					'message' => 'Cannot change inventory quantities for a batch that already has dispatches or active adjustments.',
-				], 422);
+				$this->jsonResponse(
+					[
+						'success' => false,
+						'message' => 'Cannot change inventory quantities for a batch that already has dispatches or active adjustments.',
+					],
+					422
+				);
 			}
 
 			$quantityDelta = $newQuantityRemaining - $oldQuantityRemaining;
@@ -326,58 +358,33 @@ class BatchController
 				'low_stock_threshold' => $newLowStockThreshold !== (string) ($oldLowStock ?? '') ? $newLowStockThreshold : null,
 				'image_path' => $newImagePath !== $oldImagePath ? $newImagePath : null,
 			];
-			if ($productUpdate['category'] !== null || $productUpdate['base_uom'] !== null || $productUpdate['weight_per_unit'] !== null || $productUpdate['low_stock_threshold'] !== null || $productUpdate['image_path'] !== null) {
+
+			if (
+				$productUpdate['category'] !== null ||
+				$productUpdate['base_uom'] !== null ||
+				$productUpdate['weight_per_unit'] !== null ||
+				$productUpdate['low_stock_threshold'] !== null ||
+				$productUpdate['image_path'] !== null
+			) {
 				$product->updateProductFields($productId, $productUpdate);
 			}
 
 			if ($inventoryFieldsChanged) {
-				$batchUpdate = $pdo->prepare(
-					'UPDATE batches
-					 SET supplier_id = :supplier_id,
-					     total_procurement_cost = :total_procurement_cost,
-					     unit_cost = :unit_cost,
-					     quantity_received = :quantity_received,
-					     quantity_remaining = :quantity_remaining,
-					     status = :status,
-					     updated_at = CURRENT_TIMESTAMP
-					 WHERE batch_id = :batch_id'
+				$batchModel->updateInventoryFields(
+					$batchId,
+					$newSupplierId,
+					(string) $newTotalCost,
+					(string) $newUnitCost,
+					(string) $newQuantityReceived,
+					(string) $newQuantityRemaining,
+					$newBatchStatus,
 				);
-				$batchUpdate->execute([
-					'supplier_id' => $newSupplierId,
-					'total_procurement_cost' => (string) $newTotalCost,
-					'unit_cost' => (string) $newUnitCost,
-					'quantity_received' => (string) $newQuantityReceived,
-					'quantity_remaining' => (string) $newQuantityRemaining,
-					'status' => $newBatchStatus,
-					'batch_id' => $batchId,
-				]);
 			}
 
 			if ($quantityDelta !== 0.0 || $costDelta !== 0.0) {
-				$productStmt = $pdo->prepare('SELECT current_quantity, total_asset_value FROM products WHERE product_id = :product_id LIMIT 1');
-				$productStmt->execute(['product_id' => $productId]);
-				$productRecord = $productStmt->fetch();
-				if (!$productRecord) {
-					throw new RuntimeException('Associated product not found.');
-				}
-
-				$newProductQty = (float) $productRecord['current_quantity'] + $quantityDelta;
-				$newProductAsset = (float) $productRecord['total_asset_value'] + $costDelta;
-
-				if ($newProductQty < 0 || $newProductAsset < 0) {
-					throw new RuntimeException('Resulting product totals would be negative.');
-				}
-
-				$productAdjust = $pdo->prepare('UPDATE products SET current_quantity = :current_quantity, total_asset_value = :asset_value, updated_at = CURRENT_TIMESTAMP WHERE product_id = :product_id');
-				$productAdjust->execute([
-					'current_quantity' => (string) $newProductQty,
-					'asset_value' => (string) $newProductAsset,
-					'product_id' => $productId,
-				]);
+				$product->adjustProductInventory($productId, $quantityDelta, $costDelta);
 			}
 
-			// Create audit log
-			$audit = new AuditLog($pdo);
 			$suppliers = new Suppliers($pdo);
 			$supplierList = $suppliers->getAll();
 			$supplierMap = array_column($supplierList, 'company_name', 'supplier_id');
@@ -385,39 +392,53 @@ class BatchController
 			$newSupplierName = $supplierMap[$newSupplierId] ?? (string) $newSupplierId;
 
 			$changes = [];
+
 			if ($oldSupplierId !== $newSupplierId) {
 				$changes['supplier_id'] = ['old' => $oldSupplierName, 'new' => $newSupplierName];
 			}
+
 			if ($oldQuantityReceived !== (float) $newQuantityReceived) {
 				$changes['quantity_received'] = ['old' => (float) $oldQuantityReceived, 'new' => (float) $newQuantityReceived];
 			}
+
 			if ($oldQuantityRemaining !== (float) $newQuantityRemaining) {
 				$changes['quantity_remaining'] = ['old' => (float) $oldQuantityRemaining, 'new' => (float) $newQuantityRemaining];
 			}
+
 			if ($oldTotalCost !== (float) $newTotalCost) {
 				$changes['total_cost'] = ['old' => (float) $oldTotalCost, 'new' => (float) $newTotalCost];
 			}
-			$audit->log($userId, 'batch_update', json_encode([
+
+			app_audit_log('batch_update', 'batch', $batchId, [
 				'batch_id' => $batchId,
 				'batch_code' => (string) $batch['batch_code'],
 				'changes' => $changes,
 				'resource_type' => 'batch',
 				'resource_id' => $batchId,
-			]), $_SERVER['REMOTE_ADDR'] ?? null, $_SERVER['HTTP_USER_AGENT'] ?? null);
+			]);
 
 			$pdo->commit();
 
-			$this->jsonResponse([
-				'success' => true,
-				'message' => 'Batch updated.',
-				'batch' => $product->findBatchById($batchId),
-				'summary' => ['quantity_delta' => $quantityDelta, 'cost_delta' => $costDelta],
-			], 200);
+			$this->jsonResponse(
+				[
+					'success' => true,
+					'message' => 'Batch updated.',
+					'batch' => $product->findBatchById($batchId),
+					'summary' => ['quantity_delta' => $quantityDelta, 'cost_delta' => $costDelta],
+				],
+				200
+			);
 		} catch (Throwable $e) {
 			if ($pdo->inTransaction()) {
 				$pdo->rollBack();
 			}
-			$this->jsonResponse(['success' => false, 'message' => 'Unable to update batch right now.'], 500);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Unable to update batch right now.'
+				],
+				500
+			);
 		}
 	}
 
@@ -429,81 +450,71 @@ class BatchController
 	public function voidBatchJson(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse(['success' => false, 'message' => 'Method not allowed.'], 405);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Method not allowed.'
+				],
+				405
+			);
 		}
 
 		$userId = $this->requireSignedInUserId();
 
 		$batchId = (int) ($_POST['batch_id'] ?? 0);
-		$reason = trim((string) ($_POST['reason'] ?? ''));
-		if ($batchId <= 0) {
-			$this->jsonResponse(['success' => false, 'message' => 'Select a valid batch.'], 422);
-		}
+		$reason = sanitize_plain_text(($_POST['reason'] ?? ''));
 
 		$pdo = app_db();
+		$product = new Product($pdo);
+		$batch = $product->findBatchById($batchId);
+
+		$errors = $this->validateBatchVoid($batchId, $reason, $batch);
+
+		if ($errors !== []) {
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => reset($errors)
+				],
+				422
+			);
+		}
+
+		$productId = (int) $batch['product_id'];
+		$qtyRemaining = (float) $batch['quantity_remaining'];
+		$batchCost = (float) $batch['total_procurement_cost'];
+
+		// Safety checks
+		$batchModel = new Batch($pdo);
+		$dispatchCount = $batchModel->countDispatchItems($batchId);
+		if ($dispatchCount > 0) {
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Cannot void a batch that has been used in dispatches.',
+					'blockedBy' => 'dispatches',
+					'count' => $dispatchCount
+				],
+				422
+			);
+		}
+
+		$adjustCount = $batchModel->countActiveAdjustments($batchId);
 
 		try {
-			$product = new Product($pdo);
-			$productModel = $product;
-			$batch = $product->findBatchById($batchId);
-
-			if (!$batch) {
-				$this->jsonResponse(['success' => false, 'message' => 'Batch not found.'], 404);
-			}
-
-			if (($batch['status'] ?? '') !== 'active') {
-				$this->jsonResponse(['success' => false, 'message' => 'Only active batches can be voided.'], 422);
-			}
-
-			$productId = (int) $batch['product_id'];
-			$qtyRemaining = (float) $batch['quantity_remaining'];
-			$batchCost = (float) $batch['total_procurement_cost'];
-
-			// Safety checks
-			$dispatchCheck = $pdo->prepare('SELECT COUNT(*) FROM dispatch_items WHERE batch_id = :batch_id');
-			$dispatchCheck->execute(['batch_id' => $batchId]);
-			$dispatchCount = (int) $dispatchCheck->fetchColumn();
-			if ($dispatchCount > 0) {
-				$this->jsonResponse(['success' => false, 'message' => 'Cannot void a batch that has been used in dispatches.', 'blockedBy' => 'dispatches', 'count' => $dispatchCount], 422);
-			}
-
-			$adjustCheck = $pdo->prepare('SELECT COUNT(*) FROM stock_adjustments WHERE batch_id = :batch_id AND status = "applied"');
-			$adjustCheck->execute(['batch_id' => $batchId]);
-			$adjustCount = (int) $adjustCheck->fetchColumn();
-
 			// Proceed with cascade in transaction
 			$pdo->beginTransaction();
 
 			// Mark batch voided
-			$upd = $pdo->prepare('UPDATE batches SET status = "voided", updated_at = CURRENT_TIMESTAMP WHERE batch_id = :batch_id');
-			$upd->execute(['batch_id' => $batchId]);
+			$batchModel->markVoided($batchId);
 
 			// Update product derived fields
-			$prodStm = $pdo->prepare('SELECT current_quantity, total_asset_value FROM products WHERE product_id = :product_id LIMIT 1');
-			$prodStm->execute(['product_id' => $productId]);
-			$productRow = $prodStm->fetch();
-			if (!$productRow) {
-				$pdo->rollBack();
-				$this->jsonResponse(['success' => false, 'message' => 'Associated product not found.'], 404);
-			}
-
-			$newQty = (float) $productRow['current_quantity'] - $qtyRemaining;
-			$newAsset = (float) $productRow['total_asset_value'] - $batchCost;
-
-			if ($newQty < 0) $newQty = 0.0;
-			if ($newAsset < 0) $newAsset = 0.0;
-
-			$prodUpd = $pdo->prepare('UPDATE products SET current_quantity = :current_quantity, total_asset_value = :asset_value, updated_at = CURRENT_TIMESTAMP WHERE product_id = :product_id');
-			$prodUpd->execute(['current_quantity' => (string) $newQty, 'asset_value' => (string) $newAsset, 'product_id' => $productId]);
+			$product->adjustProductInventory($productId, -$qtyRemaining, -$batchCost, true);
 
 			// Void any stock adjustments for this batch (best-effort)
-			$voidAdj = $pdo->prepare('UPDATE stock_adjustments SET status = "voided", updated_at = CURRENT_TIMESTAMP WHERE batch_id = :batch_id AND status = "applied"');
-			$voidAdj->execute(['batch_id' => $batchId]);
-			$voidedAdjustments = $voidAdj->rowCount();
+			$voidedAdjustments = $batchModel->voidAdjustments($batchId);
 
-			// Audit log
-			$audit = new AuditLog($pdo);
-			$audit->log($userId, 'batch_void', json_encode([
+			app_audit_log('batch_void', 'batch', $batchId, [
 				'batch_id' => $batchId,
 				'batch_code' => (string) $batch['batch_code'],
 				'quantity_removed' => (float) $qtyRemaining,
@@ -511,20 +522,127 @@ class BatchController
 				'reason' => $reason !== '' ? $reason : 'n/a',
 				'resource_type' => 'batch',
 				'resource_id' => $batchId,
-			]), $_SERVER['REMOTE_ADDR'] ?? null);
+			]);
 
 			$pdo->commit();
 
-			$this->jsonResponse([
-				'success' => true,
-				'message' => 'Batch voided.',
-				'batch' => $product->findBatchById($batchId),
-				'summary' => ['product_delta' => -$qtyRemaining, 'asset_delta' => -$batchCost, 'voided_adjustments' => $voidedAdjustments],
-			], 200);
+			$this->jsonResponse(
+				[
+					'success' => true,
+					'message' => 'Batch voided.',
+					'batch' => $product->findBatchById($batchId),
+					'summary' => [
+						'product_delta' => -$qtyRemaining,
+						'asset_delta' => -$batchCost,
+						'voided_adjustments' => $voidedAdjustments
+					],
+				],
+				200
+			);
 		} catch (Throwable $e) {
 			if ($pdo->inTransaction()) $pdo->rollBack();
-			error_log(sprintf('Batch void failed for batch %d: %s in %s on line %d', $batchId, $e->getMessage(), $e->getFile(), $e->getLine()));
-			$this->jsonResponse(['success' => false, 'message' => 'Unable to void batch right now.'], 500);
+			error_log(sprintf(
+				'Batch void failed for batch %d: %s in %s on line %d',
+				$batchId,
+				$e->getMessage(),
+				$e->getFile(),
+				$e->getLine()
+			));
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'Unable to void batch right now.'
+				],
+				500
+			);
 		}
+	}
+
+	/**
+	 * Validate batch update inputs.
+	 *
+	 * @param string $newName
+	 * @param string $newCategory
+	 * @param string $newBaseUom
+	 * @param string $newWeightPerUnit
+	 * @param string $newLowStockThreshold
+	 * @param int $newSupplierId
+	 * @param string $newQuantityReceived
+	 * @param float $newTotalCost
+	 * @param array<string, mixed> $existingBatch
+	 * @return array<string, string>
+	 */
+	private function validateBatchUpdate(
+		string $newName,
+		string $newCategory,
+		string $newBaseUom,
+		string $newWeightPerUnit,
+		string $newLowStockThreshold,
+		int $newSupplierId,
+		string $newQuantityReceived,
+		float $newTotalCost,
+		array $existingBatch,
+	): array {
+		$errors = [];
+		$oldName = (string) ($existingBatch['product_name'] ?? '');
+
+		if ($newName === '' || mb_strlen($newName) > 255) {
+			$errors['name'] = 'Enter a valid item name.';
+		}
+		if ($newName !== $oldName) {
+			$errors['name'] = 'Item name is read-only for batch edits.';
+		}
+		if ($newCategory === '' || !in_array($newCategory, self::ALLOWED_CATEGORIES, true)) {
+			$errors['category'] = 'Select a valid category.';
+		}
+		if ($newBaseUom === '' || !in_array($newBaseUom, self::ALLOWED_UNITS, true)) {
+			$errors['base_uom'] = 'Select a valid unit.';
+		}
+		if ($newSupplierId <= 0) {
+			$errors['supplier_id'] = 'Select a valid supplier.';
+		}
+		if ($newQuantityReceived === '' || (float) $newQuantityReceived <= 0) {
+			$errors['quantity_received'] = 'Quantity received must be greater than zero.';
+		}
+		if ($newTotalCost <= 0) {
+			$errors['total_procurement_cost'] = 'Total procurement cost must be greater than zero.';
+		}
+		if ($newWeightPerUnit !== '' && (float) $newWeightPerUnit < 0) {
+			$errors['weight_per_unit'] = 'Weight per unit must be zero or greater.';
+		}
+		if ($newLowStockThreshold !== '' && (float) $newLowStockThreshold < 0) {
+			$errors['low_stock_threshold'] = 'Low stock threshold must be zero or greater.';
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Validate batch void inputs.
+	 *
+	 * @param int $batchId
+	 * @param string $reason
+	 * @param array<string, mixed>|null $batch
+	 * @return array<string, string>
+	 */
+	private function validateBatchVoid(int $batchId, string $reason, ?array $batch): array
+	{
+		$errors = [];
+
+		if ($batchId <= 0) {
+			$errors['batch_id'] = 'Select a valid batch.';
+		}
+
+		if ($batch === null) {
+			$errors['batch_id'] = 'Batch not found.';
+		} elseif (($batch['status'] ?? '') !== 'active') {
+			$errors['batch_id'] = 'Only active batches can be voided.';
+		}
+
+		if ($reason !== '' && mb_strlen($reason) > 500) {
+			$errors['reason'] = 'Void reason must not exceed 500 characters.';
+		}
+
+		return $errors;
 	}
 }

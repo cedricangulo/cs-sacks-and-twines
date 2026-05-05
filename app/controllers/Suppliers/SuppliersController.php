@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/db.php';
+require_once __DIR__ . '/../../core/audit.php';
 require_once __DIR__ . '/../../models/Suppliers.php';
+require_once __DIR__ . '/../../core/sanitize.php';
 
 class SuppliersController
 {
@@ -69,15 +71,17 @@ class SuppliersController
       ], 405);
     }
 
-    $companyName = $this->normalizeText($_POST['company_name'] ?? '');
-    $contactPerson = $this->normalizeText($_POST['contact_person'] ?? '');
-    $contactNumber = $this->normalizeText($_POST['contact_number'] ?? '');
-    $address = $this->normalizeText($_POST['address'] ?? '');
+    // Normalize and sanitize inputs
+    $companyName = normalize_text($_POST['company_name'] ?? '');
+    $contactPerson = normalize_text($_POST['contact_person'] ?? '');
+    $contactNumber = normalize_text($_POST['contact_number'] ?? '');
+    $address = normalize_text($_POST['address'] ?? '');
 
-    $companyName = $this->sanitizePlainText($companyName);
-    $contactPerson = $this->sanitizePlainText($contactPerson);
-    $contactNumber = $this->sanitizePlainText($contactNumber);
-    $address = $this->sanitizePlainText($address);
+    // Sanitize after normalization to preserve spacing but remove tags and control characters
+    $companyName = sanitize_plain_text($companyName);
+    $contactPerson = sanitize_plain_text($contactPerson);
+    $contactNumber = sanitize_plain_text($contactNumber);
+    $address = sanitize_plain_text($address);
 
     $errors = $this->validateSupplier($companyName, $contactPerson, $contactNumber, $address);
     if ($errors !== []) {
@@ -99,6 +103,11 @@ class SuppliersController
     try {
       $supplierId = $this->suppliers->create($companyName, $contactPerson, $contactNumber, $address);
 
+      app_audit_log('supplier_create', 'supplier', $supplierId, [
+        'company_name' => $companyName,
+        'contact_person' => $contactPerson,
+      ]);
+
       $this->jsonResponse([
         'success' => true,
         'message' => 'Supplier saved successfully.',
@@ -112,34 +121,6 @@ class SuppliersController
         'message' => 'Unable to save supplier right now. Please try again.',
       ], 500);
     }
-  }
-
-  /**
-   * Normalize input text by trimming and collapsing whitespace.
-   *
-   * @param mixed $value
-   * @return string
-   */
-  private function normalizeText($value): string
-  {
-    $text = trim((string) $value);
-    $text = preg_replace('/\s+/', ' ', $text);
-
-    return $text ?? '';
-  }
-
-  /**
-   * Strip tags and control characters from input.
-   *
-   * @param string $value
-   * @return string
-   */
-  private function sanitizePlainText(string $value): string
-  {
-    $cleaned = strip_tags($value);
-    $cleaned = preg_replace('/[\x00-\x1F\x7F]/u', '', $cleaned);
-
-    return $cleaned ?? '';
   }
 
   /**
@@ -163,12 +144,17 @@ class SuppliersController
       $errors['contact_person'] = 'Enter a valid contact person name.';
     }
 
-    if ($contactNumber === '' || mb_strlen($contactNumber) < 7 || mb_strlen($contactNumber) > 20) {
-      $errors['contact_number'] = 'Enter a valid contact number.';
-    }
+    // Remove non-digit characters for validation but keep original for storage
+    $contactNumberDigits = preg_replace('/\D/', '', $contactNumber);
 
-    if (!preg_match('/^[0-9+()\s-]{7,20}$/', $contactNumber)) {
-      $errors['contact_number'] = 'Contact number may contain only digits, spaces, +, -, and parentheses.';
+    // PH mobile: 10 digits starting with 9, optionally prefixed with 0 or 63
+    $isMobile = preg_match('/^(09|639)\d{9}$/', $contactNumberDigits);
+
+    // PH landline: 7-8 digits, optionally prefixed with 0 and area code (1-2 digits)
+    $isLandline = preg_match('/^(0\d{1,2}|63\d{1,2})\d{7}$/', $contactNumberDigits);
+
+    if ($contactNumberDigits === '' || (!$isMobile && !$isLandline)) {
+      $errors['contact_number'] = 'Please enter a valid PH mobile (e.g., 0917...) or landline number.';
     }
 
     if ($address === '' || mb_strlen($address) < 10 || mb_strlen($address) > 500) {

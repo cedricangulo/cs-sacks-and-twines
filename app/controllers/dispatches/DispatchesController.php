@@ -49,10 +49,13 @@ class DispatchesController
 		$dispatch = new Dispatch(app_db());
 		$dispatches = $dispatch->getTodayDispatches();
 
-		$this->jsonResponse([
-			'success' => true,
-			'dispatches' => $dispatches,
-		], 200);
+		$this->jsonResponse(
+			[
+				'success' => true,
+				'dispatches' => $dispatches,
+			],
+			200
+		);
 	}
 
 	/**
@@ -69,18 +72,24 @@ class DispatchesController
 		$dispatchId = (int) ($_GET['dispatch_id'] ?? 0);
 
 		if ($dispatchId <= 0) {
-			$this->jsonResponse([
-				'success' => false,
-				'message' => 'A valid dispatch ID is required.',
-			], 400);
+			$this->jsonResponse(
+				[
+					'success' => false,
+					'message' => 'A valid dispatch ID is required.',
+				],
+				400
+			);
 		}
 
 		$dispatch = new Dispatch(app_db());
 		$items = $dispatch->getDispatchItems($dispatchId);
 
-		$this->jsonResponse([
-			'success' => true,
-			'items' => $items,
-		], 200);
+		$this->jsonResponse(
+			[
+				'success' => true,
+				'items' => $items,
+			],
+			200
+		);
 	}
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../core/db.php';
+require_once __DIR__ . '/../../core/audit.php';
 require_once __DIR__ . '/../../models/Users.php';
 require_once __DIR__ . '/../../core/sanitize.php';
 
@@ -95,6 +96,12 @@ class UsersController
     try {
       $userId = $this->users->create($name, $email, $passwordHash, $role);
 
+      app_audit_log('user_create', 'user', $userId, [
+        'name' => $name,
+        'email' => $email,
+        'role' => $role,
+      ]);
+
       $this->jsonResponse([
         'success' => true,
         'message' => 'Staff saved successfully.',
@@ -150,6 +157,8 @@ class UsersController
     }
 
     try {
+      $userRecord = $this->users->findById($userId);
+
       $deactivated = $this->users->deactivate($userId);
 
       if (!$deactivated) {
@@ -158,6 +167,11 @@ class UsersController
           'message' => 'Staff member not found or already deactivated.',
         ], 404);
       }
+
+      app_audit_log('user_deactivate', 'user', $userId, [
+        'name' => $userRecord['name'] ?? 'unknown',
+        'email' => $userRecord['email'] ?? 'unknown',
+      ]);
 
       $this->jsonResponse([
         'success' => true,

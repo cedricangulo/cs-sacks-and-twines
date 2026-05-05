@@ -84,6 +84,23 @@ class Users
   }
 
   /**
+   * Find a user by ID.
+   *
+   * @param int $userId
+   * @return array<string, mixed>|null
+   */
+  public function findById(int $userId): ?array
+  {
+    $statement = $this->pdo->prepare(
+      'SELECT user_id, name, email, role FROM users WHERE user_id = :user_id LIMIT 1'
+    );
+    $statement->execute(['user_id' => $userId]);
+    $user = $statement->fetch();
+
+    return $user ?: null;
+  }
+
+  /**
    * Deactivate a user by setting archived_at.
    *
    * @param int $userId

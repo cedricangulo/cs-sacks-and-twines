@@ -241,6 +241,70 @@ class Product
 	}
 
 	/**
+	 * Fetch the current inventory totals for a product.
+	 *
+	 * @param int $productId
+	 * @return array<string, mixed>|null
+	 */
+	public function getProductInventoryTotals(int $productId): ?array
+	{
+		$statement = $this->pdo->prepare(
+			'SELECT current_quantity, total_asset_value
+			 FROM products
+			 WHERE product_id = :product_id
+			 LIMIT 1'
+		);
+		$statement->execute(['product_id' => $productId]);
+		$product = $statement->fetch();
+
+		return $product === false ? null : $product;
+	}
+
+	/**
+	 * Apply a quantity and asset-value delta to a product.
+	 *
+	 * @param int $productId
+	 * @param float $quantityDelta
+	 * @param float $costDelta
+	 * @param bool $clampToZero
+	 * @return void
+	 */
+	public function adjustProductInventory(int $productId, float $quantityDelta, float $costDelta, bool $clampToZero = false): void
+	{
+		$product = $this->getProductInventoryTotals($productId);
+		if ($product === null) {
+			throw new RuntimeException('Associated product not found.');
+		}
+
+		$newQuantity = (float) $product['current_quantity'] + $quantityDelta;
+		$newAssetValue = (float) $product['total_asset_value'] + $costDelta;
+
+		if ($clampToZero) {
+			if ($newQuantity < 0) {
+				$newQuantity = 0.0;
+			}
+			if ($newAssetValue < 0) {
+				$newAssetValue = 0.0;
+			}
+		} elseif ($newQuantity < 0 || $newAssetValue < 0) {
+			throw new RuntimeException('Resulting product totals would be negative.');
+		}
+
+		$statement = $this->pdo->prepare(
+			'UPDATE products
+			 SET current_quantity = :current_quantity,
+			     total_asset_value = :asset_value,
+			     updated_at = CURRENT_TIMESTAMP
+			 WHERE product_id = :product_id'
+		);
+		$statement->execute([
+			'current_quantity' => (string) $newQuantity,
+			'asset_value' => (string) $newAssetValue,
+			'product_id' => $productId,
+		]);
+	}
+
+	/**
 	 * Create a product record.
 	 *
 	 * @param string $skuCode
