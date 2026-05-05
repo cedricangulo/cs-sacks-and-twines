@@ -17,7 +17,7 @@
       <!-- Show one generic message for validation and authentication errors. -->
       <?php if (!empty($signInError ?? '')): ?>
         <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <?= htmlspecialchars((string) $signInError, ENT_QUOTES, 'UTF-8') ?>
+          <?= htmlspecialchars((string) ($signInError ?? ''), ENT_QUOTES, 'UTF-8') ?>
         </div>
       <?php endif; ?>
 

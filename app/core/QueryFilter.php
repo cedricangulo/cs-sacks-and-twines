@@ -23,6 +23,9 @@ class QueryFilter
     private string $table;
 
     /** @var array<string> */
+    private array $leftJoins = [];
+
+    /** @var array<string> */
     private array $joins = [];
 
     /** @var array<string> */
@@ -51,6 +54,18 @@ class QueryFilter
     public function join(string $join): self
     {
         $this->joins[] = $join;
+        return $this;
+    }
+
+    /**
+     * Add a LEFT JOIN clause.
+     *
+     * @param string $join e.g. 'users u ON u.user_id = al.user_id'
+     * @return self
+     */
+    public function leftJoin(string $join): self
+    {
+        $this->leftJoins[] = $join;
         return $this;
     }
 
@@ -249,11 +264,17 @@ class QueryFilter
 
     private function buildJoins(): string
     {
-        if ($this->joins === []) {
-            return '';
+        $parts = [];
+
+        foreach ($this->joins as $j) {
+            $parts[] = "JOIN {$j}";
         }
 
-        return ' ' . implode(' ', array_map(fn($j) => "JOIN {$j}", $this->joins));
+        foreach ($this->leftJoins as $j) {
+            $parts[] = "LEFT JOIN {$j}";
+        }
+
+        return $parts === [] ? '' : ' ' . implode(' ', $parts);
     }
 
     private function buildWhere(): string

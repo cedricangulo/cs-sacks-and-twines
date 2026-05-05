@@ -28,7 +28,7 @@ require_once __DIR__ . '/../../../core/sanitize.php';
 
             <div role="group" class="field" data-field="contact_number">
               <label for="contact_number">Contact Number</label>
-              <input class="input" type="tel" name="contact_number" id="contact_number" required maxlength="20" minlength="7" placeholder="+63 912 345 6789 or 0912 345 6789" pattern="[0-9+()\s-]{7,20}" data-field-input="contact_number" aria-describedby="contact_number-error">
+              <input class="input" type="tel" name="contact_number" id="contact_number" required maxlength="20" minlength="10" placeholder="+63 912 345 6789 or 0912 345 6789" pattern="[0-9+() \-]{7,20}" data-field-input="contact_number" aria-describedby="contact_number-error">
               <p id="contact_number-error" class="hidden text-sm text-destructive" role="alert" data-field-error="contact_number"></p>
             </div>
 

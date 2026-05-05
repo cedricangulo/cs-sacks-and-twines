@@ -28,7 +28,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
         <fieldset class="fieldset">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="space-y-4">
-              <div class="flex items-center justify-between gap-2 p-2 w-full text-blue-800 border rounded-md border-border bg-blue-50" data-new-item-alert>
+              <div class="flex items-center justify-between gap-2 p-2 w-full text-blue-800 dark:text-blue-200 border rounded-md border-border bg-blue-50 dark:bg-blue-950" data-new-item-alert>
                 <div class="flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info-icon lucide-info size-4 shrink-0">
                     <circle cx="12" cy="12" r="10" />

@@ -36,4 +36,4 @@ require_once __DIR__ . '/../../../../core/sanitize.php';
   <div id="pagination-container"></div>
 </section>
 
-<script type="module" src="<?= escape_for_html(routeUrl('/public/dist/audit-logs/index.js?v=4')) ?>"></script>
+<script type="module" src="<?= escape_for_html(routeUrl('/public/dist/audit-logs/index.js?v=5')) ?>"></script>
