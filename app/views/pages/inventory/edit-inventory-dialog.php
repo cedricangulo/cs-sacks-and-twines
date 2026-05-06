@@ -20,7 +20,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
         <input type="hidden" name="batch_id" value="" data-field-input="batch_id" data-edit-batch-id />
         <input type="hidden" name="product_id" value="" data-field-input="product_id" data-edit-product-id />
 
-        <div class="hidden px-4 py-3 mb-4 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-edit-form-error></div>
+        <div class="hidden rounded-(--radius) px-4 py-3 text-sm text-destructive-foreground border border-red-500 bg-destructive" role="alert" data-edit-form-error></div>
 
         <div class="space-y-5">
           <div class="space-y-2">

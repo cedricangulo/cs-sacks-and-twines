@@ -11,6 +11,9 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
 
 <aside class="sidebar" data-side="left" aria-hidden="false">
   <nav aria-label="Sidebar navigation">
+    <header class="type-md p-4">
+      Sacks & Twines
+    </header>
     <section class="scrollbar">
       <?php foreach ($visibleSections as $sectionIndex => $section): ?>
         <div role="group" aria-labelledby="group-label-content-<?php echo $sectionIndex + 1; ?>">
@@ -41,9 +44,9 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
         </div>
       <?php endforeach; ?>
     </section>
-    <div role="group" aria-label="Session actions">
+    <footer role="group" aria-label="Session actions">
       <ul>
-        <li class="px-2">
+        <li>
           <button
             type="button"
             aria-label="Toggle theme mode"
@@ -72,7 +75,7 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
             <span>Theme</span>
           </button>
         </li>
-        <li class="px-2 pb-2">
+        <li>
           <form action="<?php echo $escape(routeUrl('/sign-out')); ?>" method="post">
             <button class="justify-start w-full btn-ghost hover:text-destructive hover:bg-destructive/20" type="submit">
               <?php echo app_icon_svg('sign-out'); ?>
@@ -81,6 +84,6 @@ $escape = static fn($value) => htmlspecialchars((string) $value, ENT_QUOTES, 'UT
           </form>
         </li>
       </ul>
-    </div>
+    </footer>
   </nav>
 </aside>

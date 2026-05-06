@@ -1,6 +1,7 @@
 <?php
 
 include __DIR__ . '/add-supplier-dialog.php';
+include __DIR__ . '/delete-supplier-dialog.php';
 require_once __DIR__ . '/../../../core/sanitize.php';
 
 $tableHeaders = [
@@ -9,7 +10,11 @@ $tableHeaders = [
   ['key' => 'contact_number', 'label' => 'Contact Number'],
   ['key' => 'address', 'label' => 'Address'],
   ['key' => 'created_at', 'label' => 'Added At'],
+  ['key' => 'actions', 'label' => ''],
 ];
+
+$userRole = $_SESSION['user_role'] ?? 'guest';
+$canManage = $userRole === 'owner';
 
 ?>
 
@@ -48,9 +53,13 @@ $tableHeaders = [
           <?php endforeach; ?>
         </tr>
       </thead>
-      <tbody id="suppliers-container" data-api-url="<?= escape_for_html(routeUrl('/api/suppliers')) ?>">
+      <tbody
+        id="suppliers-container"
+        data-api-url="<?= escape_for_html(routeUrl('/api/suppliers')) ?>"
+        data-edit-url="<?= $canManage ? escape_for_html(routeUrl('/api/suppliers/show?id=')) : '' ?>"
+        data-delete-url="<?= $canManage ? escape_for_html(routeUrl('/api/suppliers/delete')) : '' ?>">
         <tr>
-          <td colspan="5" class="py-12">
+          <td colspan="6" class="py-12">
             <div class="flex flex-col items-center justify-center gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="status" aria-label="Loading" class="size-6 animate-spin text-muted-foreground">
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />

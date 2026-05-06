@@ -53,7 +53,7 @@ const inventoryNewSchema = z.object({
   name: normalizedString(1, 255, 'Enter an item name for the new product.'),
   category: normalizedString(1, 255, 'Select a valid category for the new product.'),
   base_uom: normalizedString(1, 255, 'Select a valid unit of measurement for the new product.'),
-  weight_per_unit: optionalPositiveNumber('Weight per unit must be greater than zero.'),
+  weight_per_unit: optionalNonNegativeNumber('Weight per unit must be zero or greater.'),
   supplier_id: normalizedString(1, 255, 'Select a supplier for the new item.'),
   quantity_received: positiveNumber('Quantity must be greater than zero.'),
   total_procurement_cost: positiveNumber('Total procurement cost must be greater than zero.'),

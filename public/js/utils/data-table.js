@@ -497,7 +497,7 @@ export function createClientTable(config) {
     });
   }
 
-  return { load, render, init, getState: () => ({ ...state }), setData: (d) => { allData = d; render(); } };
+  return { load, refresh: load, render, init, getState: () => ({ ...state }), setData: (d) => { allData = d; render(); } };
 }
 
 /**

@@ -64,6 +64,8 @@ function getActionBadge(action) {
     'user_create': { class: '-secondary', label: 'User Created' },
     'user_deactivate': { class: '-destructive', label: 'User Deactivated' },
     'supplier_create': { class: '-secondary', label: 'Supplier Created' },
+    'supplier_update': { class: '-outline', label: 'Supplier Updated' },
+    'supplier_delete': { class: '-destructive', label: 'Supplier Deleted' },
   };
   const { class: badgeClass, label } = badges[action] || { class: '-ghost', label: action };
   return `<span class="badge${badgeClass}">${escapeHtml(label)}</span>`;
@@ -126,6 +128,10 @@ function getShortDescription(description, action) {
       return `Deactivated user ${escapeHtml(parsed.name || '')} (${escapeHtml(parsed.email || '')})`;
     case 'supplier_create':
       return `Created supplier ${escapeHtml(parsed.company_name || '')} — Contact: ${escapeHtml(parsed.contact_person || '')}`;
+    case 'supplier_update':
+      return `Updated supplier ${escapeHtml(parsed.company_name || '')} — Contact: ${escapeHtml(parsed.contact_person || '')}`;
+    case 'supplier_delete':
+      return `Deleted supplier ${escapeHtml(parsed.company_name || '')}`;
     default:
       return escapeHtml(description);
   }
@@ -156,11 +162,10 @@ export function renderLogDetailsRow(log) {
     if (parsed.changes && Object.keys(parsed.changes).length > 0) {
       const changesRows = Object.entries(parsed.changes).map(([field, vals]) => `
         <div class="grid grid-cols-2 p-0 hover:bg-muted/50">
-          <div class="font-medium text-foreground">${formatFieldLabel(field)}</div>
-          <div class="text-muted-foreground">
-            <span class="line-through">${escapeHtml(String(vals.old))}</span>
-            <span class="mx-1">→</span>
-            <span class="font-medium">${escapeHtml(String(vals.new))}</span>
+          <p class="font-medium text-foreground">${formatFieldLabel(field)}</p>
+          <div class="type-base text-muted-foreground">
+            <p class="break-all line-through text-destructive">${escapeHtml(String(vals.old))}</p>
+            <p class="break-all">${escapeHtml(String(vals.new))}</p>
           </div>
         </div>
       `).join('');
@@ -175,7 +180,7 @@ export function renderLogDetailsRow(log) {
     if (d.isHtml) {
       return `
         <div class="grid grid-cols-[180px_1fr] py-1 px-4 hover:bg-muted/50">
-          <div class="font-medium text-foreground">${d.label}</div>
+          <p class="font-medium text-foreground">${d.label}</p>
           <div class="text-muted-foreground">${d.value}</div>
         </div>
       `;
@@ -183,14 +188,14 @@ export function renderLogDetailsRow(log) {
     if (d.isBadge) {
       return `
         <div class="grid grid-cols-[180px_1fr] py-1 px-4 hover:bg-muted/50">
-          <div class="font-medium text-foreground">${d.label}</div>
+          <p class="font-medium text-foreground">${d.label}</p>
           <div>${getActionBadge(d.value)}</div>
         </div>
       `;
     }
     return `
       <div class="grid grid-cols-[180px_1fr] py-1 px-4 hover:bg-muted/50">
-        <div class="font-medium text-foreground">${d.label}</div>
+        <p class="font-medium text-foreground">${d.label}</p>
         <div class="text-muted-foreground">${escapeHtml(String(d.value))}</div>
       </div>
     `;

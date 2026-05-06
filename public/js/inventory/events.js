@@ -1,17 +1,19 @@
 import { createClientTable, renderSortIndicator } from "../utils/data-table";
 import { getBatchCount, getBatches, getProducts, sortBatches } from "./get-products";
-import { renderBatchDetailRow, renderBatchRows, renderProducts } from "./render";
+import { renderBatchDetailRow, renderBatchRows, renderProducts } from "./render.js";
 import { openEditBatchDialog } from './edit-inventory.js';
 import { openVoidBatchDialog } from './void-batch.js';
 
 let batchSortState = {};
 let accordionBoundContainer = null;
 let table;
+let expandedProductId = null;
 
 /**
  * Initialize the inventory products table.
  *
  * @code INV-initProductsTable
+ * @returns {object} The table controller with load/refresh methods
  */
 export function initProductsTable() {
   table = createClientTable({
@@ -77,6 +79,8 @@ export function initProductsTable() {
   });
 
   table.init();
+
+  return table;
 }
 
 /**
@@ -255,6 +259,44 @@ export function bindBatchSortHeaders(productId, container) {
 }
 
 /**
+ * Close any currently expanded product row.
+ *
+ * @code INV-closeExpandedRow
+ */
+function closeExpandedRow() {
+  if (expandedProductId) {
+    const container = document.getElementById('products-container');
+    const expandedRow = container?.querySelector(`[data-product-id="${expandedProductId}"][data-expanded="true"]`);
+    if (expandedRow) {
+      collapseRowInternal(expandedRow);
+    }
+    expandedProductId = null;
+  }
+}
+
+/**
+ * Collapse a product row (internal without tracking).
+ *
+ * @code INV-collapseRowInternal
+ * @param {HTMLElement} row
+ */
+function collapseRowInternal(row) {
+  const productId = row.getAttribute('data-product-id');
+  const chevron = row.querySelector('.chevron-icon');
+
+  if (chevron) {
+    chevron.style.transform = 'rotate(0deg)';
+  }
+
+  row.setAttribute('data-expanded', 'false');
+
+  const detailsRow = document.querySelector(`.batch-details-row[data-product-id="${productId}"]`);
+  if (detailsRow) {
+    detailsRow.remove();
+  }
+}
+
+/**
  * Expand a product row to show batches.
  *
  * @code INV-expandRow
@@ -267,12 +309,14 @@ export async function expandRow(row) {
 
   if (!productId) return;
 
+  // Close any other expanded row first
+  closeExpandedRow();
+
   if (chevron) {
     chevron.style.transform = 'rotate(180deg)';
   }
 
   row.setAttribute('data-expanded', 'true');
-  // row.classList.add('bg-muted/30');
 
   const detailsRow = document.createElement('tr');
   detailsRow.className = 'batch-details-row';
@@ -306,6 +350,9 @@ export async function expandRow(row) {
       tbody.innerHTML = renderBatchError();
     }
   }
+
+  // Track this as the expanded row
+  expandedProductId = productId;
 }
 
 /**
@@ -323,6 +370,7 @@ export function collapseRow(row) {
   }
 
   row.setAttribute('data-expanded', 'false');
+  expandedProductId = null;
   // row.classList.remove('bg-muted/30');
 
   const detailsRow = document.querySelector(`.batch-details-row[data-product-id="${productId}"]`);

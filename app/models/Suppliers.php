@@ -43,7 +43,7 @@ class Suppliers
     return $statement->fetchColumn() !== false;
   }
 
-  /**
+/**
    * Create a new supplier record.
    *
    * @param string $companyName
@@ -66,5 +66,82 @@ class Suppliers
     ]);
 
     return (int) $this->pdo->lastInsertId();
+  }
+
+  /**
+   * Retrieve a single supplier by ID.
+   *
+   * @param int $supplierId
+   * @return array<string, mixed>|false
+   */
+  public function getById(int $supplierId): array|false
+  {
+    $statement = $this->pdo->prepare(
+      'SELECT supplier_id, company_name, contact_person, contact_number, address, created_at, updated_at FROM suppliers WHERE supplier_id = :supplier_id'
+    );
+    $statement->execute(['supplier_id' => $supplierId]);
+    $result = $statement->fetch();
+
+    return $result ?: false;
+  }
+
+  /**
+   * Update an existing supplier record.
+   *
+   * @param int $supplierId
+   * @param string $companyName
+   * @param string $contactPerson
+   * @param string $contactNumber
+   * @param string $address
+   * @return bool
+   */
+  public function update(int $supplierId, string $companyName, string $contactPerson, string $contactNumber, string $address): bool
+  {
+    $statement = $this->pdo->prepare(
+      'UPDATE suppliers SET company_name = :company_name, contact_person = :contact_person, contact_number = :contact_number, address = :address WHERE supplier_id = :supplier_id'
+    );
+    $statement->execute([
+      'supplier_id' => $supplierId,
+      'company_name' => $companyName,
+      'contact_person' => $contactPerson,
+      'contact_number' => $contactNumber,
+      'address' => $address,
+    ]);
+
+    return $statement->rowCount() > 0;
+  }
+
+  /**
+   * Delete a supplier record.
+   *
+   * @param int $supplierId
+   * @return bool
+   */
+  public function delete(int $supplierId): bool
+  {
+    $statement = $this->pdo->prepare('DELETE FROM suppliers WHERE supplier_id = :supplier_id');
+    $statement->execute(['supplier_id' => $supplierId]);
+
+    return $statement->rowCount() > 0;
+  }
+
+  /**
+   * Get all batches associated with a supplier.
+   *
+   * @param int $supplierId
+   * @return array<int, array<string, mixed>>
+   */
+  public function getBatches(int $supplierId): array
+  {
+    $statement = $this->pdo->prepare(
+      "SELECT b.batch_id, b.batch_code, p.name, b.quantity_received
+       FROM batches b
+       JOIN products p ON b.product_id = p.product_id
+       WHERE b.supplier_id = :supplier_id
+       ORDER BY b.created_at DESC"
+    );
+    $statement->execute(['supplier_id' => $supplierId]);
+
+    return $statement->fetchAll();
   }
 }

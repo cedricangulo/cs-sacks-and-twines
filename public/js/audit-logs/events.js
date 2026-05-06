@@ -2,6 +2,28 @@ import { createServerTable } from '../utils/data-table.js';
 import { fetchAuditLogs } from './get-logs.js';
 import { renderLogsTable, renderPagination, renderLogDetailsRow } from './render.js';
 
+let expandedLogId = null;
+
+/**
+ * Close any currently expanded log row.
+ *
+ * @code AUD-closeExpandedRow
+ */
+function closeExpandedLogRow() {
+  if (expandedLogId) {
+    const container = document.getElementById('audit-logs-container');
+    const expandedRow = container?.querySelector(`.log-row[data-log-id="${expandedLogId}"][data-expanded="true"]`);
+    if (expandedRow) {
+      const detailsRow = container?.querySelector(`#log-details-${expandedLogId}`);
+      if (detailsRow) {
+        detailsRow.remove();
+      }
+      expandedRow.setAttribute('data-expanded', 'false');
+    }
+    expandedLogId = null;
+  }
+}
+
 /**
  * Toggle a log row's expanded details.
  *
@@ -11,17 +33,21 @@ import { renderLogsTable, renderPagination, renderLogDetailsRow } from './render
  */
 export function toggleLogRow(logId, logs) {
   const container = document.getElementById('audit-logs-container');
-  const row = container.querySelector(`.log-row[data-log-id="${logId}"]`);
+  const row = container?.querySelector(`.log-row[data-log-id="${logId}"]`);
   if (!row) return;
 
   const isExpanded = row.getAttribute('data-expanded') === 'true';
   const detailsId = `log-details-${logId}`;
-  const existingDetails = container.querySelector(`#${detailsId}`);
+  const existingDetails = container?.querySelector(`#${detailsId}`);
 
   if (isExpanded && existingDetails) {
     existingDetails.remove();
     row.setAttribute('data-expanded', 'false');
+    expandedLogId = null;
   } else if (!isExpanded) {
+    // Close any other expanded row first
+    closeExpandedLogRow();
+
     const log = logs.find(l => String(l.log_id) === String(logId));
     if (log) {
       const detailsRow = document.createElement('tr');
@@ -29,6 +55,7 @@ export function toggleLogRow(logId, logs) {
       detailsRow.innerHTML = renderLogDetailsRow(log);
       row.after(detailsRow);
       row.setAttribute('data-expanded', 'true');
+      expandedLogId = logId;
     }
   }
 }

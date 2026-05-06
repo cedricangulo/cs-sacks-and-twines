@@ -11,21 +11,6 @@ class SuppliersController
 {
   private Suppliers $suppliers;
 
-  /**
-   * Send a JSON response and stop rendering.
-   *
-   * @param array<string, mixed> $payload
-   * @param int $statusCode
-   * @return void
-   */
-  private function jsonResponse(array $payload, int $statusCode): void
-  {
-    header('Content-Type: application/json; charset=UTF-8');
-    http_response_code($statusCode);
-    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
-    exit;
-  }
-
   public function __construct()
   {
     $this->suppliers = new Suppliers(app_db());
@@ -54,7 +39,7 @@ class SuppliersController
     
     $suppliers = $this->suppliers->getAll();
     
-    $this->jsonResponse($suppliers, 200);
+    app_json_response($suppliers, 200);
   }
 
   /**
@@ -65,7 +50,7 @@ class SuppliersController
   public function save(): void
   {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Method not allowed.',
       ], 405);
@@ -85,14 +70,14 @@ class SuppliersController
 
     $errors = $this->validateSupplier($companyName, $contactPerson, $contactNumber, $address);
     if ($errors !== []) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'errors' => $errors,
       ], 422);
     }
 
     if ($this->suppliers->companyExists($companyName)) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'errors' => [
           'company_name' => 'That supplier already exists.',
@@ -106,9 +91,11 @@ class SuppliersController
       app_audit_log('supplier_create', 'supplier', $supplierId, [
         'company_name' => $companyName,
         'contact_person' => $contactPerson,
+        'resource_type' => 'supplier',
+        'resource_id' => $supplierId,
       ]);
 
-      $this->jsonResponse([
+      app_json_response([
         'success' => true,
         'message' => 'Supplier saved successfully.',
         'data' => [
@@ -116,7 +103,7 @@ class SuppliersController
         ],
       ], 201);
     } catch (Throwable $throwable) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Unable to save supplier right now. Please try again.',
       ], 500);
@@ -162,5 +149,218 @@ class SuppliersController
     }
 
     return $errors;
+  }
+
+  /**
+   * Return a single supplier as JSON.
+   *
+   * @return void
+   */
+  public function show(): void
+  {
+    $supplierId = (int) ($_GET['id'] ?? 0);
+
+    if ($supplierId <= 0) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Supplier not found.',
+      ], 404);
+    }
+
+    $supplier = $this->suppliers->getById($supplierId);
+
+    if ($supplier === false) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Supplier not found.',
+      ], 404);
+    }
+
+    $batches = $this->suppliers->getBatches($supplierId);
+    $batchCount = count($batches);
+    $relatedBatches = $batchCount > 0 ? array_map(fn($batch) => [
+      'batch' => $batch['batch_code'],
+      'product' => $batch['name'],
+      'qty' => (int) $batch['quantity_received'],
+    ], $batches) : null;
+
+    app_json_response([
+      'success' => true,
+      'data' => $supplier,
+      'batch_count' => $batchCount,
+      'related_batches' => $relatedBatches,
+    ], 200);
+  }
+
+  /**
+   * Update a supplier record.
+   *
+   * @return void
+   */
+  public function update(): void
+  {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+      app_json_response([
+        'success' => false,
+        'message' => 'Method not allowed.',
+      ], 405);
+    }
+
+    $supplierId = (int) ($_POST['id'] ?? 0);
+
+    if ($supplierId <= 0) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Supplier not found.',
+      ], 404);
+    }
+
+    $existing = $this->suppliers->getById($supplierId);
+    if ($existing === false) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Supplier not found.',
+      ], 404);
+    }
+
+    // Normalize and sanitize inputs
+    $companyName = normalize_text($_POST['company_name'] ?? '');
+    $contactPerson = normalize_text($_POST['contact_person'] ?? '');
+    $contactNumber = normalize_text($_POST['contact_number'] ?? '');
+    $address = normalize_text($_POST['address'] ?? '');
+
+    // Sanitize after normalization to preserve spacing but remove tags and control characters
+    $companyName = sanitize_plain_text($companyName);
+    $contactPerson = sanitize_plain_text($contactPerson);
+    $contactNumber = sanitize_plain_text($contactNumber);
+    $address = sanitize_plain_text($address);
+
+    $errors = $this->validateSupplier($companyName, $contactPerson, $contactNumber, $address);
+    if ($errors !== []) {
+      app_json_response([
+        'success' => false,
+        'errors' => $errors,
+      ], 422);
+    }
+
+    // Check if company name changed and if it already exists for another supplier
+    if ($companyName !== $existing['company_name'] && $this->suppliers->companyExists($companyName)) {
+      app_json_response([
+        'success' => false,
+        'errors' => [
+          'company_name' => 'That supplier already exists.',
+        ],
+      ], 409);
+    }
+
+    try {
+      $changes = [];
+
+      if ($companyName !== (string) $existing['company_name']) {
+        $changes['company_name'] = ['old' => (string) $existing['company_name'], 'new' => $companyName];
+      }
+
+      if ($contactPerson !== (string) $existing['contact_person']) {
+        $changes['contact_person'] = ['old' => (string) $existing['contact_person'], 'new' => $contactPerson];
+      }
+
+      if ($contactNumber !== (string) $existing['contact_number']) {
+        $changes['contact_number'] = ['old' => (string) $existing['contact_number'], 'new' => $contactNumber];
+      }
+
+      if ($address !== (string) $existing['address']) {
+        $changes['address'] = ['old' => (string) $existing['address'], 'new' => $address];
+      }
+
+      $this->suppliers->update($supplierId, $companyName, $contactPerson, $contactNumber, $address);
+
+      app_audit_log('supplier_update', 'supplier', $supplierId, [
+        'company_name' => $companyName,
+        'contact_person' => $contactPerson,
+        'changes' => $changes,
+        'resource_type' => 'supplier',
+        'resource_id' => $supplierId,
+      ]);
+
+      app_json_response([
+        'success' => true,
+        'message' => 'Supplier updated successfully.',
+      ], 200);
+    } catch (Throwable $throwable) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Unable to update supplier right now. Please try again.',
+      ], 500);
+    }
+  }
+
+  /**
+   * Delete a supplier record.
+   *
+   * @return void
+   */
+  public function delete(): void
+  {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+      app_json_response([
+        'success' => false,
+        'message' => 'Method not allowed.',
+      ], 405);
+    }
+
+    $supplierId = (int) ($_POST['id'] ?? 0);
+
+    if ($supplierId <= 0) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Supplier not found.',
+      ], 404);
+    }
+
+    $existing = $this->suppliers->getById($supplierId);
+    if ($existing === false) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Supplier not found.',
+      ], 404);
+    }
+
+    // Check for related batches first
+    $batches = $this->suppliers->getBatches($supplierId);
+
+    if ([] !== $batches) {
+      $batchDetails = array_map(fn($batch) => [
+        'batch' => $batch['batch_code'],
+        'product' => $batch['name'],
+        'qty' => (int) $batch['quantity_received'],
+      ], $batches);
+
+      app_json_response([
+        'success' => false,
+        'error' => 'Cannot delete supplier. They still have ' . count($batches) . ' batch(es):',
+        'details' => $batchDetails,
+      ], 422);
+    }
+
+    try {
+      $companyName = $existing['company_name'];
+      $this->suppliers->delete($supplierId);
+
+      app_audit_log('supplier_delete', 'supplier', $supplierId, [
+        'company_name' => $companyName,
+        'resource_type' => 'supplier',
+        'resource_id' => $supplierId,
+      ]);
+
+      app_json_response([
+        'success' => true,
+        'message' => 'Supplier deleted successfully.',
+      ], 200);
+    } catch (Throwable $throwable) {
+      app_json_response([
+        'success' => false,
+        'message' => 'Unable to delete supplier right now. Please try again.',
+      ], 500);
+    }
   }
 }

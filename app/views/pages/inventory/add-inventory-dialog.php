@@ -23,7 +23,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
         <input type="hidden" name="mode" value="existing" data-inventory-mode />
         <input type="hidden" name="product_id" value="" data-product-id />
 
-        <div class="hidden px-4 py-3 mb-4 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-form-error></div>
+        <div class="hidden rounded-(--radius) px-4 py-3 text-sm text-destructive-foreground border border-red-500 bg-destructive" role="alert" data-form-error></div>
 
         <fieldset class="fieldset">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

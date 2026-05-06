@@ -4,65 +4,88 @@ import { validateSupplierForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 
 /**
- * Initialize supplier form submission and validation.
- *
- * @code SUP-initForm
- * @param {{ onSuccess?: () => void }} [options]
- */
-export function initSuppliersForm(options = {}) {
-  const dialog = document.querySelector('[data-supplier-dialog]');
-  const form = document.querySelector('[data-suppliers-form]');
-  const errorBox = document.querySelector('[data-form-error]');
-  const saveButton = document.querySelector('[data-save-button]');
-
-  if (!dialog || !form || !errorBox || !saveButton) {
-    return;
-  }
-
-  const fields = {
-    companyName: form.querySelector('[data-field-input="company_name"]'),
-    contactPerson: form.querySelector('[data-field-input="contact_person"]'),
-    contactNumber: form.querySelector('[data-field-input="contact_number"]'),
-    address: form.querySelector('[data-field-input="address"]'),
-  };
-
-  if (!fields.companyName || !fields.contactPerson || !fields.contactNumber || !fields.address) {
-    return;
-  }
-
-  /**
-   * Reset the supplier form.
+   * Initialize supplier form submission and validation.
    *
-   * @code SUP-resetForm
+   * @code SUP-initForm
+   * @param {{ onSuccess?: () => void }} [options]
    */
-  const resetForm = () => {
-    form.reset();
-    errorBox.textContent = '';
-    errorBox.classList.add('hidden');
-    clearFieldErrors();
-  };
+  export function initSuppliersForm(options = {}) {
+    const dialog = document.querySelector('[data-supplier-dialog]');
+    const form = document.querySelector('[data-suppliers-form]');
+    const errorBox = document.querySelector('[data-form-error]');
+    const saveButton = document.querySelector('[data-save-button]');
 
-  /**
-   * Toggle submitting UI state.
-   *
-   * @code SUP-setSubmitting
-   * @param {boolean} isSubmitting
-   */
-  const setSubmitting = (isSubmitting) => {
-    saveButton.disabled = isSubmitting;
-    saveButton.textContent = isSubmitting ? 'Saving...' : 'Save supplier';
-  };
+    if (!dialog || !form || !errorBox || !saveButton) {
+      return;
+    }
 
-  /**
-   * Show a form-level error message.
-   *
-   * @code SUP-showError
-   * @param {string} message
-   */
-  const showError = (message) => {
-    errorBox.textContent = message;
-    errorBox.classList.remove('hidden');
-  };
+    const idInput = form.querySelector('#supplier-id');
+
+    const fields = {
+      companyName: form.querySelector('[data-field-input="company_name"]'),
+      contactPerson: form.querySelector('[data-field-input="contact_person"]'),
+      contactNumber: form.querySelector('[data-field-input="contact_number"]'),
+      address: form.querySelector('[data-field-input="address"]'),
+    };
+
+    if (!fields.companyName || !fields.contactPerson || !fields.contactNumber || !fields.address) {
+      return;
+    }
+
+    /**
+     * Check if in edit mode.
+     *
+     * @code SUP-isEditMode
+     * @returns {boolean}
+     */
+    const isEditMode = () => idInput && idInput.value !== '';
+
+    /**
+     * Reset the supplier form.
+     *
+     * @code SUP-resetForm
+     */
+    const resetForm = () => {
+      form.reset();
+      if (idInput) {
+        idInput.value = '';
+      }
+      errorBox.textContent = '';
+      errorBox.classList.add('hidden');
+      clearFieldErrors();
+
+      const title = dialog.querySelector('h2');
+      const description = dialog.querySelector('p');
+      if (title) title.textContent = 'Add Supplier';
+      if (description) description.textContent = 'Fill in the details for the new supplier.';
+      if (saveButton) saveButton.textContent = 'Save supplier';
+
+      form.action = form.action.replace('/update', '/save');
+    };
+
+    /**
+     * Toggle submitting UI state.
+     *
+     * @code SUP-setSubmitting
+     * @param {boolean} isSubmitting
+     */
+    const setSubmitting = (isSubmitting) => {
+      saveButton.disabled = isSubmitting;
+      saveButton.textContent = isSubmitting
+        ? 'Saving...'
+        : (isEditMode() ? 'Update supplier' : 'Save supplier');
+    };
+
+    /**
+     * Show a form-level error message.
+     *
+     * @code SUP-showError
+     * @param {string} message
+     */
+    const showError = (message) => {
+      errorBox.textContent = message;
+      errorBox.classList.remove('hidden');
+    };
 
   /**
    * Set field error message and state.
@@ -190,9 +213,10 @@ export function initSuppliersForm(options = {}) {
       resetForm();
 
       const companyName = fields.companyName.value;
+      const action = isEditMode() ? 'updated' : 'added';
       toast.success(
-        'Supplier added successfully',
-        `${companyName} has been added to your suppliers. You can now create stock intake from this supplier.`
+        `Supplier ${action === 'updated' ? 'updated' : 'added'} successfully`,
+        `${companyName} has been ${action} to your suppliers.${action === 'added' ? ' You can now create stock intake from this supplier.' : ''}`
       );
 
       if (typeof options.onSuccess === 'function') {

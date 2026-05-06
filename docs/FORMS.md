@@ -8,7 +8,7 @@ This project uses Basecoat's field structure with per-field errors and a single 
 
 ```html
 <form class="form" method="POST" novalidate>
-  <div class="hidden px-4 py-3 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-form-error></div>
+  <div class="hidden rounded-(--radius) px-4 py-3 text-sm text-destructive-foreground border border-red-500 bg-destructive" role="alert" data-form-error></div>
 
   <fieldset class="fieldset">
     <legend>Section title</legend>

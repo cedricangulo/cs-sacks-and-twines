@@ -3,20 +3,24 @@ import { initInventoryCombobox } from './combobox.js';
 import { initInventoryModes } from './modes.js';
 import { initInventorySubmission } from './submit.js';
 import { resetForm, initImageHandlers, fillExistingItem } from './state.js';
+import { refreshComboboxOptions } from './render.js';
 import { loadProducts } from './get-products.js';
 import './edit-inventory.js';
 import './void-batch.js';
-import { refreshComboboxOptions } from './render.js';
 import { initProductsTable } from './events.js';
 
+let inventoryTable;
+
 /**
- * Refresh inventory data after a save.
+ * Refresh inventory table after a save.
  *
  * @code INV-onSaveSuccess
  * @returns {Promise<void>}
  */
 async function onInventorySaveSuccess() {
-  await loadProducts({ force: true });
+  if (inventoryTable) {
+    inventoryTable.refresh();
+  }
   const newOptions = await refreshComboboxOptions({
     fillExistingItem: (option) => fillExistingItem(window.inventoryState, option),
   });
@@ -39,7 +43,7 @@ function initInventoryPage() {
   }
 
   window.inventoryState = state;
-  window.inventoryRefresh = () => loadProducts({ force: true });
+  window.inventoryRefresh = () => inventoryTable?.refresh();
 
   initInventoryCombobox(state);
   initInventoryModes(state);
@@ -52,7 +56,7 @@ function initInventoryPage() {
     resetForm(state);
   });
 
-  initProductsTable();
+  inventoryTable = initProductsTable();
   resetForm(state);
 }
 

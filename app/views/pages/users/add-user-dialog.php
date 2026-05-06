@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../../core/sanitize.php';
 
     <section class="overflow-y-auto scrollbar">
       <form id="users-form" class="form pb-4" data-users-form action="<?= escape_for_html(routeUrl('/api/users/save')) ?>" method="POST" novalidate>
-        <div class="hidden px-4 py-3 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-form-error></div>
+        <div class="hidden rounded-(--radius) px-4 py-3 text-sm text-destructive-foreground border border-red-500 bg-destructive" role="alert" data-form-error></div>
         <fieldset class="fieldset">
           <div class="grid gap-4">
             <div role="group" class="field" data-field="name">

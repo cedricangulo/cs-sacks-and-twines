@@ -103,13 +103,6 @@ export async function getBatchCount(productId) {
  * @returns {Promise<void>}
  */
 export async function loadProducts(options = {}) {
-  if (table) {
-    if (options.force) {
-      table.load();
-    }
-    return;
-  }
-
   const container = document.getElementById('products-container');
   if (!container) {
     return;

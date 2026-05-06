@@ -10,8 +10,9 @@ require_once __DIR__ . '/../../../core/sanitize.php';
     </header>
 
     <section class="overflow-y-auto scrollbar">
-      <form id="suppliers-form" class="form pb-4" data-suppliers-form action="<?= escape_for_html(routeUrl('/api/suppliers/save')) ?>" method="POST" novalidate>
-        <div class="hidden px-4 py-3 text-sm text-red-700 border border-red-200 bg-red-50" role="alert" data-form-error></div>
+      <form id="suppliers-form" class="pb-4 form" data-suppliers-form action="<?= escape_for_html(routeUrl('/api/suppliers/save')) ?>" method="POST" novalidate>
+        <input type="hidden" name="id" id="supplier-id" value="">
+        <div class="hidden px-4 py-3 text-sm text-destructive-foreground border border-red-200 bg-destructive" role="alert" data-form-error></div>
         <fieldset class="fieldset">
           <div class="grid gap-4">
             <div role="group" class="field" data-field="company_name">

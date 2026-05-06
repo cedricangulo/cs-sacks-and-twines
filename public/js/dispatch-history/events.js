@@ -15,6 +15,23 @@ import {
 const loadedDispatchIds = new Set();
 const dispatchItemsSortState = {};
 const dispatchItemsCache = {};
+let expandedDispatchId = null;
+
+/**
+ * Close any currently expanded dispatch row.
+ *
+ * @code DSP-closeExpandedRow
+ */
+function closeExpandedDispatchRow() {
+  if (expandedDispatchId) {
+    const container = document.getElementById('dispatches-container');
+    const expandedRow = container?.querySelector(`[data-dispatch-id="${expandedDispatchId}"][data-expanded="true"]`);
+    if (expandedRow) {
+      collapseDispatch(expandedRow, expandedDispatchId);
+    }
+    expandedDispatchId = null;
+  }
+}
 
 /**
  * Expand a dispatch row to show its items.
@@ -24,6 +41,9 @@ const dispatchItemsCache = {};
  * @param {string} dispatchId
  */
 export async function expandDispatch(row, dispatchId) {
+  // Close any other expanded row first
+  closeExpandedDispatchRow();
+
   const chevron = row.querySelector('.dispatch-chevron');
 
   if (chevron) {
@@ -39,6 +59,9 @@ export async function expandDispatch(row, dispatchId) {
   detailsRow.classList.add('hover:bg-transparent!');
 
   row.after(detailsRow);
+
+  // Track this as expanded
+  expandedDispatchId = dispatchId;
 
   try {
     const itemsUrl = window.dispatchHistoryItemsUrl;
@@ -87,6 +110,10 @@ export function collapseDispatch(row, dispatchId) {
 
   const detailsRow = document.querySelector(`.dispatch-details-row[data-dispatch-id="${dispatchId}"]`);
   detailsRow?.remove();
+
+  if (expandedDispatchId === dispatchId) {
+    expandedDispatchId = null;
+  }
 }
 
 /**

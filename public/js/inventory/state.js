@@ -39,7 +39,7 @@ function syncCategoryDefaults(state) {
 
   if (category === 'sacks') {
     state.unitInput.value = 'piece';
-    state.weightInput.value = '';
+    state.weightInput.value = '0.00';
   }
 
   if (category === 'twines') {
