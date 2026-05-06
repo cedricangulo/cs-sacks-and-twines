@@ -11,21 +11,6 @@ class UsersController
 {
   private Users $users;
 
-  /**
-   * Send a JSON response and stop rendering.
-   *
-   * @param array<string, mixed> $payload
-   * @param int $statusCode
-   * @return void
-   */
-  private function jsonResponse(array $payload, int $statusCode): void
-  {
-    header('Content-Type: application/json; charset=UTF-8');
-    http_response_code($statusCode);
-    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
-    exit;
-  }
-
   public function __construct()
   {
     $this->users = new Users(app_db());
@@ -43,7 +28,7 @@ class UsersController
 
     $users = $this->users->getAllActive();
 
-    $this->jsonResponse($users, 200);
+    app_json_response($users, 200);
   }
 
   /**
@@ -54,7 +39,7 @@ class UsersController
   public function save(): void
   {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Method not allowed.',
       ], 405);
@@ -76,14 +61,14 @@ class UsersController
     $errors = $this->validateNewUser($name, $email, $role, $password);
 
     if ($errors !== []) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'errors' => $errors,
       ], 422);
     }
 
     if ($this->users->emailExists($email)) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'errors' => [
           'email' => 'That email address is already in use.',
@@ -102,7 +87,7 @@ class UsersController
         'role' => $role,
       ]);
 
-      $this->jsonResponse([
+      app_json_response([
         'success' => true,
         'message' => 'Staff saved successfully.',
         'data' => [
@@ -110,7 +95,7 @@ class UsersController
         ],
       ], 201);
     } catch (Throwable $throwable) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Unable to save staff right now. Please try again.',
       ], 500);
@@ -126,7 +111,7 @@ class UsersController
   public function deactivate(): void
   {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Method not allowed.',
       ], 405);
@@ -136,21 +121,21 @@ class UsersController
     $currentUserId = (int) ($_SESSION['user']['user_id'] ?? 0);
 
     if ($userId <= 0) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Select a valid staff member.',
       ], 422);
     }
 
     if (!$this->users->isStaff($userId)) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Cannot deactivate this account.',
       ], 422);
     }
 
     if ($currentUserId > 0 && $userId === $currentUserId) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'You cannot deactivate your own account.',
       ], 422);
@@ -162,7 +147,7 @@ class UsersController
       $deactivated = $this->users->deactivate($userId);
 
       if (!$deactivated) {
-        $this->jsonResponse([
+        app_json_response([
           'success' => false,
           'message' => 'Staff member not found or already deactivated.',
         ], 404);
@@ -173,12 +158,12 @@ class UsersController
         'email' => $userRecord['email'] ?? 'unknown',
       ]);
 
-      $this->jsonResponse([
+      app_json_response([
         'success' => true,
         'message' => 'Staff member deactivated successfully.',
       ], 200);
     } catch (Throwable $throwable) {
-      $this->jsonResponse([
+      app_json_response([
         'success' => false,
         'message' => 'Unable to deactivate staff right now. Please try again.',
       ], 500);

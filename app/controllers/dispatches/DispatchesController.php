@@ -21,21 +21,6 @@ class DispatchesController
 	}
 
 	/**
-	 * Send a JSON response and stop rendering.
-	 *
-	 * @param array<string, mixed> $payload
-	 * @param int $statusCode
-	 * @return void
-	 */
-	private function jsonResponse(array $payload, int $statusCode): void
-	{
-		header('Content-Type: application/json; charset=UTF-8');
-		http_response_code($statusCode);
-		echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
-		exit;
-	}
-
-	/**
 	 * Return today's dispatches as JSON.
 	 *
 	 * @return void
@@ -49,7 +34,7 @@ class DispatchesController
 		$dispatch = new Dispatch(app_db());
 		$dispatches = $dispatch->getTodayDispatches();
 
-		$this->jsonResponse(
+		app_json_response(
 			[
 				'success' => true,
 				'dispatches' => $dispatches,
@@ -72,7 +57,7 @@ class DispatchesController
 		$dispatchId = (int) ($_GET['dispatch_id'] ?? 0);
 
 		if ($dispatchId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'A valid dispatch ID is required.',
@@ -84,7 +69,7 @@ class DispatchesController
 		$dispatch = new Dispatch(app_db());
 		$items = $dispatch->getDispatchItems($dispatchId);
 
-		$this->jsonResponse(
+		app_json_response(
 			[
 				'success' => true,
 				'items' => $items,

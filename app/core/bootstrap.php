@@ -20,4 +20,5 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/path.php';
 require_once __DIR__ . '/routes.php';
 require_once __DIR__ . '/page.php';
+require_once __DIR__ . '/response.php';
 require_once __DIR__ . '/QueryFilter.php';

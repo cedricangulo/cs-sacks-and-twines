@@ -11,21 +11,6 @@ require_once __DIR__ . '/../../models/AuditLog.php';
 class AuditLogsController
 {
 	/**
-	 * Send a JSON response and stop rendering.
-	 *
-	 * @param array<string, mixed> $payload
-	 * @param int $statusCode
-	 * @return void
-	 */
-	private function jsonResponse(array $payload, int $statusCode): void
-	{
-		header('Content-Type: application/json; charset=UTF-8');
-		http_response_code($statusCode);
-		echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
-		exit;
-	}
-
-	/**
 	 * Return all audit logs as JSON with filtering, sorting, and pagination.
 	 *
 	 * @return void
@@ -52,7 +37,7 @@ class AuditLogsController
 			'users' => $auditLog->getUsersWithLogs(),
 		];
 
-		$this->jsonResponse([
+		app_json_response([
 			'success' => true,
 			'logs' => $result['logs'],
 			'pagination' => $result['pagination'],
@@ -69,7 +54,7 @@ class AuditLogsController
 	{
 		$userId = (int) ($_SESSION['user']['user_id'] ?? 0);
 		if ($userId <= 0) {
-			$this->jsonResponse([
+			app_json_response([
 				'success' => false,
 				'message' => 'You must be signed in to view audit logs.',
 			], 401);
@@ -91,7 +76,7 @@ class AuditLogsController
 
 		$result = $auditLog->getFiltered($params);
 
-		$this->jsonResponse([
+		app_json_response([
 			'success' => true,
 			'logs' => $result['logs'],
 			'pagination' => $result['pagination'],

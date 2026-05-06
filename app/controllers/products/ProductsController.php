@@ -13,20 +13,6 @@ require_once __DIR__ . '/../../core/sanitize.php';
  */
 class ProductsController
 {
-	/**
-	 * Send a JSON response and stop rendering.
-	 *
-	 * @param array<string, mixed> $payload
-	 * @param int $statusCode
-	 * @return void
-	 */
-	private function jsonResponse(array $payload, int $statusCode): void
-	{
-		header('Content-Type: application/json; charset=UTF-8');
-		http_response_code($statusCode);
-		echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
-		exit;
-	}
 
 	/**
 	 * Generate a unique product SKU.
@@ -90,7 +76,7 @@ class ProductsController
 		header('Expires: ' . gmdate('D, d M Y H:i:s T', time() + 300));
 
 		$product = new Product(app_db());
-		$this->jsonResponse($product->allProducts(), 200);
+		app_json_response($product->allProducts(), 200);
 	}
 
 	/**
@@ -104,7 +90,7 @@ class ProductsController
 		header('Expires: ' . gmdate('D, d M Y H:i:s T', time() + 300));
 
 		$product = new Product(app_db());
-		$this->jsonResponse($product->getProductsList(), 200);
+		app_json_response($product->getProductsList(), 200);
 	}
 
 	/**
@@ -115,7 +101,7 @@ class ProductsController
 	public function save(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Method not allowed.',
@@ -126,7 +112,7 @@ class ProductsController
 
 		$userId = (int) ($_SESSION['user']['user_id'] ?? 0);
 		if ($userId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'You must be signed in to save inventory.',
@@ -145,7 +131,9 @@ class ProductsController
 		$category = sanitize_plain_text($category);
 		$baseUom = normalize_text((string) ($_POST['base_uom'] ?? ''));
 		$baseUom = sanitize_plain_text($baseUom);
-		$weightPerUnit = (float) ($_POST['weight_per_unit'] ?? 0);
+		$weightPerUnitInput = normalize_text((string) ($_POST['weight_per_unit'] ?? ''));
+		$weightPerUnitInput = sanitize_plain_text($weightPerUnitInput);
+		$weightPerUnit = $weightPerUnitInput === '' ? 0.0 : (float) $weightPerUnitInput;
 		$supplierId = (int) ($_POST['supplier_id'] ?? 0);
 		$quantityReceived = normalize_decimal($_POST['quantity_received'] ?? '');
 		$totalProcurementCost = normalize_decimal($_POST['total_procurement_cost'] ?? '');
@@ -173,7 +161,7 @@ class ProductsController
 		);
 
 		if ($errors !== []) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'errors' => $errors,
@@ -194,7 +182,7 @@ class ProductsController
 
 				$category = $category !== '' ? $category : (string) ($productRecord['category'] ?? '');
 				$baseUom = $baseUom !== '' ? $baseUom : (string) ($productRecord['base_uom'] ?? '');
-				$weightPerUnit = $weightPerUnit !== '' ? $weightPerUnit : ($productRecord['weight_per_unit'] ?? null);
+				$weightPerUnit = $weightPerUnitInput !== '' ? (float) $weightPerUnitInput : (float) ($productRecord['weight_per_unit'] ?? 0);
 				$supplierId = $supplierId > 0 ? $supplierId : (int) ($productRecord['default_supplier_id'] ?? 0);
 
 				if ($category === '' || !in_array($category, $allowedCategories, true)) {
@@ -258,7 +246,7 @@ class ProductsController
 				'resource_id' => $productId,
 			]);
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => true,
 					'message' => $mode === 'new' ? 'New item saved successfully.' : 'Stock saved successfully.',
@@ -274,7 +262,7 @@ class ProductsController
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => $throwable->getMessage(),
@@ -286,7 +274,7 @@ class ProductsController
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Unable to save inventory right now. Please try again.',
@@ -304,7 +292,7 @@ class ProductsController
 	public function dispatch(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Method not allowed.',
@@ -315,7 +303,7 @@ class ProductsController
 
 		$userId = (int) ($_SESSION['user']['user_id'] ?? 0);
 		if ($userId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'You must be signed in to dispatch items.',
@@ -334,7 +322,7 @@ class ProductsController
 		$errors = $this->validateDispatchInput($customerReference, $itemsJson);
 
 		if ($errors !== []) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'errors' => $errors,
@@ -420,7 +408,7 @@ class ProductsController
 				'resource_id' => $dispatchId,
 			]);
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => true,
 					'message' => 'Dispatch completed successfully.',
@@ -437,7 +425,7 @@ class ProductsController
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => $throwable->getMessage(),
@@ -449,7 +437,7 @@ class ProductsController
 				$pdo->rollBack();
 			}
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Unable to complete dispatch right now. Please try again.',
@@ -527,8 +515,12 @@ class ProductsController
 				$errors['base_uom'] = 'Select a valid unit of measurement for the new product.';
 			}
 
-			if ($weightPerUnit !== '' && (float) $weightPerUnit <= 0) {
-				$errors['weight_per_unit'] = 'Weight per unit must be greater than zero.';
+			if ($category === 'twines' && $weightPerUnit < 0) {
+				$errors['weight_per_unit'] = 'Weight per unit must be zero or greater.';
+			}
+
+			if ($category === 'sacks' && $weightPerUnit < 0) {
+				$errors['weight_per_unit'] = 'Weight per unit must be zero or greater.';
 			}
 
 			if ($supplierId <= 0) {

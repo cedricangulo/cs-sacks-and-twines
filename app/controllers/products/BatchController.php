@@ -19,21 +19,6 @@ class BatchController
 	private const ALLOWED_UNITS = ['piece', 'roll'];
 
 	/**
-	 * Send a JSON response and stop rendering.
-	 *
-	 * @param array<string, mixed> $payload
-	 * @param int $statusCode
-	 * @return void
-	 */
-	private function jsonResponse(array $payload, int $statusCode): void
-	{
-		header('Content-Type: application/json; charset=UTF-8');
-		http_response_code($statusCode);
-		echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
-		exit;
-	}
-
-	/**
 	 * Return batches for a product as JSON.
 	 *
 	 * @return void
@@ -45,7 +30,7 @@ class BatchController
 
 		$productId = (int) ($_GET['product_id'] ?? 0);
 		if ($productId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'A valid product ID is required.',
@@ -60,7 +45,7 @@ class BatchController
 		$product = new Product(app_db());
 		$batches = $product->batchesByProductId($productId, $limit, $offset);
 
-		$this->jsonResponse(
+		app_json_response(
 			[
 				'success' => true,
 				'batches' => $batches,
@@ -82,7 +67,7 @@ class BatchController
 		$productId = (int) ($_GET['product_id'] ?? 0);
 
 		if ($productId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'A valid product ID is required.',
@@ -94,7 +79,7 @@ class BatchController
 		$product = new Product(app_db());
 		$batches = $product->getBatchesForDispatch($productId);
 
-		$this->jsonResponse(
+		app_json_response(
 			[
 				'success' => true,
 				'batches' => $batches,
@@ -116,7 +101,7 @@ class BatchController
 		$productId = (int) ($_GET['product_id'] ?? 0);
 
 		if ($productId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'A valid product ID is required.',
@@ -128,7 +113,7 @@ class BatchController
 		$product = new Product(app_db());
 		$count = $product->batchCountByProductId($productId);
 
-		$this->jsonResponse(
+		app_json_response(
 			[
 				'success' => true,
 				'count' => $count,
@@ -151,7 +136,7 @@ class BatchController
 		$batchId = (int) ($_GET['batch_id'] ?? 0);
 
 		if ($batchId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'A valid batch ID is required.'
@@ -165,7 +150,7 @@ class BatchController
 		$batch = $product->findBatchById($batchId);
 
 		if ($batch === null) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Batch not found.'
@@ -179,7 +164,7 @@ class BatchController
 		$batch['active_adjustment_count'] = $batchModel->countActiveAdjustments($batchId);
 		$batch['can_edit_quantities'] = $batch['dispatch_count'] === 0 && $batch['active_adjustment_count'] === 0;
 
-		$this->jsonResponse(
+		app_json_response(
 			[
 				'success' => true,
 				'batch' => $batch
@@ -198,7 +183,7 @@ class BatchController
 		$userId = (int) ($_SESSION['user']['user_id'] ?? 0);
 
 		if ($userId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'You must be signed in to perform this action.'
@@ -218,7 +203,7 @@ class BatchController
 	public function updateBatchJson(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Method not allowed.'
@@ -231,7 +216,7 @@ class BatchController
 
 		$batchId = (int) ($_POST['batch_id'] ?? 0);
 		if ($batchId <= 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Select a valid batch.'
@@ -247,7 +232,7 @@ class BatchController
 			$batch = $product->findBatchById($batchId);
 
 			if (!$batch) {
-				$this->jsonResponse(
+				app_json_response(
 					[
 						'success' => false,
 						'message' => 'Batch not found.'
@@ -257,7 +242,7 @@ class BatchController
 			}
 
 			if (($batch['status'] ?? '') !== 'active') {
-				$this->jsonResponse(
+				app_json_response(
 					[
 						'success' => false,
 						'message' => 'Only active batches may be edited.'
@@ -313,7 +298,7 @@ class BatchController
 			);
 
 			if ($errors !== []) {
-				$this->jsonResponse(
+				app_json_response(
 					[
 						'success' => false,
 						'errors' => $errors
@@ -335,7 +320,7 @@ class BatchController
 			);
 
 			if ($hasQuantityHistory && $inventoryFieldsChanged) {
-				$this->jsonResponse(
+				app_json_response(
 					[
 						'success' => false,
 						'message' => 'Cannot change inventory quantities for a batch that already has dispatches or active adjustments.',
@@ -419,7 +404,7 @@ class BatchController
 
 			$pdo->commit();
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => true,
 					'message' => 'Batch updated.',
@@ -432,7 +417,7 @@ class BatchController
 			if ($pdo->inTransaction()) {
 				$pdo->rollBack();
 			}
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Unable to update batch right now.'
@@ -450,7 +435,7 @@ class BatchController
 	public function voidBatchJson(): void
 	{
 		if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Method not allowed.'
@@ -471,7 +456,7 @@ class BatchController
 		$errors = $this->validateBatchVoid($batchId, $reason, $batch);
 
 		if ($errors !== []) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => reset($errors)
@@ -488,7 +473,7 @@ class BatchController
 		$batchModel = new Batch($pdo);
 		$dispatchCount = $batchModel->countDispatchItems($batchId);
 		if ($dispatchCount > 0) {
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Cannot void a batch that has been used in dispatches.',
@@ -526,7 +511,7 @@ class BatchController
 
 			$pdo->commit();
 
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => true,
 					'message' => 'Batch voided.',
@@ -548,7 +533,7 @@ class BatchController
 				$e->getFile(),
 				$e->getLine()
 			));
-			$this->jsonResponse(
+			app_json_response(
 				[
 					'success' => false,
 					'message' => 'Unable to void batch right now.'
