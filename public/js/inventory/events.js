@@ -1,5 +1,5 @@
 import { createClientTable, renderSortIndicator } from "../utils/data-table";
-import { getBatchCount, getBatches, getProducts } from "./get-products";
+import { getBatchCount, getBatches, getProducts, sortBatches } from "./get-products";
 import { renderBatchDetailRow, renderBatchRows, renderProducts } from "./render";
 import { openEditBatchDialog } from './edit-inventory.js';
 import { openVoidBatchDialog } from './void-batch.js';

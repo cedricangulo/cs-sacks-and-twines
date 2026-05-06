@@ -95,4 +95,41 @@ export function initAuditLogsTable() {
 
   const serverTable = createServerTable(config);
   serverTable.init();
+
+  bindExportButton();
+}
+
+/**
+ * Bind the Export Logs button to download a CSV with current filters.
+ *
+ * @code AUD-bindExport
+ */
+function bindExportButton() {
+  const btn = document.getElementById('export-logs-btn');
+  if (!btn) return;
+
+  const exportUrl = btn.getAttribute('data-export-url');
+  if (!exportUrl) return;
+
+  btn.addEventListener('click', () => {
+    const params = new URLSearchParams();
+
+    const searchInput = document.querySelector('[data-filter-search]');
+    if (searchInput?.value) params.set('search', searchInput.value);
+
+    const actionSelect = document.querySelector('select[data-filter="action"]');
+    if (actionSelect?.value) params.set('action', actionSelect.value);
+
+    const userSelect = document.querySelector('select[data-filter="user_id"]');
+    if (userSelect?.value) params.set('user_id', userSelect.value);
+
+    const dateFrom = document.querySelector('input[data-filter="date_from"]');
+    if (dateFrom?.value) params.set('date_from', dateFrom.value);
+
+    const dateTo = document.querySelector('input[data-filter="date_to"]');
+    if (dateTo?.value) params.set('date_to', dateTo.value);
+
+    const url = `${exportUrl}?${params.toString()}`;
+    window.location.href = url;
+  });
 }

@@ -57,7 +57,13 @@ function getActionBadge(action) {
     'stock_in': { class: '-secondary', label: 'Stock In' },
     'stock_out': { class: '-outline', label: 'Stock Out' },
     'batch_update': { class: '-outline', label: 'Batch Update' },
-    'batch_void': { class: '-outline', label: 'Batch Void' },
+    'batch_void': { class: '-destructive', label: 'Batch Void' },
+    'auth_sign_in': { class: '-secondary', label: 'Sign In' },
+    'auth_sign_in_failed': { class: '-destructive', label: 'Failed Sign In' },
+    'auth_sign_out': { class: '-ghost', label: 'Sign Out' },
+    'user_create': { class: '-secondary', label: 'User Created' },
+    'user_deactivate': { class: '-destructive', label: 'User Deactivated' },
+    'supplier_create': { class: '-secondary', label: 'Supplier Created' },
   };
   const { class: badgeClass, label } = badges[action] || { class: '-ghost', label: action };
   return `<span class="badge${badgeClass}">${escapeHtml(label)}</span>`;
@@ -103,11 +109,23 @@ function getShortDescription(description, action) {
     case 'batch_update':
       if (parsed.changes && Object.keys(parsed.changes).length > 0) {
         const fieldLabels = Object.keys(parsed.changes).map(f => formatFieldLabel(f)).join(', ');
-        return `${escapeHtml(parsed.batch_code || '')} - Updated: ${fieldLabels}`;
+        return `${escapeHtml(parsed.batch_code || '')} — Updated: ${fieldLabels}`;
       }
-      return `${escapeHtml(parsed.batch_code || '')} - Updated`;
+      return `${escapeHtml(parsed.batch_code || '')} — Updated`;
     case 'batch_void':
       return `${escapeHtml(parsed.batch_code || '')} — Removed ${parsed.quantity_removed} units (${formatCurrency(parsed.cost_removed)})`;
+    case 'auth_sign_in':
+      return `Signed in as ${escapeHtml(parsed.email || '')} (${escapeHtml(parsed.role || '')})`;
+    case 'auth_sign_in_failed':
+      return `Failed sign in attempt for ${escapeHtml(parsed.email || '')} — ${escapeHtml(parsed.reason || '')}`;
+    case 'auth_sign_out':
+      return `Signed out: ${escapeHtml(parsed.name || '')} (${escapeHtml(parsed.email || '')})`;
+    case 'user_create':
+      return `Created user ${escapeHtml(parsed.name || '')} (${escapeHtml(parsed.email || '')}) as ${escapeHtml(parsed.role || '')}`;
+    case 'user_deactivate':
+      return `Deactivated user ${escapeHtml(parsed.name || '')} (${escapeHtml(parsed.email || '')})`;
+    case 'supplier_create':
+      return `Created supplier ${escapeHtml(parsed.company_name || '')} — Contact: ${escapeHtml(parsed.contact_person || '')}`;
     default:
       return escapeHtml(description);
   }
@@ -204,7 +222,7 @@ export function renderLogRow(log, includeUser = true) {
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1 min-w-0">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="font-medium text-muted-foreground">${escapeHtml(log.user_name || '')}</span> — ${getActionBadge(log.action)}
+              <span class="font-medium text-muted-foreground">${escapeHtml(log.user_name || 'Unknown User')}  —</span> ${getActionBadge(log.action)}
             </div>
             <p class="truncate max-w-prose">${getShortDescription(log.description, log.action)} — ${formatRelativeTime(log.created_at)}</p>
           </div>

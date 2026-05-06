@@ -1,4 +1,5 @@
 import { fetchJson, fetchJsonResponse, sanitizeFormData } from '../utils/fetch-utils.js';
+import { sanitizeFieldsForSubmit } from '../utils/sanitize.js';
 import { validateUserCreateForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 
@@ -147,7 +148,9 @@ export function initUserCreateForm(options = {}) {
     hideError(errorBox);
     clearFieldErrors(form, ['name', 'email', 'password']);
 
-    const result = validateUserCreateForm(getValues());
+    const rawValues = getValues();
+    const sanitizedValues = sanitizeFieldsForSubmit(rawValues);
+    const result = validateUserCreateForm(sanitizedValues);
     if (!result.success) {
       Object.entries(result.errors).forEach(([fieldName, message]) => {
         setFieldError(form, fieldName, message);

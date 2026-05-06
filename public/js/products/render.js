@@ -201,10 +201,9 @@ export function renderDispatchQueue() {
   if (queueContainer) {
     const uploadsBase = getBasePath();
     queueContainer.innerHTML = items.map(item => {
-      const firstTwo = (item.name || '').slice(0, 2).toUpperCase();
       const imageHtml = item.image_path
         ? `<img src="${uploadsBase}/public/uploads/products/${escapeHtml(item.image_path)}" class="size-10 object-cover rounded" alt="" />`
-        : `<div class="size-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium">${firstTwo}</div>`;
+        : `<div class="size-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs font-medium">${getInitials(item.name)}</div>`;
 
       return `
         <div class="flex items-center gap-3 p-2 border rounded" data-product-id="${item.product_id}">

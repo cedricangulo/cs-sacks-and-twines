@@ -63,7 +63,7 @@ export function renderEmptyState(type, title, description) {
             <div class="bg-muted text-foreground flex size-12 shrink-0 items-center justify-center rounded-lg">
               ${iconHtml}
             </div>
-            <h3 class="text-lg font-medium tracking-tight">${escapeHtml(titleText)}</h3>
+            <h3 class="text-foreground text-lg font-medium tracking-tight">${escapeHtml(titleText)}</h3>
             ${descText ? `<p class="text-muted-foreground text-sm/relaxed">${escapeHtml(descText)}</p>` : ''}
           </header>
         </div>

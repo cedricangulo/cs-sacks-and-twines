@@ -11,6 +11,7 @@ import {
 import { validateInventoryForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 import { fetchJsonResponse, sanitizeFormData } from '../utils/fetch-utils.js';
+import { sanitizeFieldsForSubmit } from '../utils/sanitize.js';
 import { loadProducts } from './get-products.js';
 
 /**
@@ -41,7 +42,8 @@ export function initInventorySubmission(state, options = {}) {
     event.preventDefault();
 
     const { values } = validateBeforeSubmit(state);
-    const result = validateInventoryForm(values);
+    const sanitizedValues = sanitizeFieldsForSubmit(values);
+    const result = validateInventoryForm(sanitizedValues);
     if (!result.success) {
       const errors = result.errors;
       Object.entries(errors).forEach(([fieldName, message]) => {

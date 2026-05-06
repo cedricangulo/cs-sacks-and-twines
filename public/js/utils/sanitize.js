@@ -20,6 +20,7 @@ export function sanitizeInput(value) {
 
 /**
  * Filter text for database submission by stripping HTML tags and control characters.
+ * Mirrors PHP sanitize_plain_text() order: trim → control chars → strip tags → collapse whitespace.
  * Does NOT encode to HTML entities - preserves plain text in DB.
  *
  * @code UTIL-sanitizeForSubmit
@@ -27,15 +28,16 @@ export function sanitizeInput(value) {
  * @returns {string} Filtered string safe for storage
  */
 export function sanitizeForSubmit(value) {
+  // 1. Cast to string
   const text = String(value);
   let clean = text;
-  // Strip complete tags <...> and incomplete tag openings like <iframe src="
-  // Pattern 1: <...> (complete tags)
-  // Pattern 2: <tagname attr= including opening quote (incomplete tags)
-  clean = clean.replace(/<[^>]*>|<[^=]*(?:=["'])?/g, '');
-  // Remove ASCII control characters (0-31) and delete character (127)
+  // 2. Trim (matches PHP step 1)
+  clean = clean.trim();
+  // 3. Remove ASCII control characters (0-31) and delete character (127) (matches PHP step 2)
   clean = clean.replace(/[\x00-\x1F\x7F]/g, '');
-  // Collapse multiple whitespace characters into a single space and trim
+  // 4. Strip HTML and PHP tags (matches PHP strip_tags() step 3)
+  clean = clean.replace(/<[^>]*>/g, '');
+  // 5. Collapse multiple whitespace characters into a single space (matches PHP step 4)
   clean = clean.replace(/\s+/g, ' ').trim();
   return clean;
 }

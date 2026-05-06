@@ -1,4 +1,5 @@
 import { fetchJsonResponse, sanitizeFormData } from '../utils/fetch-utils.js';
+import { sanitizeFieldsForSubmit } from '../utils/sanitize.js';
 import { validateSupplierForm } from './validation.js';
 import { toast } from '../utils/toast.js';
 
@@ -136,7 +137,9 @@ export function initSuppliersForm(options = {}) {
     errorBox.classList.add('hidden');
     clearFieldErrors();
 
-    const result = validateSupplierForm(getValues());
+    const rawValues = getValues();
+    const sanitizedValues = sanitizeFieldsForSubmit(rawValues);
+    const result = validateSupplierForm(sanitizedValues);
     if (!result.success) {
       const errors = result.errors;
       Object.entries(errors).forEach(([fieldName, message]) => {

@@ -130,6 +130,3 @@ async function runBuild() {
 }
 
 runBuild();
-
-// Quick test write
-writeFileSync('test-direct.txt', 'test at end');

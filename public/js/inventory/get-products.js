@@ -142,7 +142,7 @@ export async function loadProducts(options = {}) {
  * @param {string} dir
  * @returns {Array<Record<string, unknown>>}
  */
-function sortBatches(batches, key, dir) {
+export function sortBatches(batches, key, dir) {
   const direction = dir === 'asc' ? 1 : -1;
 
   return [...batches].sort((a, b) => {
