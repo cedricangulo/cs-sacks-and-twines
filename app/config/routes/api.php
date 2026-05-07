@@ -315,4 +315,43 @@ return [
       'show' => false,
     ],
   ],
+  '/api/dashboard/efficiency' => [
+    'title' => 'API Dashboard Efficiency',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/dashboard/DashboardController.php',
+    'class' => 'DashboardController',
+    'method' => 'getEfficiency',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/dispatch-history' => [
+    'title' => 'API Dispatch History',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/dashboard/DashboardController.php',
+    'class' => 'DashboardController',
+    'method' => 'getDispatchHistory',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner', 'staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
+  '/api/dashboard/stats' => [
+    'title' => 'API Dashboard Stats',
+    'type' => 'api',
+    'controller' => __DIR__ . '/../../controllers/dashboard/DashboardController.php',
+    'class' => 'DashboardController',
+    'method' => 'getStats',
+    'layout' => 'none',
+    'methods' => ['GET'],
+    'roles' => ['owner', 'staff'],
+    'nav' => [
+      'show' => false,
+    ],
+  ],
 ];
