@@ -59,7 +59,7 @@ if ($hour >= 5 && $hour < 12) {
     <div class="card">
       <header class="flex items-center justify-between">
         <p class="type-base text-muted-foreground">Product Dispatch History</p>
-        <select id="dispatch-range" class="input-field py-1 px-2 text-sm w-auto">
+        <select id="dispatch-range" class="select">
           <option value="today">Today</option>
           <option value="week">This Week</option>
           <option value="month" selected>This Month</option>

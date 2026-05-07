@@ -5,6 +5,7 @@
 import { escapeHtml, getBasePath, renderEmptyState, renderLoadingRow } from '../utils/dom-utils.js';
 import { formatDate } from '../utils/date-utils.js';
 import { formatCurrency, getInitials } from '../utils/format.js';
+import { getProductsForCombobox } from './get-products.js';
 
 /**
  * Render batch table header.
@@ -261,6 +262,7 @@ export function renderProducts(products) {
 
 /**
  * Refresh the combobox options with current products.
+ * Fetches fresh product data, clears existing options, and rebuilds the list.
  *
  * @code INV-refreshComboboxOptions
  * @param {{ fillExistingItem?: (option: HTMLElement) => void }} [handlers]
@@ -275,18 +277,44 @@ export async function refreshComboboxOptions(handlers = {}) {
   const addNewButton = listbox.querySelector('[data-add-new-item]');
   const products = await getProductsForCombobox();
 
-  const optionsHtml = products.map(renderComboboxOption).join('');
+  listbox.querySelectorAll('[data-combobox-option]').forEach((option) => {
+    option.remove();
+  });
 
-  if (addNewButton) {
-    addNewButton.insertAdjacentHTML('beforebegin', optionsHtml);
-  } else {
-    listbox.innerHTML = optionsHtml;
+  if (products.length === 0) {
+    const emptyState = listbox.querySelector('[data-combobox-empty]');
+    if (emptyState) {
+      emptyState.classList.remove('hidden');
+      emptyState.textContent = 'No items found yet.';
+    }
+    return [];
   }
 
-  const newOptions = Array.from(listbox.querySelectorAll('[data-combobox-option]'));
+  const emptyState = listbox.querySelector('[data-combobox-empty]');
+  if (emptyState) {
+    emptyState.classList.add('hidden');
+  }
+
+  const fragment = document.createDocumentFragment();
+  products.forEach((product) => {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = renderComboboxOption(product);
+    const newOption = wrapper.firstElementChild;
+    if (newOption) {
+      fragment.appendChild(newOption);
+    }
+  });
+
+  if (addNewButton) {
+    addNewButton.parentNode.insertBefore(fragment, addNewButton);
+  } else {
+    listbox.appendChild(fragment);
+  }
+
+  const freshOptions = Array.from(listbox.querySelectorAll('[data-combobox-option]'));
 
   if (handlers.fillExistingItem) {
-    newOptions.forEach((option) => {
+    freshOptions.forEach((option) => {
       option.addEventListener('click', () => handlers.fillExistingItem(option));
       option.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -297,7 +325,7 @@ export async function refreshComboboxOptions(handlers = {}) {
     });
   }
 
-  return newOptions;
+  return freshOptions;
 }
 
 /**

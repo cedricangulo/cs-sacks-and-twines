@@ -58,6 +58,10 @@ function initInventoryPage() {
 
   inventoryTable = initProductsTable();
   resetForm(state);
+
+  refreshComboboxOptions({
+    fillExistingItem: (option) => fillExistingItem(state, option),
+  });
 }
 
 initInventoryPage();

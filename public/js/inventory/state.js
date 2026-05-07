@@ -277,6 +277,7 @@ function openCombobox(state) {
 
 /**
  * Filter combobox options by query.
+ * Always reads from live DOM to stay in sync after combobox refresh.
  *
  * @code INV-filterOptions
  * @param {ReturnType<import('./context.js').createInventoryState>} state
@@ -286,7 +287,8 @@ function filterOptions(state, query) {
   const normalized = query.trim().toLowerCase();
   let visibleCount = 0;
 
-  state.options.forEach((option) => {
+  const liveOptions = state.listbox.querySelectorAll('[data-combobox-option]');
+  liveOptions.forEach((option) => {
     const filterText = (option.dataset.filter || option.textContent || '').toLowerCase();
     const isVisible = normalized === '' || filterText.includes(normalized);
     option.classList.toggle(state.hiddenClass, !isVisible);
@@ -298,8 +300,7 @@ function filterOptions(state, query) {
 
   const emptyState = state.dialog.querySelector('[data-combobox-empty]');
   if (emptyState instanceof HTMLElement) {
-    const hasOptions = state.options.length > 0;
-    emptyState.classList.toggle(state.hiddenClass, hasOptions && visibleCount > 0);
+    emptyState.classList.toggle(state.hiddenClass, visibleCount > 0);
   }
 }
 
@@ -411,13 +412,15 @@ function switchToNewItem(state) {
 
 /**
  * Find the first visible combobox option.
+ * Always reads from live DOM to stay in sync after combobox refresh.
  *
  * @code INV-findFirstVisibleOption
  * @param {ReturnType<import('./context.js').createInventoryState>} state
  * @returns {HTMLElement | undefined}
  */
 function findFirstVisibleOption(state) {
-  return state.options.find((option) => !option.classList.contains(state.hiddenClass));
+  const liveOptions = state.listbox.querySelectorAll('[data-combobox-option]');
+  return Array.from(liveOptions).find((option) => !option.classList.contains(state.hiddenClass));
 }
 
 /**

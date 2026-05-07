@@ -2,9 +2,6 @@
 
 require_once __DIR__ . '/../../../core/sanitize.php';
 
-if (!isset($products) || !is_array($products)) {
-  $products = [];
-}
 if (!isset($suppliers) || !is_array($suppliers)) {
   $suppliers = [];
 }
@@ -94,42 +91,7 @@ if (!isset($suppliers) || !is_array($suppliers)) {
                     </div>
 
                     <div class="p-2 space-y-2 overflow-auto max-h-64" role="listbox" id="inventory-item-listbox" aria-labelledby="inventory-item-trigger" data-combobox-listbox>
-                      <?php if ($products === []): ?>
-                        <div class="px-3 py-4 text-center type-sm text-destructive" data-combobox-empty>No items found yet.</div>
-                      <?php endif; ?>
-
-                      <?php foreach ($products as $product): ?>
-                        <?php
-                        $productId = (string) ($product['product_id'] ?? '');
-                        $productName = (string) ($product['name'] ?? '');
-                        $productSku = (string) ($product['sku_code'] ?? '');
-                        $productCategory = (string) ($product['category'] ?? '');
-                        $productUnit = (string) ($product['base_uom'] ?? '');
-                        $productWeight = (string) ($product['weight_per_unit'] ?? '');
-                        $productImage = (string) ($product['image_path'] ?? '');
-                        $defaultSupplierId = (string) ($product['default_supplier_id'] ?? '');
-                        $productLowStockThreshold = (string) ($product['low_stock_threshold'] ?? '0.00');
-                        $filterText = trim($productName . ' ' . $productSku . ' ' . $productCategory . ' ' . $productUnit);
-                        ?>
-                        <div
-                          role="option"
-                          tabindex="0"
-                          class="flex-col items-start w-full gap-1 transition h-fit btn-ghost inventory-option"
-                          data-combobox-option
-                          data-value="<?= escape_for_html($productId) ?>"
-                          data-label="<?= escape_for_html($productName) ?>"
-                          data-sku="<?= escape_for_html($productSku) ?>"
-                          data-category="<?= escape_for_html($productCategory) ?>"
-                          data-unit="<?= escape_for_html($productUnit) ?>"
-                          data-weight="<?= escape_for_html($productWeight) ?>"
-                          data-image="<?= escape_for_html($productImage) ?>"
-                          data-supplier-id="<?= escape_for_html($defaultSupplierId) ?>"
-                          data-low-stock-threshold="<?= escape_for_html($productLowStockThreshold) ?>"
-                          data-filter="<?= escape_for_html($filterText) ?>">
-                          <h4 class="font-medium type-base text-foreground"><?= escape_for_html($productName) ?></h4>
-                          <div class="type-xs text-muted-foreground"><?= escape_for_html($productSku) ?> · <?= escape_for_html($productCategory) ?> · <?= escape_for_html($productUnit) ?></div>
-                        </div>
-                      <?php endforeach; ?>
+                      <div class="px-3 py-4 text-center type-sm text-muted-foreground" data-combobox-empty>Loading items...</div>
 
                       <button
                         type="button"
