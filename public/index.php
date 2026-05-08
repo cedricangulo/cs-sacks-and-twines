@@ -73,18 +73,28 @@ if (is_string($pageController) && $pageController !== '' && is_file($pageControl
       
       // Extract array return values into variables for the view
       if (is_array($controllerOutput)) {
+        if (isset($controllerOutput['status_code']) && is_numeric($controllerOutput['status_code'])) {
+          $currentPage['status_code'] = (int) $controllerOutput['status_code'];
+        }
+
         extract($controllerOutput);
       }
     }
   }
 }
 
-$pageTitle = $currentPage['title'] ?? 'Sacks and Twines';
-$pageView = $currentPage['view'] ?? __DIR__ . '/../app/views/pages/not-found.php';
-$pageShell = app_route_shell($currentPage);
-$showSidebar = app_should_show_sidebar($currentPage, $currentRole);
+$statusCode = (int) ($currentPage['status_code'] ?? 200);
+$isErrorPage = $statusCode >= 400;
+$errorDetails = $isErrorPage ? app_error_details($statusCode) : null;
 
-http_response_code($currentPage['status_code'] ?? 200);
+$pageTitle = $isErrorPage ? $errorDetails['title'] : ($currentPage['title'] ?? 'Sacks and Twines');
+$pageView = $isErrorPage
+  ? __DIR__ . '/../app/views/pages/not-found.php'
+  : ($currentPage['view'] ?? __DIR__ . '/../app/views/pages/not-found.php');
+$pageShell = $isErrorPage ? 'auth' : app_route_shell($currentPage);
+$showSidebar = !$isErrorPage && app_should_show_sidebar($currentPage, $currentRole);
+
+http_response_code($statusCode);
 
 ?>
 <?php require_once __DIR__ . '/../app/views/layout/head.php'; ?>

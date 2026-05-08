@@ -14,7 +14,22 @@ if (!function_exists('app_resolve_page_route')) {
   function app_resolve_page_route(): array
   {
     $requestedPath = request_path();
-    $currentPage = app_current_route();
+    $matchedRoute = app_route_for_path($requestedPath);
+    $currentPage = $matchedRoute ?? app_current_route();
+
+    if ($requestedPath !== '/not-found' && $matchedRoute === null) {
+      if ($requestedPath === '/uploads' || str_starts_with($requestedPath, '/uploads/')) {
+        $currentPage = app_route_for_path('/forbidden') ?? $currentPage;
+        $currentPage['status_code'] = 403;
+
+        return $currentPage;
+      }
+
+      $currentPage = app_route_for_path('/not-found') ?? $currentPage;
+      $currentPage['status_code'] = 404;
+
+      return $currentPage;
+    }
 
     if ($requestedPath !== '/not-found') {
       $hasView = app_route_has_view($currentPage);

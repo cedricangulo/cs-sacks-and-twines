@@ -61,6 +61,11 @@ if (!function_exists('request_path')) {
 			$path = substr($path, strlen($basePath)) ?: '/';
 		}
 
+		// Support direct /public URLs by normalizing them to app route paths.
+		if ($path === '/public' || str_starts_with($path, '/public/')) {
+			$path = substr($path, strlen('/public')) ?: '/';
+		}
+
 		// Normalize the path to always start with a single slash and not end with a slash (except for the root path)
 		$path = '/' . ltrim($path, '/');
 		$path = rtrim($path, '/');
