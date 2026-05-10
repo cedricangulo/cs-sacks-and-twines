@@ -29,7 +29,14 @@ pnpm install
 /docs/schema.sql
 ```
 
-7. If you need initial data, apply the migration files in `docs/migrations/` in date order.
+7. (Optional) Generate sample seed data:
+
+```bash
+pnpm run seed
+```
+
+This command generates sample users, suppliers, products, and transaction data in `scripts/data/seed.sql`. Then import this file into your database to populate it with demo data for testing. This makes it easier to explore the app without manually creating data.
+
 8. Configure the database connection using environment variables or your local server setup:
    - `DB_HOST`
    - `DB_PORT`
@@ -56,6 +63,7 @@ pnpm run build
 pnpm run watch:css
 pnpm run watch:js
 pnpm run watch
+pnpm run seed
 ```
 
 - `build:css` compiles `public/css/input.css` to `public/css/output.css`

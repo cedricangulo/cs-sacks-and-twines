@@ -5,7 +5,8 @@
 		"build:js": "node scripts/build-js.mjs",
 		"watch:js": "node scripts/build-js.mjs --watch",
 		"build": "pnpm run build:css && pnpm run build:js",
-		"watch": "pnpm run watch:css & pnpm run watch:js"
+		"watch": "pnpm run watch:css & pnpm run watch:js",
+		"seed": "node scripts/generate-seed.js"
 	},
 	"devDependencies": {
 		"@tailwindcss/cli": "^4.2.4",
